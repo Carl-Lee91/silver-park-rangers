@@ -171,6 +171,13 @@ entities/match/
   공개되므로 누구든 API 를 직접 부를 수 있다.
 - 스키마 변경은 `supabase/migrations/` 의 마이그레이션 파일로만 한다. 대시보드에서
   직접 고치지 않는다.
+- 🔴 마이그레이션을 고치면 **`pnpm db:verify`** 를 돌린다. 로컬 Postgres 에 임시 DB 를
+  띄워 마이그레이션을 깔고 `supabase/verify/rls_scenarios.sql` 의 권한 시나리오를 검사한다
+  (Docker 불필요). 정책을 새로 만들면 막혀야 하는 경우와 열려야 하는 경우를 시나리오에
+  같이 넣는다.
+- 원격 적용은 지금은 SQL Editor 에 붙여 실행한다. 적용한 파일은 [docs/SETUP.md](docs/SETUP.md)
+  §1 의 표에 적는다.
+- Supabase 대시보드·카카오 콘솔·Vercel 설정은 [docs/SETUP.md](docs/SETUP.md) 에 있다.
 - DB 타입은 손으로 쓰지 않고 생성한다(Supabase 를 연결하면 `pnpm db:types`).
 - service role key 는 서버에서만, 꼭 필요할 때만 쓴다. RLS 를 건너뛰기 때문이다.
 
@@ -233,6 +240,7 @@ pnpm test:watch  # watch 모드
 pnpm typecheck   # tsc --noEmit
 pnpm lint        # ESLint + FSD 경계 검사
 pnpm build       # 프로덕션 빌드
+pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
 ```
 
 ### 구현 완료 후 필수 프로세스
@@ -240,7 +248,8 @@ pnpm build       # 프로덕션 빌드
 1. `pnpm test` 통과
 2. `pnpm typecheck` 통과
 3. `pnpm lint` 통과 (FSD 경계 위반 0)
-4. **카테고리별로 파편화하여** 커밋
+4. DB 를 고쳤으면 `pnpm db:verify` 통과
+5. **카테고리별로 파편화하여** 커밋
 
 ---
 
