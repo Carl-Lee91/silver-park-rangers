@@ -339,3 +339,23 @@ select verify.ok((select status from public.my_access()) is null and not (select
   '가입 안 한 사람은 멤버도 어드민도 아니다');
 
 reset role;
+
+-- ── 투표 마감 기본값 (20261019020000) ────────────────────────────────
+-- 마감을 정하지 않으면 매치 시작(한국 시간)에 마감한다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+insert into public.matches (id, match_date, starts_at) values
+  ('10000000-0000-0000-0000-000000000011', current_date + 7, '10:00'),
+  ('10000000-0000-0000-0000-000000000012', current_date - 7, '10:00');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000006', 'yes');
+select verify.ok(exists (select 1 from public.match_attendance
+  where match_id = '10000000-0000-0000-0000-000000000011' and member_id = '00000000-0000-0000-0000-000000000006'),
+  '마감을 안 정한 매치는 시작 전까지 투표한다');
+select verify.fails($$insert into public.match_attendance (match_id, member_id, response)
+  values ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000006', 'yes')$$,
+  '마감을 안 정한 매치도 시작한 뒤에는 투표하지 못한다');
+
+reset role;
