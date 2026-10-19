@@ -74,9 +74,10 @@ app → views → widgets → features → entities → shared
 - **상위 레이어만 하위 레이어를 import** 할 수 있다. 역방향 금지.
 - **같은 레이어 내 슬라이스 간 import 금지.**
   `features/attendance-vote` 가 `features/squad-builder` 를 import 할 수 없다.
-  - 예외: **entities 끼리는 타입만** 가져올 수 있다(`import type`). 포지션 코드처럼
-    여러 엔티티가 같은 어휘를 쓰기 때문이다. 값(함수·상수)이 필요하면 그 값을 쓰는
-    쪽을 한 레이어 올리거나, 호출하는 쪽에서 계산해 인자로 넘긴다.
+  - 예외 1: **entities 끼리는 타입만** 가져올 수 있다(`import type`). 값(함수·상수)이
+    필요하면 그 값을 쓰는 쪽을 한 레이어 올리거나, 호출하는 쪽에서 계산해 인자로 넘긴다.
+  - 예외 2: **`entities/position` 은 값도** 가져올 수 있다. 동작 없는 공통 어휘(포지션 코드·
+    이름)라서 막으면 엔티티마다 같은 목록을 베끼게 된다. 다른 엔티티에 이 예외를 늘리지 않는다.
 - `widgets` 는 cross-feature 합성 UI 가 실제로 필요해질 때까지 도입하지 않는다.
 - 여러 feature 가 같이 쓰는 도메인 규칙(예: 자동 배치, 출전 수 집계)은 순수 함수로
   `entities` 에 둔다.
