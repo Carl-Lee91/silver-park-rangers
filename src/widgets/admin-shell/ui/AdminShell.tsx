@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { fetchMyGate } from "@/entities/member/server";
+import { PendingWatcher } from "@/features/pending-watch";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
 
@@ -28,6 +29,7 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
         </nav>
       </header>
       <main className="flex-1 px-4 py-6">{children}</main>
+      <PendingWatcher />
     </div>
   );
 }
