@@ -183,3 +183,23 @@ export const toSavePayload = (builder: Builder) =>
 /** 이 쿼터에 뛰는 사람 */
 export const placedIn = (builder: Builder, quarter: number) =>
   new Set(builder[quarter].slots.flatMap((slot) => (slot.memberId === null ? [] : [slot.memberId])));
+
+/**
+ * 드래그를 놓았을 때(dnd-kit onDragEnd). 끄는 것: "bench:<멤버 id>" · "slot:<자리 번호>",
+ * 놓는 곳: "slot:<자리 번호>" · "bench". 결과는 탭 두 번과 같다 — 넣기·바꾸기·빼기.
+ */
+export const handleDrop = (builder: Builder, quarter: number, activeId: string, overId: string | null): Builder => {
+  if (overId === null) return builder;
+  const slots = builder[quarter].slots;
+  const fromSlot = activeId.startsWith("slot:") ? Number(activeId.slice("slot:".length)) : null;
+  const memberId = activeId.startsWith("bench:")
+    ? activeId.slice("bench:".length)
+    : fromSlot !== null
+      ? (slots[fromSlot]?.memberId ?? null)
+      : null;
+  if (memberId === null) return builder;
+
+  if (overId === "bench") return fromSlot === null ? builder : removeMember(builder, quarter, fromSlot);
+  if (overId.startsWith("slot:")) return placeMember(builder, quarter, memberId, Number(overId.slice("slot:".length)));
+  return builder;
+};
