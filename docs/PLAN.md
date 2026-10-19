@@ -121,7 +121,8 @@ URL은 공개라서 누구나 접속 자체는 할 수 있다. 그래서 다음 
 
 ### 참석 투표
 
-- 참석 / 불참 / 미정 중에서 고른다.
+- 참석 / 불참 / 미정 중에서 고른다. 마감 전에는 몇 번이고 바꿀 수 있다.
+- 투표 마감은 관리자가 매치를 만들 때 정한다. **따로 정하지 않으면 매치 시작 시각에 마감한다.**
 - 참석이면 **도착 시간**과 **떠나는 시간**을 고른다. 쿼터 시작 시각 단위로 선택하고, 기본값은 "처음부터"와 "끝까지"다.
   - 예: 11:00에 도착하면 11:00 쿼터부터, 12:00에 떠나면 11:30 쿼터까지 뛸 수 있다.
 - 늦게 오는 사람과 일찍 가는 사람은 같은 규칙으로 처리한다(6장 자동 배치).
@@ -221,7 +222,7 @@ URL은 공개라서 누구나 접속 자체는 할 수 있다. 그래서 다음 
 | `members` | `id`(= auth user id), `real_name`, `kakao_nickname`, `avatar_url`, `feet`(foot[]), `preferred_positions`(position[], 1~3개, 순서 = 우선순위), `role`(admin / user), `status`(pending / approved / rejected / inactive), `approved_by`, `approved_at` | 용병도 가입하므로 선수 = 계정 |
 | `owners` | `user_id`(= auth user id) | 어드민 전용 계정. 쓰기 정책이 없어 SQL Editor 로만 넣는다. `approved_by`·`created_by` 는 어드민도 가리킬 수 있게 `auth.users` 를 참조한다 |
 | `member_admin_info` | `member_id`, `member_type`(member / guest) | 관리자만 읽기·쓰기. 이후 관리자 메모도 여기에 둔다 |
-| `matches` | `date`, `starts_at`(기본 10:00), `ends_at`(기본 13:00), `quarter_count`(기본 6), `venue`, `opponent`, `vote_deadline`, `squad_published_at`, `share_token` | |
+| `matches` | `date`, `starts_at`(기본 10:00), `ends_at`(기본 13:00), `quarter_count`(기본 6), `venue`, `opponent`, `vote_deadline`(null 이면 매치 시작에 마감), `squad_published_at`, `share_token` | 날짜·시각은 한국 시간 |
 | `match_attendance` | `match_id`, `member_id`, `response`(yes / no / maybe), `arrive_at`(null = 처음부터), `leave_at`(null = 끝까지), `attended`(null = 미확정) | 투표와 실제 출석을 따로 저장해야 노쇼율과 참석률을 계산할 수 있다 |
 | `formations` | `name`, `is_preset`, `slots` jsonb `[{position, x, y}]` | 4-3-3, 4-4-2는 시드 데이터로 넣는다 |
 | `quarters` | `match_id`, `number`, `formation_name` | 쿼터 시각은 매치 시간에서 계산한다 |
@@ -234,7 +235,8 @@ URL은 공개라서 누구나 접속 자체는 할 수 있다. 그래서 다음 
 - 카카오 로그인, 온보딩, 승인 게이트(화면 + RLS) — 완료
 - 어드민 전용 계정, 멤버 관리(승인 시 멤버 / 용병 지정, 휴면, 어드민의 관리자 지정) — 완료
 - 관리 화면의 가입 신청 수를 실시간으로 갱신(Supabase Realtime). 지금은 화면을 열 때 센다
-- 매치 생성, 참석 투표(도착 / 떠나는 시간), 실제 출석 확정
+- 매치 생성·고치기·지우기, 참석 투표(도착 / 떠나는 시간), 참석자·미투표자 명단 — 완료
+- 실제 출석 확정 — 스쿼드 빌더 뒤에 한다(기본값을 "스쿼드에 들어간 사람"으로 채우기 때문)
 - 스쿼드 빌더(쿼터별, 프리셋과 커스텀 포메이션, 드래그, 자동 배치, 키퍼 수동 차출, 출전 / 보장 쿼터 수, 경고)
 - 쿼터 보드(포메이션 보기 / 출전표 보기)
 - 이미지 익스포트, 카톡 공유(이름 포함 미리보기)
