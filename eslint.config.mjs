@@ -1,0 +1,61 @@
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+import boundaries from "eslint-plugin-boundaries";
+
+/**
+ * FSD 레이어 경계를 여기서 강제한다. 위반하면 `pnpm lint` 가 실패한다.
+ *
+ * 의존 방향: app → views → widgets → features → entities → shared
+ * 같은 레이어의 다른 슬라이스끼리도 import 하지 않는다
+ * (`allow` 에 자기 타입이 없다. shared 만 예외다).
+ */
+const LAYERS = ["app", "views", "widgets", "features", "entities", "shared"];
+
+const allowBelow = (type) =>
+  LAYERS.slice(LAYERS.indexOf(type) + 1).map((to) => ({
+    to: { element: { type: to } },
+  }));
+
+const fsd = {
+  plugins: { boundaries },
+  settings: {
+    "boundaries/include": ["src/**/*"],
+    "boundaries/elements": [
+      { type: "app", pattern: "src/app/**" },
+      { type: "views", pattern: "src/views/*" },
+      { type: "widgets", pattern: "src/widgets/*" },
+      { type: "features", pattern: "src/features/*" },
+      { type: "entities", pattern: "src/entities/*" },
+      { type: "shared", pattern: "src/shared/*" },
+    ],
+  },
+  rules: {
+    "boundaries/dependencies": [
+      "error",
+      {
+        default: "disallow",
+        policies: [
+          ...LAYERS.filter((t) => t !== "shared").map((type) => ({
+            from: { element: { type } },
+            allow: allowBelow(type),
+          })),
+          // shared 는 가장 아래라 같은 레이어끼리만 참조한다.
+          {
+            from: { element: { type: "shared" } },
+            allow: [{ to: { element: { type: "shared" } } }],
+          },
+        ],
+      },
+    ],
+  },
+};
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  fsd,
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "coverage/**"]),
+]);
+
+export default eslintConfig;
