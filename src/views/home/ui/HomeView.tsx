@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/entities/member";
 import { fetchMyMember } from "@/entities/member/server";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
@@ -16,6 +18,11 @@ export default async function HomeView() {
       <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">
         다가오는 매치는 곧 여기에 보여요.
       </p>
+      {isAdmin(me) && (
+        <Link href={ROUTES.admin} className="rounded-xl border border-border p-4 text-sm font-semibold">
+          관리 화면으로
+        </Link>
+      )}
       <SignOutButton />
     </main>
   );
