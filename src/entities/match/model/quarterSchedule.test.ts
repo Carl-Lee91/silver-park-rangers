@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { availableQuarters, quarterSchedule } from "./quarterSchedule";
+import { availableQuarters, quarterSchedule, timeWindowOptions } from "./quarterSchedule";
 
 const DEFAULT_MATCH = { startsAt: "10:00", endsAt: "13:00", quarterCount: 6 };
 
@@ -65,5 +65,29 @@ describe("뛸 수 있는 쿼터", () => {
 
   it("쿼터가 끝나기 전에 떠나면 그 쿼터는 못 뛴다", () => {
     expect(availableQuarters(schedule, { arriveAt: null, leaveAt: "11:50" })).toEqual([0, 1, 2]);
+  });
+});
+
+describe("도착·떠나는 시간 고르기 (PLAN.md §6 참석 투표)", () => {
+  it("도착은 처음부터 또는 두 번째 쿼터부터의 시작 시각", () => {
+    expect(timeWindowOptions(quarterSchedule(DEFAULT_MATCH)).arrive).toEqual([
+      { value: "", label: "처음부터" },
+      { value: "10:30", label: "10:30 도착" },
+      { value: "11:00", label: "11:00 도착" },
+      { value: "11:30", label: "11:30 도착" },
+      { value: "12:00", label: "12:00 도착" },
+      { value: "12:30", label: "12:30 도착" },
+    ]);
+  });
+
+  it("떠나는 시간은 끝까지 또는 마지막 전 쿼터까지의 끝 시각", () => {
+    expect(timeWindowOptions(quarterSchedule(DEFAULT_MATCH)).leave).toEqual([
+      { value: "", label: "끝까지" },
+      { value: "10:30", label: "10:30 출발" },
+      { value: "11:00", label: "11:00 출발" },
+      { value: "11:30", label: "11:30 출발" },
+      { value: "12:00", label: "12:00 출발" },
+      { value: "12:30", label: "12:30 출발" },
+    ]);
   });
 });

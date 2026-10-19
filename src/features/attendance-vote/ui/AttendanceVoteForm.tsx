@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { RESPONSE_LABELS, type AttendanceResponse } from "@/entities/attendance";
-import type { QuarterTime } from "@/entities/match";
-import { attendanceTimeOptions, playableQuarters, type Vote, type VoteState } from "../model/attendanceVote";
+import { timeWindowOptions, type QuarterTime } from "@/entities/match";
+import { playableQuarters, type Vote, type VoteState } from "../model/attendanceVote";
 
 type Props = {
   action: (state: VoteState, formData: FormData) => Promise<VoteState>;
@@ -33,7 +33,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
   const [leaveAt, setLeaveAt] = useState(current?.leaveAt ?? "");
 
   const coming = response === "yes" || response === "maybe";
-  const options = attendanceTimeOptions(schedule);
+  const options = timeWindowOptions(schedule);
   const playable = playableQuarters(schedule, arriveAt, leaveAt);
   const ready = response !== "" && (!coming || playable.length > 0);
 

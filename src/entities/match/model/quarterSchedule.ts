@@ -54,3 +54,21 @@ export const availableQuarters = (
     const stays = leaveAt === null || toMinutes(quarter.endsAt) <= toMinutes(leaveAt);
     return arrived && stays ? [index] : [];
   });
+
+export type TimeOption = { value: string; label: string };
+
+/**
+ * 도착·떠나는 시간 선택지(PLAN.md §6). 쿼터 경계에서만 고른다 — 쿼터 중간에 오가는 것은
+ * 그 쿼터를 못 뛰는 것과 같다. 첫 쿼터 시작 도착은 "처음부터", 마지막 쿼터 끝 출발은 "끝까지"(값 "").
+ * 팀원의 참석 투표와 관리자의 당일 시간 고치기가 같이 쓴다.
+ */
+export const timeWindowOptions = (schedule: readonly QuarterTime[]): { arrive: TimeOption[]; leave: TimeOption[] } => ({
+  arrive: [
+    { value: "", label: "처음부터" },
+    ...schedule.slice(1).map((quarter) => ({ value: quarter.startsAt, label: `${quarter.startsAt} 도착` })),
+  ],
+  leave: [
+    { value: "", label: "끝까지" },
+    ...schedule.slice(0, -1).map((quarter) => ({ value: quarter.endsAt, label: `${quarter.endsAt} 출발` })),
+  ],
+});
