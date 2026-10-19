@@ -23,8 +23,9 @@
 | --- | --- | --- |
 | 매치 | `match` | 하루 일정 하나 (기본 10:00~13:00) |
 | 쿼터 | `quarter` | 매치 안의 경기 하나(25~30분). 기본 6개 |
-| 멤버 · 용병 | `member` / `guest` (`member_type`) | 운영진만 보는 구분 |
-| 운영진 · 일반 | `admin` / `user` (`role`) | 권한 |
+| 멤버 · 용병 | `member` / `guest` (`member_type`) | 관리자만 보는 구분 |
+| 어드민 | `owner` (`owners` 테이블) | 선수가 아닌 운영용 전용 계정. 관리자를 지정한다 |
+| 관리자 · 일반 | `admin` / `user` (`role`) | 멤버의 권한 |
 | 포지션 | `FW` `AM` `WG` `MF` `WB` `CB` `GK` | PLAN.md §5 |
 
 ## 🔴 비용은 0원이다
@@ -73,6 +74,9 @@ app → views → widgets → features → entities → shared
 - **상위 레이어만 하위 레이어를 import** 할 수 있다. 역방향 금지.
 - **같은 레이어 내 슬라이스 간 import 금지.**
   `features/attendance-vote` 가 `features/squad-builder` 를 import 할 수 없다.
+  - 예외: **entities 끼리는 타입만** 가져올 수 있다(`import type`). 포지션 코드처럼
+    여러 엔티티가 같은 어휘를 쓰기 때문이다. 값(함수·상수)이 필요하면 그 값을 쓰는
+    쪽을 한 레이어 올리거나, 호출하는 쪽에서 계산해 인자로 넘긴다.
 - `widgets` 는 cross-feature 합성 UI 가 실제로 필요해질 때까지 도입하지 않는다.
 - 여러 feature 가 같이 쓰는 도메인 규칙(예: 자동 배치, 출전 수 집계)은 순수 함수로
   `entities` 에 둔다.
@@ -168,6 +172,13 @@ entities/match/
   공개되므로 누구든 API 를 직접 부를 수 있다.
 - 스키마 변경은 `supabase/migrations/` 의 마이그레이션 파일로만 한다. 대시보드에서
   직접 고치지 않는다.
+- 🔴 마이그레이션을 고치면 **`pnpm db:verify`** 를 돌린다. 로컬 Postgres 에 임시 DB 를
+  띄워 마이그레이션을 깔고 `supabase/verify/rls_scenarios.sql` 의 권한 시나리오를 검사한다
+  (Docker 불필요). 정책을 새로 만들면 막혀야 하는 경우와 열려야 하는 경우를 시나리오에
+  같이 넣는다.
+- 원격 적용은 지금은 SQL Editor 에 붙여 실행한다. 적용한 파일은 [docs/SETUP.md](docs/SETUP.md)
+  §1 의 표에 적는다.
+- Supabase 대시보드·카카오 콘솔·Vercel 설정은 [docs/SETUP.md](docs/SETUP.md) 에 있다.
 - DB 타입은 손으로 쓰지 않고 생성한다(Supabase 를 연결하면 `pnpm db:types`).
 - service role key 는 서버에서만, 꼭 필요할 때만 쓴다. RLS 를 건너뛰기 때문이다.
 
@@ -180,11 +191,13 @@ entities/match/
 
 ## 🔴 사용자 판단 기준 (승인 게이트)
 
-- **서비스를 쓸 수 있는 사람 = `status === 'approved'`.** 판단 함수는 `entities/member`
-  한 곳에 두고, DB 의 `is_approved()` 와 정의를 같게 유지한다. 둘이 어긋나면 화면은
-  열리는데 데이터가 비거나, 그 반대가 된다.
-- **운영진 = 승인됨 + `role === 'admin'`.** DB 의 `is_admin()` 과 같다.
-- 🔴 **멤버/용병 구분(`member_type`)은 운영진 전용이다.** 운영진만 읽는
+- 판단은 `entities/member` 의 `gate`·`permissions` 한 곳에 두고, DB 의 판단 함수·RPC 검사와
+  정의를 같게 유지한다. 둘이 어긋나면 화면은 열리는데 데이터가 비거나, 누를 수 없는 단추가 생긴다.
+- **어드민 = `owners` 에 있는 계정.** DB 의 `is_owner()`. 멤버 행이 없고 관리 화면만 쓴다.
+- **서비스를 쓸 수 있는 사람 = 어드민 또는 `status === 'approved'` 인 멤버.** DB 의 `is_approved()`.
+- **관리자 = 어드민 또는 승인됨 + `role === 'admin'`.** DB 의 `is_admin()`.
+- **관리자 지정·해제는 어드민만**, 관리자의 휴면도 어드민만 한다(`set_member_role`·`set_member_status`).
+- 🔴 **멤버/용병 구분(`member_type`)은 관리자 전용이다.** 관리자만 읽는
   `member_admin_info` 테이블에만 둔다. 일반 사용자에게 가는 응답·화면·공유 이미지에
   절대 섞지 않는다.
 
@@ -214,7 +227,7 @@ entities/match/
 ### 반드시 커버해야 하는 경로
 
 - 승인 게이트 분기 (온보딩 전 / 승인 대기 / 거절 / 승인 / 휴면) 와 리다이렉트
-- 운영진 권한 분기
+- 관리자 권한 분기
 - 🔴 **자동 배치 규칙** (PLAN.md §6) — 보장 출전 수, 도착·떠나는 시간, 전담 키퍼,
   키퍼 쿼터 미집계, 경고. 규칙을 바꿀 때는 PLAN.md §6 과 테스트를 **같이** 고친다.
 - 쿼터 시각 계산
@@ -230,6 +243,7 @@ pnpm test:watch  # watch 모드
 pnpm typecheck   # tsc --noEmit
 pnpm lint        # ESLint + FSD 경계 검사
 pnpm build       # 프로덕션 빌드
+pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
 ```
 
 ### 구현 완료 후 필수 프로세스
@@ -237,7 +251,8 @@ pnpm build       # 프로덕션 빌드
 1. `pnpm test` 통과
 2. `pnpm typecheck` 통과
 3. `pnpm lint` 통과 (FSD 경계 위반 0)
-4. **카테고리별로 파편화하여** 커밋
+4. DB 를 고쳤으면 `pnpm db:verify` 통과
+5. **카테고리별로 파편화하여** 커밋
 
 ---
 

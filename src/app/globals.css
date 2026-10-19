@@ -2,11 +2,35 @@
 
 /*
   디자인 토큰. 색·간격은 여기 있는 이름으로만 쓴다(CLAUDE.md).
-  화면 작업을 시작할 때 팀 색에 맞춰 채운다.
+
+      --color-primary  →  bg-primary · text-primary · border-primary
+
+  팀 색이 정해지면 primary 만 바꾼다.
 */
 @theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+
+  /* ── Brand ── */
+  --color-primary: #1f6f43;
+  --color-primary-contrast: #ffffff;
+
+  /* ── Background ── */
   --color-bg-base: #ffffff;
+  --color-bg-subtle: #f4f5f7;
+
+  /* ── Text ── */
   --color-text-primary: #171717;
+  --color-text-secondary: #5b6270;
+  --color-text-tertiary: #8b929e;
+
+  /* ── Line · State ── */
+  --color-border: #e3e6ea;
+  --color-danger: #d93a3a;
+
+  /* ── 카카오 로그인 단추(카카오 디자인 가이드) ── */
+  --color-kakao: #fee500;
+  --color-kakao-label: #191919;
 }
 
 body {
