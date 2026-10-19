@@ -9,6 +9,7 @@ import { fetchAdminMembers } from "@/entities/member/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { computeMemberStats, periodRange } from "@/entities/stats";
 import { fetchStatsSource } from "@/entities/stats/server";
+import { setAttendanceWindow } from "@/features/attendance-adjust";
 import { saveMatchNote } from "@/features/match-note";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
 import { ShareActions } from "@/features/squad-share";
@@ -71,6 +72,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         seasonAverages={seasonAverages}
         notes={notes}
         noteAction={saveMatchNote}
+        windowAction={setAttendanceWindow}
       />
       {match.squadPublishedAt !== null && current.length > 0 && (
         <section>

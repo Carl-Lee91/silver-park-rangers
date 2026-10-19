@@ -23,6 +23,7 @@ import {
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
 import { warningMessage } from "../model/warnings";
 import NoteEditor from "./NoteEditor";
+import TimeWindowEditor from "./TimeWindowEditor";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
@@ -41,6 +42,8 @@ type Props = {
   notes?: Record<string, string>;
   /** 특이사항 저장(features/match-note). 없으면 편집기를 띄우지 않는다 */
   noteAction?: Action;
+  /** 당일 도착·떠나는 시간 저장(features/attendance-adjust). 없으면 띄우지 않는다 */
+  windowAction?: Action;
 };
 
 const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
@@ -61,6 +64,7 @@ export default function SquadBuilder({
   seasonAverages = {},
   notes = {},
   noteAction,
+  windowAction,
 }: Props) {
   const [builder, setBuilder] = useState(initial);
   const [quarter, setQuarter] = useState(0);
@@ -102,6 +106,18 @@ export default function SquadBuilder({
     const next = handleTap(builder, quarter, selection, target);
     setBuilder(next.builder);
     setSelection(next.selection);
+  };
+
+  /** 끝난 쿼터(지금 쿼터 앞)는 그대로 두고 지금 쿼터부터 다시 짠다(PLAN.md §10 당일 변동). */
+  const reassignFromHere = () => {
+    if (!window.confirm(`1~${quarter}쿼터는 그대로 두고 ${quarter + 1}쿼터부터 필드를 다시 짤까요?`)) return;
+    const lineup = toLineup(builder);
+    change(
+      applyLineup(
+        builder,
+        autoAssign(input, { startQuarter: quarter, current: lineup, keepers: lineup.map((row) => row.keeperId) }),
+      ),
+    );
   };
 
   const runAutoAssign = () => {
@@ -222,6 +238,19 @@ export default function SquadBuilder({
         </div>
       )}
 
+      {windowAction && noteTarget !== null && byId.has(noteTarget) && (
+        <TimeWindowEditor
+          key={`window-${noteTarget}`}
+          action={windowAction}
+          matchId={matchId}
+          memberId={noteTarget}
+          name={nameOf(noteTarget)}
+          schedule={schedule}
+          arriveAt={byId.get(noteTarget)!.arriveAt}
+          leaveAt={byId.get(noteTarget)!.leaveAt}
+        />
+      )}
+
       {noteAction && noteTarget !== null && (
         <NoteEditor
           key={noteTarget}
@@ -306,6 +335,15 @@ export default function SquadBuilder({
           <button type="button" onClick={runAutoAssign} className="h-11 rounded-lg border border-border text-sm font-semibold">
             자동 배치
           </button>
+          {quarter > 0 && (
+            <button
+              type="button"
+              onClick={reassignFromHere}
+              className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold"
+            >
+              {quarter + 1}쿼터부터 다시 배치
+            </button>
+          )}
           <form action={saveFormAction}>
             <input type="hidden" name="matchId" value={matchId} />
             <input type="hidden" name="quarters" value={payload} />
