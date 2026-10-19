@@ -36,4 +36,23 @@ describe("보장 출전 수 (PLAN.md §6)", () => {
     expect(guaranteed.p1).toBe(3);
     expect(guaranteed.p2).toBe(5);
   });
+
+  describe("앞 쿼터가 끝난 뒤 다시 계산할 때", () => {
+    it("이미 뛴 쿼터를 더해, 남은 쿼터로 맞출 수 있는 가장 큰 보장 수를 낸다", () => {
+      // 2쿼터짜리 매치의 1쿼터가 끝났다. p1~p10 은 1쿼터를 뛰었고 p11·p12 는 쉬었다.
+      const input = { players: fieldPlayers(12), quarters: sixQuarters().slice(0, 2) };
+      const alreadyPlayed = Object.fromEntries(fieldPlayers(10).map((p) => [p.id, 1]));
+      const guaranteed = guaranteedQuarters(input, [null, null], { fromQuarter: 1, alreadyPlayed });
+      // 남은 1쿼터의 10자리: 쉬었던 둘이 먼저 들어가야 전원 1쿼터 이상이 된다.
+      expect(guaranteed.p11).toBe(1);
+      expect(guaranteed.p1).toBe(1);
+    });
+
+    it("이미 보장 수보다 많이 뛴 사람은 그 수를 그대로 보장으로 본다", () => {
+      const input = { players: fieldPlayers(12), quarters: sixQuarters().slice(0, 2) };
+      const guaranteed = guaranteedQuarters(input, [null, null], { fromQuarter: 2, alreadyPlayed: { p1: 2 } });
+      expect(guaranteed.p1).toBe(2);
+      expect(guaranteed.p2).toBe(0);
+    });
+  });
 });

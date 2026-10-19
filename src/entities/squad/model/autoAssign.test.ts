@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Position } from "@/entities/position";
 import { autoAssign } from "./autoAssign";
 import { evaluateSquad } from "./evaluateSquad";
+import { guaranteedQuarters } from "./guarantees";
 import type { QuarterLineup, SquadInput, SquadPlayer } from "./types";
 import { ALL_DAY, FIELD_433, fieldPlayers, keeper, player, seeded, sixQuarters } from "./testing";
 
@@ -171,6 +172,40 @@ describe("자동 배치 (PLAN.md §6)", () => {
     });
   });
 
+  describe("N쿼터부터 다시 배치 (당일 변동)", () => {
+    const field = fieldPlayers(17);
+    const input: SquadInput = { players: [keeper("gk"), ...field], quarters: sixQuarters() };
+
+    it.each(SEEDS)("앞 쿼터는 그대로 두고 남은 쿼터만 다시 짠다 (seed %i)", (seed) => {
+      const first = autoAssign(input, { random: seeded(seed) });
+      const again = autoAssign(input, {
+        random: seeded(seed + 100),
+        startQuarter: 3,
+        current: first,
+        keepers: first.map((quarter) => quarter.keeperId),
+      });
+      expect(again.slice(0, 3)).toEqual(first.slice(0, 3));
+      expect(again).toHaveLength(6);
+    });
+
+    it.each(SEEDS)("앞에서 덜 뛴 사람을 남은 쿼터에 먼저 넣는다 (seed %i)", (seed) => {
+      // 1~3쿼터에 p1 이 한 번도 못 뛰었다(관리자가 그렇게 짰다).
+      const played = autoAssign(
+        { players: [keeper("gk"), ...field.filter((p) => p.id !== "p1")], quarters: sixQuarters() },
+        { random: seeded(seed) },
+      );
+      const again = autoAssign(input, { random: seeded(seed), startQuarter: 3, current: played });
+      expect(fieldQuartersOf(again, "p1")).toEqual([3, 4, 5]);
+    });
+
+    it.each(SEEDS)("당일 먼저 간 사람은 남은 쿼터에 넣지 않는다 (seed %i)", (seed) => {
+      const first = autoAssign(input, { random: seeded(seed) });
+      const left = { ...input, players: input.players.map((p) => (p.id === "p2" ? { ...p, availableQuarters: [0, 1, 2] } : p)) };
+      const again = autoAssign(left, { random: seeded(seed), startQuarter: 3, current: first });
+      expect(fieldQuartersOf(again, "p2").filter((quarter) => quarter >= 3)).toEqual([]);
+    });
+  });
+
   describe("어떤 입력이든 지키는 규칙", () => {
     const OUTFIELD: Position[] = ["FW", "AM", "WG", "MF", "WB", "CB"];
 
@@ -234,6 +269,60 @@ describe("자동 배치 (PLAN.md §6)", () => {
         expect(warnings.filter((w) => w.kind === "below-guarantee"), where).toEqual([]);
         for (const [id, count] of Object.entries(guaranteed)) {
           expect(fieldCounts[id], `${where}: ${id} 가 보장 수보다 2쿼터 이상 더 뜀`).toBeLessThanOrEqual(count + 1);
+        }
+      }
+    });
+
+    it("중간 쿼터부터 다시 배치해도 무작위 입력 200개에서 규칙을 지킨다", () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const random = seeded(seed);
+        const { input, keepers } = randomScenario(random);
+        const first = autoAssign(input, { keepers, random });
+        const start = 1 + Math.floor(random() * 5);
+
+        // 당일 변동: 몇 명은 남은 쿼터 중 일부를 못 뛰게 된다(일찍 감·부상).
+        const players = input.players.map((p) =>
+          random() < 0.15 ? { ...p, availableQuarters: p.availableQuarters.filter((q) => q < start || random() < 0.5) } : p,
+        );
+        const changed = { ...input, players };
+        const again = autoAssign(changed, {
+          random,
+          startQuarter: start,
+          current: first,
+          keepers: first.map((quarter) => quarter.keeperId),
+        });
+        const where = `seed ${seed}, ${start + 1}쿼터부터`;
+        const byId = new Map(players.map((p) => [p.id, p]));
+        const isDedicated = (id: string) => byId.get(id)!.preferredPositions[0] === "GK";
+
+        expect(again.slice(0, start), `${where}: 끝난 쿼터가 바뀜`).toEqual(first.slice(0, start));
+        again.slice(start).forEach((quarter, offset) => {
+          const q = start + offset;
+          const onPitch = [quarter.keeperId, ...quarter.fieldIds].filter((id) => id !== null);
+          expect(new Set(onPitch).size, `${where}: ${q}쿼터에 같은 사람이 두 번`).toBe(onPitch.length);
+          for (const id of quarter.fieldIds) {
+            if (id === null) continue;
+            expect(byId.get(id)!.availableQuarters, `${where}: ${id} 가 못 오는 ${q}쿼터에 뜀`).toContain(q);
+          }
+          const eligible = players.filter(
+            (p) => !isDedicated(p.id) && p.availableQuarters.includes(q) && p.id !== quarter.keeperId,
+          ).length;
+          expect(quarter.fieldIds.filter((id) => id !== null).length, `${where}: ${q}쿼터를 채울 수 있는데 비움`).toBe(
+            Math.min(FIELD_433.length, eligible),
+          );
+        });
+
+        const alreadyPlayed: Record<string, number> = {};
+        for (const quarter of first.slice(0, start)) {
+          for (const id of quarter.fieldIds) if (id !== null) alreadyPlayed[id] = (alreadyPlayed[id] ?? 0) + 1;
+        }
+        const guaranteed = guaranteedQuarters(changed, again.map((quarter) => quarter.keeperId), {
+          fromQuarter: start,
+          alreadyPlayed,
+        });
+        const { fieldCounts } = evaluateSquad(changed, again);
+        for (const [id, target] of Object.entries(guaranteed)) {
+          expect(fieldCounts[id], `${where}: ${id} 가 보장 ${target} 보다 적게 뜀`).toBeGreaterThanOrEqual(target);
         }
       }
     });
