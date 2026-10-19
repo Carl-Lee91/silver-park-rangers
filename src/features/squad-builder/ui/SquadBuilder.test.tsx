@@ -133,4 +133,27 @@ describe("스쿼드 빌더", () => {
     expect(within(bench()).getByRole("button", { name: /이수비/ })).toHaveTextContent("올해 평균 3.4");
     expect(within(bench()).getByRole("button", { name: /박공격/ })).not.toHaveTextContent("올해 평균");
   });
+
+  describe("특이사항", () => {
+    const notes = { c: "무릎 안 좋음 — 수비만" };
+
+    it("경기장과 같은 화면에 이 매치의 특이사항을 모아 보여 준다", () => {
+      renderBuilder({ notes, noteAction: noop });
+      const list = screen.getByRole("region", { name: "특이사항" });
+      expect(list).toHaveTextContent("이수비");
+      expect(list).toHaveTextContent("무릎 안 좋음 — 수비만");
+    });
+
+    it("메모가 있는 선수는 벤치에서 표시된다", () => {
+      renderBuilder({ notes, noteAction: noop });
+      expect(within(bench()).getByRole("button", { name: /이수비/ })).toHaveTextContent("메모");
+    });
+
+    it("선수를 고르면 그 선수의 특이사항을 바로 고칠 수 있다", async () => {
+      const user = userEvent.setup();
+      renderBuilder({ notes, noteAction: noop });
+      await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
+      expect(screen.getByLabelText("이수비 특이사항")).toHaveValue("무릎 안 좋음 — 수비만");
+    });
+  });
 });
