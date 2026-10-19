@@ -9,6 +9,9 @@ import boundaries from "eslint-plugin-boundaries";
  * 의존 방향: app → views → widgets → features → entities → shared
  * 같은 레이어의 다른 슬라이스끼리도 import 하지 않는다
  * (`allow` 에 자기 타입이 없다. shared 만 예외다).
+ *
+ * 예외 하나: entities 끼리는 **타입만** 가져올 수 있다. 포지션 코드처럼 여러
+ * 엔티티가 같은 어휘를 쓰기 때문이다. 값(함수·상수)을 가져오면 여전히 실패한다.
  */
 const LAYERS = ["app", "views", "widgets", "features", "entities", "shared"];
 
@@ -40,6 +43,10 @@ const fsd = {
             from: { element: { type } },
             allow: allowBelow(type),
           })),
+          {
+            from: { element: { type: "entities" } },
+            allow: [{ to: { element: { type: "entities" } }, dependency: { kind: "type" } }],
+          },
           // shared 는 가장 아래라 같은 레이어끼리만 참조한다.
           {
             from: { element: { type: "shared" } },
