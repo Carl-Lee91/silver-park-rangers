@@ -25,4 +25,4 @@ export const getEnv = (): Env =>
 
 /** 서버에서만 부른다. 브라우저에서 부르면 값이 없어 터진다 — 그게 맞다. */
 export const getServerEnv = (): ServerEnv =>
-  (cachedServer ??= parseServerEnv({ SITE_URL: process.env.SITE_URL }));
+  (cachedServer ??= parseServerEnv({ SITE_URL: process.env.SITE_URL, CRON_SECRET: process.env.CRON_SECRET }));

@@ -9,5 +9,6 @@ export {
   startOAuthLogin,
 } from "./auth";
 export { dbErrorMessage } from "./dbError";
+export { pingDatabase } from "./keepAlive";
 export { createSupabaseServerClient } from "./supabaseServer";
 export { updateSession, withSessionCookies } from "./supabaseProxy";

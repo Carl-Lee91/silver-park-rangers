@@ -32,8 +32,11 @@ export const gateOf = (signedIn: boolean, { member, isOwner }: GateAccess): Gate
   return member.status;
 };
 
-/** 로그인 콜백과 카톡 공유 링크는 게이트가 막지 않는다(공유는 PLAN.md §8). */
-const PUBLIC_PREFIXES = ["/auth", "/s"];
+/**
+ * 게이트가 막지 않는 주소: 로그인 콜백, 카톡 공유 링크(PLAN.md §8), Vercel Cron.
+ * Cron 은 로그인하지 않은 Vercel 이 부른다. 대신 CRON_SECRET 으로 확인한다.
+ */
+const PUBLIC_PREFIXES = ["/auth", "/s", "/api/cron"];
 
 export const isPublicPath = (pathname: string) =>
   PUBLIC_PREFIXES.some((prefix) => isUnder(pathname, prefix));
