@@ -4,15 +4,22 @@ import { AttendanceList } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { formatDeadline, isVotingOpen, MatchSummary, quarterSchedule, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
+import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
 import { getAuthUserId } from "@/shared/api";
 import { ROUTES } from "@/shared/config";
+import { QuarterBoard } from "@/widgets/quarter-board";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, userId] = await Promise.all([fetchMatchAttendance(match.id), getAuthUserId()]);
+  const [attendance, userId, squad] = await Promise.all([
+    fetchMatchAttendance(match.id),
+    getAuthUserId(),
+    // 공개 전에는 RLS 가 빈 배열을 준다.
+    match.squadPublishedAt ? fetchSquad(match.id) : Promise.resolve([]),
+  ]);
   const mine = attendance.find((row) => row.memberId === userId && row.response !== null);
   const open = isVotingOpen(match);
 
@@ -42,8 +49,13 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
         <AttendanceList attendance={attendance} />
       </section>
 
-      <section className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">
-        {match.squadPublishedAt ? "스쿼드가 공개됐어요. 쿼터 보드는 곧 여기에 보여요." : "스쿼드는 아직 공개 전이에요."}
+      <section>
+        <h2 className="mb-3 font-semibold">스쿼드</h2>
+        {squad.length > 0 ? (
+          <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
+        ) : (
+          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
+        )}
       </section>
     </main>
   );
