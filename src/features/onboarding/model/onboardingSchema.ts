@@ -1,26 +1,16 @@
 import { z } from "zod";
-import type { NewMember } from "@/entities/member";
-import { POSITION_CODES } from "@/entities/position";
-
-const distinct = (items: readonly string[]) => new Set(items).size === items.length;
+import { profileFieldsSchema, type NewMember } from "@/entities/member";
 
 /** DB 제약(members 테이블)과 같은 규칙이다. 화면에서 먼저 걸러 알맞은 안내를 띄운다. */
-const schema = z.object({
-  realName: z
-    .string()
-    .trim()
-    .min(1, "실명을 입력해 주세요.")
-    .max(20, "실명은 20자까지 입력할 수 있어요."),
-  feet: z
-    .array(z.enum(["left", "right"]), "주로 쓰는 발을 골라 주세요.")
-    .min(1, "주로 쓰는 발을 골라 주세요.")
-    .refine(distinct, "같은 발을 두 번 고를 수 없어요."),
-  preferredPositions: z
-    .array(z.enum(POSITION_CODES), "선호 포지션을 골라 주세요.")
-    .min(1, "선호 포지션을 하나 이상 골라 주세요.")
-    .max(3, "선호 포지션은 3개까지 고를 수 있어요.")
-    .refine(distinct, "같은 포지션을 두 번 고를 수 없어요."),
-});
+const schema = z
+  .object({
+    realName: z
+      .string()
+      .trim()
+      .min(1, "실명을 입력해 주세요.")
+      .max(20, "실명은 20자까지 입력할 수 있어요."),
+  })
+  .extend(profileFieldsSchema.shape);
 
 export type OnboardingField = keyof z.infer<typeof schema>;
 
