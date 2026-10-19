@@ -558,3 +558,26 @@ reset role;
 select verify.ok(exists (
   select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'members'),
   'members 의 바뀜을 Realtime 으로 보낸다');
+
+-- ── 등번호 (20261020000000) ──────────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+update public.members set jersey_number = 7 where id = '00000000-0000-0000-0000-000000000002';
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000002') = 7,
+  '본인이 등번호를 고른다');
+select verify.fails($$update public.members set jersey_number = 100 where id = '00000000-0000-0000-0000-000000000002'$$,
+  '등번호는 0~99 다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$update public.members set jersey_number = 7 where id = '00000000-0000-0000-0000-000000000006'$$,
+  '같은 번호는 한 사람만 쓴다');
+update public.members set jersey_number = 10 where id = '00000000-0000-0000-0000-000000000006';
+update public.members set jersey_number = 55 where id = '00000000-0000-0000-0000-000000000002';
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000002') = 7,
+  '남의 등번호는 바꾸지 못한다(조용히 0행)');
+reset role;
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,1,jersey_number}' = '10',
+  '공유 링크에 등번호가 들어간다');
+reset role;
