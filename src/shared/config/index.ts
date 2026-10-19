@@ -1,7 +1,7 @@
 import { parseEnv, parseServerEnv, type Env, type ServerEnv } from "./env";
 
 export type { Env, ServerEnv } from "./env";
-export { isUnder, ROUTES } from "./routes";
+export { adminMatchEditPath, adminMatchPath, isUnder, matchPath, ROUTES } from "./routes";
 
 let cachedPublic: Env | null = null;
 let cachedServer: ServerEnv | null = null;
