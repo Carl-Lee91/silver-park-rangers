@@ -76,7 +76,9 @@
 
 - [ ] GitHub 저장소(`Carl-Lee91/silver-park-rangers`)를 Import 한다. Production 브랜치는 `main`.
 - [ ] Environment Variables 에 [.env.example](../.env.example) 의 이름으로 값을 넣는다.
-  `SITE_URL` 은 Vercel 주소다.
+  `SITE_URL` 은 Vercel 주소다. `CRON_SECRET` 은 아무 긴 문자열(비밀번호 생성기 등)이면 된다.
+- [ ] 배포 뒤 Vercel › Settings › Cron Jobs 에 `/api/cron/keep-alive`(매일 1회)가 보이는지 본다.
+  Supabase 무료 프로젝트가 7일 동안 요청이 없어 멈추는 것을 막는다. `vercel.json` 에 이미 들어 있다.
 - [ ] 3단계의 Redirect URLs 에 Vercel 주소의 `/auth/callback` 을 추가한다.
 - [ ] 배포한 뒤 카톡 공유를 확인한다. 미리보기 카드는 **배포 주소에서만** 뜬다(카카오 수집기는 localhost 에 못 온다).
   - 매치 하나에 스쿼드를 저장·공개하고, 관리자 스쿼드 화면의 "공유하기"로 링크를 단톡방(또는 나와의 채팅)에 붙여 본다.

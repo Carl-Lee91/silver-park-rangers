@@ -29,6 +29,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // 정적 파일과 이미지에는 돌리지 않는다.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  // 정적 파일·이미지·PWA 매니페스트에는 돌리지 않는다. 매니페스트가 로그인 화면으로 보내지면
+  // 홈 화면에 추가가 안 된다.
+  matcher: ["/((?!_next/static|_next/image|manifest.webmanifest|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };
