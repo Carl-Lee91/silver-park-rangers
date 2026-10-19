@@ -4,6 +4,7 @@ import {
   applyFormation,
   applyLineup,
   copyQuarter,
+  handleDrop,
   handleTap,
   initialBuilder,
   placeMember,
@@ -121,6 +122,27 @@ describe("탭으로 고르고 놓기", () => {
     expect(handleTap(first.builder, 0, first.selection, { kind: "slot", index: 1 }).selection).toBeNull();
     const bench = handleTap(filled(), 0, null, { kind: "bench", memberId: "a" });
     expect(handleTap(bench.builder, 0, bench.selection, { kind: "bench", memberId: "a" }).selection).toBeNull();
+  });
+});
+
+describe("드래그로 놓기", () => {
+  it("벤치 선수를 자리에 놓으면 넣는다", () => {
+    expect(membersOf(handleDrop(filled(), 0, "bench:a", "slot:2"))).toEqual([null, null, "a", null]);
+  });
+
+  it("뛰는 사람을 다른 자리에 놓으면 서로 바꾼다", () => {
+    expect(membersOf(handleDrop(filled("k", "a", "b"), 0, "slot:1", "slot:2"))).toEqual(["k", "b", "a", null]);
+  });
+
+  it("뛰는 사람을 벤치에 놓으면 뺀다", () => {
+    expect(membersOf(handleDrop(filled("k", "a"), 0, "slot:1", "bench"))).toEqual(["k", null, null, null]);
+  });
+
+  it("빈자리를 끌거나, 아무 데도 안 놓으면 그대로다", () => {
+    const builder = filled("k", "a");
+    expect(handleDrop(builder, 0, "slot:3", "slot:1")).toBe(builder);
+    expect(handleDrop(builder, 0, "slot:1", null)).toBe(builder);
+    expect(handleDrop(builder, 0, "bench:a", "bench")).toBe(builder);
   });
 });
 
