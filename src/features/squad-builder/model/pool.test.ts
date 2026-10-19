@@ -1,0 +1,96 @@
+import { describe, expect, it } from "vitest";
+import type { Attendance } from "@/entities/attendance";
+import { quarterSchedule } from "@/entities/match";
+import type { AdminMember } from "@/entities/member";
+import type { Builder } from "./builder";
+import { buildPool, placementIssues, squadPlayersFor } from "./pool";
+
+const schedule = quarterSchedule({ startsAt: "10:00", endsAt: "13:00", quarterCount: 6 });
+
+const member = (id: string, realName: string, extra: Partial<AdminMember> = {}): AdminMember => ({
+  id,
+  realName,
+  kakaoNickname: null,
+  avatarUrl: null,
+  feet: ["right"],
+  preferredPositions: ["MF"],
+  role: "user",
+  status: "approved",
+  memberType: "member",
+  createdAt: "2026-10-19T00:00:00Z",
+  ...extra,
+});
+
+const vote = (memberId: string, response: Attendance["response"], extra: Partial<Attendance> = {}): Attendance => ({
+  memberId,
+  realName: memberId,
+  response,
+  arriveAt: null,
+  leaveAt: null,
+  attended: null,
+  ...extra,
+});
+
+const members = [
+  member("a", "가참석"),
+  member("b", "나미정"),
+  member("c", "다불참"),
+  member("d", "라일찍", { memberType: "guest" }),
+];
+
+describe("빌더 후보 명단", () => {
+  it("참석·미정만 넣고, 참석이 먼저다. 뛸 수 있는 쿼터를 시간에서 계산한다", () => {
+    const pool = buildPool(
+      [vote("b", "maybe"), vote("a", "yes"), vote("c", "no"), vote("d", "yes", { leaveAt: "12:00" })],
+      members,
+      schedule,
+      new Set(),
+    );
+    expect(pool.map((player) => player.id)).toEqual(["a", "d", "b"]);
+    expect(pool.find((player) => player.id === "d")).toMatchObject({
+      memberType: "guest",
+      availableQuarters: [0, 1, 2, 3],
+    });
+  });
+
+  it("저장된 스쿼드에 있는데 불참으로 바꾼 사람도 명단에 남긴다(빼야 한다는 걸 보이려고)", () => {
+    const pool = buildPool([vote("c", "no")], members, schedule, new Set(["c"]));
+    expect(pool.map((player) => player.response)).toEqual(["no"]);
+  });
+});
+
+describe("자동 배치·점검에 넘길 선수", () => {
+  const pool = buildPool([vote("a", "yes"), vote("b", "maybe")], members, schedule, new Set());
+  const empty: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: null }] }];
+
+  it("참석한 사람만 넘긴다", () => {
+    expect(squadPlayersFor(pool, empty).map((player) => player.id)).toEqual(["a"]);
+  });
+
+  it("미정이어도 관리자가 넣은 사람은 넘긴다", () => {
+    const placed: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: "b" }] }];
+    expect(squadPlayersFor(pool, placed).map((player) => player.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("배치 문제", () => {
+  it("불참으로 바꾼 사람과 못 오는 쿼터에 들어간 사람을 알려준다", () => {
+    const pool = buildPool(
+      [vote("c", "no"), vote("d", "yes", { leaveAt: "12:00" })],
+      members,
+      schedule,
+      new Set(["c", "d"]),
+    );
+    const builder: Builder = Array.from({ length: 6 }, (_, quarter) => ({
+      formationName: "x",
+      slots: [
+        { position: "MF" as const, x: 50, y: 50, memberId: quarter === 0 ? "c" : null },
+        { position: "FW" as const, x: 50, y: 20, memberId: quarter === 5 ? "d" : null },
+      ],
+    }));
+    expect(placementIssues(pool, builder)).toEqual([
+      "다불참님은 불참으로 바꿨어요.",
+      "라일찍님은 6쿼터에 못 와요.",
+    ]);
+  });
+});
