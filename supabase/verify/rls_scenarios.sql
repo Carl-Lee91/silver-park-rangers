@@ -148,8 +148,6 @@ select verify.ok((select member_type from public.member_admin_info where member_
   '승인하면서 용병으로 지정한다');
 select verify.fails($$select public.approve_member('00000000-0000-0000-0000-000000000002', 'member')$$,
   '이미 승인된 사람은 다시 승인하지 않는다');
-select verify.fails($$select public.approve_member('00000000-0000-0000-0000-000000000006', 'member')$$,
-  '거절된 사람은 승인 대기가 아니다');
 
 -- ── 승인된 일반 멤버 ─────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000002');
@@ -262,5 +260,82 @@ select verify.login('00000000-0000-0000-0000-000000000001');
 update public.members set status = 'inactive' where id = '00000000-0000-0000-0000-000000000005';
 select verify.login('00000000-0000-0000-0000-000000000005');
 select verify.ok((select count(*) from public.matches) = 0, '휴면 처리되면 매치를 못 본다');
+
+reset role;
+
+-- ── 어드민 전용 계정 · 관리자 지정 (20261019010000) ──────────────────
+--   …07 어드민 계정(멤버 행이 없다)
+insert into auth.users (id, raw_user_meta_data) values ('00000000-0000-0000-0000-000000000007', '{}');
+insert into public.owners (user_id) values ('00000000-0000-0000-0000-000000000007');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select verify.ok((select is_owner from public.my_access()), '어드민 계정은 my_access 에서 어드민으로 나온다');
+select verify.ok((select status from public.my_access()) is null, '어드민 계정은 멤버 행이 없다');
+select verify.ok((select count(*) from public.members) = 5, '어드민은 모든 멤버를 본다');
+select verify.ok((select count(*) from public.member_admin_info) = 2, '어드민은 멤버/용병 구분을 본다');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'admin');
+select verify.ok((select role from public.members where id = '00000000-0000-0000-0000-000000000002') = 'admin',
+  '어드민은 관리자를 지정한다');
+select verify.fails($$select public.set_member_role('00000000-0000-0000-0000-000000000003', 'admin')$$,
+  '승인 전인 사람은 관리자로 지정할 수 없다');
+select public.approve_member('00000000-0000-0000-0000-000000000006', 'member');
+select verify.ok((select status from public.members where id = '00000000-0000-0000-0000-000000000006') = 'approved',
+  '거절한 사람도 다시 승인할 수 있다');
+insert into public.matches (match_date, created_by)
+values ('2026-11-01', '00000000-0000-0000-0000-000000000007');
+select verify.ok(exists (select 1 from public.matches where created_by = '00000000-0000-0000-0000-000000000007'),
+  '어드민은 매치를 만든다 — 만든 사람은 멤버가 아니라 인증 사용자를 가리킨다');
+
+-- 어드민이 지정한 관리자(…02)
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok(not (select is_owner from public.my_access()) and (select role from public.my_access()) = 'admin',
+  '관리자는 my_access 에서 관리자로 나오고 어드민은 아니다');
+select verify.fails($$select public.set_member_role('00000000-0000-0000-0000-000000000006', 'admin')$$,
+  '관리자는 다른 사람을 관리자로 지정할 수 없다');
+select verify.fails($$update public.members set role = 'admin' where id = '00000000-0000-0000-0000-000000000006'$$,
+  '관리자도 역할을 직접 바꿀 수 없다');
+select verify.fails($$select public.set_member_status('00000000-0000-0000-0000-000000000001', 'inactive')$$,
+  '관리자는 다른 관리자를 휴면 처리할 수 없다');
+select verify.fails($$update public.members set status = 'inactive' where id = '00000000-0000-0000-0000-000000000001'$$,
+  '관리자는 다른 관리자의 상태를 직접 바꿀 수 없다');
+select public.set_member_status('00000000-0000-0000-0000-000000000006', 'inactive');
+select verify.ok((select status from public.members where id = '00000000-0000-0000-0000-000000000006') = 'inactive',
+  '관리자는 일반 멤버를 휴면 처리한다');
+select public.set_member_status('00000000-0000-0000-0000-000000000006', 'approved');
+select verify.ok((select status from public.members where id = '00000000-0000-0000-0000-000000000006') = 'approved',
+  '휴면에서 복귀시킨다');
+select public.set_member_type('00000000-0000-0000-0000-000000000006', 'guest');
+select verify.ok((select member_type from public.member_admin_info where member_id = '00000000-0000-0000-0000-000000000006') = 'guest',
+  '관리자는 멤버/용병 구분을 바꾼다');
+select verify.fails($$select public.set_member_status('00000000-0000-0000-0000-000000000003', 'approved')$$,
+  '가입 대기는 휴면 함수로 승인할 수 없다');
+select verify.fails($$select public.set_member_status('00000000-0000-0000-0000-000000000006', 'pending')$$,
+  '휴면 함수로 대기 상태로 되돌릴 수 없다');
+select verify.fails($$insert into public.owners (user_id) values ('00000000-0000-0000-0000-000000000002')$$,
+  '스스로 어드민 계정이 될 수 없다');
+select verify.ok((select count(*) from public.owners) = 0, '어드민 목록은 본인 것만 보인다');
+
+-- 일반 멤버(…06)는 관리 함수를 하나도 못 쓴다
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$select public.set_member_type('00000000-0000-0000-0000-000000000006', 'member')$$,
+  '일반 멤버는 멤버/용병 구분을 못 바꾼다');
+select verify.fails($$select public.set_member_status('00000000-0000-0000-0000-000000000005', 'approved')$$,
+  '일반 멤버는 휴면을 못 푼다');
+
+-- 어드민은 관리자도 휴면 처리하고 해제한다
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.set_member_status('00000000-0000-0000-0000-000000000001', 'inactive');
+select verify.ok((select status from public.members where id = '00000000-0000-0000-0000-000000000001') = 'inactive',
+  '어드민은 관리자를 휴면 처리한다');
+select public.set_member_status('00000000-0000-0000-0000-000000000001', 'approved');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'user');
+select verify.ok((select role from public.members where id = '00000000-0000-0000-0000-000000000002') = 'user',
+  '어드민은 관리자를 해제한다');
+
+-- 가입 안 한 외부인
+select verify.login('00000000-0000-0000-0000-000000000004');
+select verify.ok((select status from public.my_access()) is null and not (select is_owner from public.my_access()),
+  '가입 안 한 사람은 멤버도 어드민도 아니다');
 
 reset role;
