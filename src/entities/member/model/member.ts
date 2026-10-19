@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Position } from "@/entities/position";
+import { POSITION_CODES, type Position } from "@/entities/position";
 
 export const FEET = [
   { code: "left", label: "왼발" },
@@ -27,27 +27,13 @@ export type Member = {
   status: MemberStatus;
 };
 
-/**
- * DB 의 포지션 값 목록. entities 끼리는 값을 가져올 수 없어서(CLAUDE.md) 여기 따로 둔다.
- * `Record<Position, true>` 라서 `entities/position` 과 하나라도 어긋나면 타입 검사가 실패한다.
- */
-const KNOWN_POSITIONS: Record<Position, true> = {
-  FW: true,
-  AM: true,
-  WG: true,
-  MF: true,
-  WB: true,
-  CB: true,
-  GK: true,
-};
-
 const rowSchema = z.object({
   id: z.string(),
   real_name: z.string(),
   kakao_nickname: z.string().nullable(),
   avatar_url: z.string().nullable(),
   feet: z.array(z.enum(["left", "right"])),
-  preferred_positions: z.array(z.enum(Object.keys(KNOWN_POSITIONS) as [Position, ...Position[]])),
+  preferred_positions: z.array(z.enum(POSITION_CODES)),
   role: z.enum(["admin", "user"]),
   status: z.enum(["pending", "approved", "rejected", "inactive"]),
 });

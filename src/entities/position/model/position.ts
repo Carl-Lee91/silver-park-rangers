@@ -11,6 +11,9 @@ export const POSITIONS = [
 
 export type Position = (typeof POSITIONS)[number]["code"];
 
+/** 검증(zod enum)에 쓰는 코드 목록 */
+export const POSITION_CODES = POSITIONS.map(({ code }) => code) as [Position, ...Position[]];
+
 const LABELS = Object.fromEntries(POSITIONS.map(({ code, label }) => [code, label])) as Record<
   Position,
   string

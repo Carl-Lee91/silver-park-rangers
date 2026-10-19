@@ -1,11 +1,6 @@
 import { z } from "zod";
 import type { NewMember } from "@/entities/member";
-import { POSITIONS } from "@/entities/position";
-
-const POSITION_CODES = POSITIONS.map(({ code }) => code) as [
-  (typeof POSITIONS)[number]["code"],
-  ...(typeof POSITIONS)[number]["code"][],
-];
+import { POSITION_CODES } from "@/entities/position";
 
 const distinct = (items: readonly string[]) => new Set(items).size === items.length;
 
