@@ -4,13 +4,14 @@ import { useState } from "react";
 import { positionLabel, type Position } from "@/entities/position";
 import type { MemberStats } from "@/entities/stats";
 
-type SortKey = "attendance" | "response" | "noShows" | "quarters";
+type SortKey = "attendance" | "response" | "noShows" | "quarters" | "goals";
 
 const SORTS: { key: SortKey; label: string; value: (row: MemberStats) => number | null }[] = [
   { key: "attendance", label: "참석률 높은 순", value: (row) => row.attendanceRate },
   { key: "response", label: "응답률 낮은 순", value: (row) => (row.responseRate === null ? null : -row.responseRate) },
   { key: "noShows", label: "노쇼 많은 순", value: (row) => row.noShows },
   { key: "quarters", label: "평균 출전 많은 순", value: (row) => row.avgFieldQuarters },
+  { key: "goals", label: "득점 많은 순", value: (row) => row.goals },
 ];
 
 const percent = (rate: number | null) => (rate === null ? "–" : `${Math.round(rate * 100)}%`);
@@ -68,6 +69,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
               {row.yesConfirmed > 0 && `/${row.yesConfirmed}`} · 평균 출전{" "}
               {row.avgFieldQuarters === null ? "–" : `${row.avgFieldQuarters.toFixed(1)}쿼터`}
               {row.keeperQuarters > 0 && ` · 키퍼 ${row.keeperQuarters}쿼터`}
+              {(row.goals > 0 || row.assists > 0) && ` · 골 ${row.goals} · 도움 ${row.assists}`}
             </p>
             {row.fieldQuarters > 0 && (
               <details className="mt-1 text-xs">

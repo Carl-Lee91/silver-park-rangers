@@ -42,6 +42,14 @@ export default async function AdminStatsView({ period }: { period: StatsPeriod }
         ))}
       </nav>
 
+      <div className="grid grid-cols-2 gap-2">
+        <Tile
+          label="쿼터 전적"
+          value={`${summary.record.win}승 ${summary.record.draw}무 ${summary.record.loss}패`}
+          note="결과를 남긴 쿼터만"
+        />
+        <Tile label="득실" value={`${summary.goalsFor} : ${summary.goalsAgainst}`} />
+      </div>
       <div className="grid grid-cols-3 gap-2">
         <Tile label="지난 매치" value={`${summary.matchCount}`} note={`출석 확정 ${summary.confirmedCount}`} />
         <Tile

@@ -5,9 +5,11 @@ import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
+import { fetchMatchResult } from "@/entities/result/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
+import { ResultEditor } from "@/features/result-record";
 import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
 import { ActionButton } from "@/shared/ui";
 
@@ -15,10 +17,11 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, members, squad] = await Promise.all([
+  const [attendance, members, squad, result] = await Promise.all([
     fetchMatchAttendance(match.id),
     fetchAdminMembers(),
     fetchSquad(match.id),
+    fetchMatchResult(match.id),
   ]);
   const approved = members.filter((member) => member.status === "approved");
   const waiting = unrespondedMembers(approved, attendance);
@@ -88,6 +91,19 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
           rows={confirmRows(attendance, squadIds, members)}
           members={approved}
           hasSquad={squadIds.size > 0}
+        />
+      </section>
+
+      <section>
+        <h2 className="mb-1 font-semibold">경기 결과</h2>
+        <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
+        <ResultEditor
+          matchId={match.id}
+          quarterCount={match.quarterCount}
+          scores={result.scores}
+          goals={result.goals}
+          squad={squad}
+          members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
         />
       </section>
     </div>

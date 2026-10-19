@@ -12,6 +12,8 @@ import {
   votingClosesAt,
 } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
+import { ResultSummaryView, summarizeResult } from "@/entities/result";
+import { fetchMatchResult } from "@/entities/result/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
 import { ShareActions } from "@/features/squad-share";
@@ -25,12 +27,14 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, userId, squad] = await Promise.all([
+  const [attendance, userId, squad, result] = await Promise.all([
     fetchMatchAttendance(match.id),
     getAuthUserId(),
     // 공개 전에는 RLS 가 빈 배열을 준다.
     match.squadPublishedAt ? fetchSquad(match.id) : Promise.resolve([]),
+    fetchMatchResult(match.id),
   ]);
+  const summary = summarizeResult(match.quarterCount, result.scores, result.goals);
   const mine = attendance.find((row) => row.memberId === userId && row.response !== null);
   const open = isVotingOpen(match);
 
@@ -40,6 +44,13 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
         ← 홈
       </Link>
       <MatchSummary match={match} />
+
+      {summary.quarters.length > 0 && (
+        <section>
+          <h2 className="mb-3 font-semibold">경기 결과</h2>
+          <ResultSummaryView summary={summary} />
+        </section>
+      )}
 
       <section className="rounded-xl border border-border p-4">
         <h2 className="font-semibold">참석 투표</h2>
