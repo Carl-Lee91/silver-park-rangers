@@ -4,6 +4,7 @@
  */
 export const PALETTE = {
   primary: "#1f6f43",
+  primarySoft: "#dcefe4",
   bgBase: "#ffffff",
   bgSubtle: "#f4f5f7",
   textPrimary: "#171717",

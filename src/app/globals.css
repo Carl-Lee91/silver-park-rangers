@@ -14,6 +14,8 @@
   /* ── Brand ── */
   --color-primary: #1f6f43;
   --color-primary-contrast: #ffffff;
+  /* primary 의 옅은 단계. 막대 바탕(트랙)처럼 primary 를 받쳐 줄 때만 쓴다 */
+  --color-primary-soft: #dcefe4;
 
   /* ── Background ── */
   --color-bg-base: #ffffff;
