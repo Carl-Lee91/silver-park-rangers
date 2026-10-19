@@ -477,3 +477,29 @@ select verify.login('00000000-0000-0000-0000-000000000006');
 select verify.fails($$select public.admin_stats_source(current_date - 30, current_date)$$,
   '일반 멤버는 통계 원본을 못 읽는다');
 reset role;
+
+-- ── 선수별 특이사항 (20261019060000) ─────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+insert into public.match_notes (match_id, member_id, note, updated_by)
+values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '무릎 안 좋음 — 수비만',
+        '00000000-0000-0000-0000-000000000007');
+select verify.ok((select count(*) from public.match_notes) = 1, '어드민은 특이사항을 쓰고 본다');
+select verify.fails($$insert into public.match_notes (match_id, member_id, note)
+  values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000006', '   ')$$,
+  '빈 특이사항은 저장하지 않는다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.ok((select note from public.match_notes) = '무릎 안 좋음 — 수비만', '관리자도 특이사항을 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.match_notes) = 0, '일반 멤버는 자기에 대한 특이사항도 못 본다');
+select verify.fails($$insert into public.match_notes (match_id, member_id, note)
+  values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '내가 쓴 메모')$$,
+  '일반 멤버는 특이사항을 못 쓴다');
+reset role;
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%무릎%',
+  '공유 링크에는 특이사항이 없다');
+reset role;
