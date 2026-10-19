@@ -503,3 +503,53 @@ set role anon;
 select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%무릎%',
   '공유 링크에는 특이사항이 없다');
 reset role;
+
+-- ── 경기 결과 (20261019070000) ───────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.match_quarter_results (match_id, number, their_score)
+values ('10000000-0000-0000-0000-000000000012', 1, 1);
+insert into public.match_goals (match_id, quarter_number, scorer_id, assist_id) values
+  ('10000000-0000-0000-0000-000000000012', 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000006'),
+  ('10000000-0000-0000-0000-000000000012', 1, null, null);
+select verify.ok((select count(*) from public.match_goals where match_id = '10000000-0000-0000-0000-000000000012') = 2,
+  '관리자는 골을 기록한다 — 득점자를 모르는 골도');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id)
+  values ('10000000-0000-0000-0000-000000000012', 7, '00000000-0000-0000-0000-000000000002')$$,
+  '쿼터 수를 넘는 쿼터에는 기록하지 않는다');
+select verify.fails($$insert into public.match_quarter_results (match_id, number, their_score)
+  values ('10000000-0000-0000-0000-000000000012', 9, 0)$$,
+  '쿼터 수를 넘는 쿼터 점수는 기록하지 않는다');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id, assist_id)
+  values ('10000000-0000-0000-0000-000000000012', 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002')$$,
+  '득점자와 도움이 같은 사람일 수 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.ok((select count(*) from public.match_goals) = 2, '승인된 팀원은 결과를 본다');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id)
+  values ('10000000-0000-0000-0000-000000000012', 2, '00000000-0000-0000-0000-000000000006')$$,
+  '일반 멤버는 골을 기록하지 못한다');
+select verify.fails($$insert into public.match_quarter_results (match_id, number, their_score)
+  values ('10000000-0000-0000-0000-000000000012', 2, 3)$$,
+  '일반 멤버는 점수를 기록하지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000003');
+select verify.ok((select count(*) from public.match_goals) = 0, '가입 대기 중엔 결과를 못 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.stats2', public.admin_stats_source(current_date - 30, current_date)::text, false);
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000002' and (e ->> 'goals')::int = 1),
+  '통계 원본에 득점이 들어간다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000006' and (e ->> 'assists')::int = 1),
+  '통계 원본에 도움이 들어간다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'matches') m,
+                jsonb_array_elements(m -> 'quarter_scores') q
+   where m ->> 'id' = '10000000-0000-0000-0000-000000000012'
+     and (q ->> 'ours')::int = 2 and (q ->> 'theirs')::int = 1),
+  '통계 원본에 쿼터 점수(우리 = 골 기록 수)가 들어간다');
+reset role;
