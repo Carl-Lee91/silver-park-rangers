@@ -23,6 +23,8 @@ const stats = (realName: string, extra: Partial<MemberStats> = {}): MemberStats 
   avgFieldQuarters: 3.5,
   positionCounts: { MF: 10, CB: 4 },
   preferredShare: 0.71,
+  goals: 0,
+  assists: 0,
   ...extra,
 });
 
@@ -60,5 +62,13 @@ describe("멤버 통계 목록", () => {
   it("값을 낼 수 없으면 – 로 보인다", () => {
     render(<MemberStatsList stats={list} />);
     expect(rowOf(2)).toHaveTextContent("참석률 –");
+  });
+
+  it("득점·도움을 보여 주고 득점 많은 순으로 바꿀 수 있다", async () => {
+    const user = userEvent.setup();
+    render(<MemberStatsList stats={[stats("가", { goals: 1 }), stats("나", { goals: 4, assists: 2 })]} />);
+    await user.selectOptions(screen.getByLabelText("정렬"), "goals");
+    expect(names()[0]).toBe("나");
+    expect(rowOf(0)).toHaveTextContent("골 4 · 도움 2");
   });
 });

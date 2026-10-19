@@ -4,7 +4,16 @@ import { toStatsSource } from "./source";
 describe("통계 원본 읽기", () => {
   it("RPC 가 준 모양을 화면이 쓰는 이름으로 바꾼다", () => {
     const source = toStatsSource({
-      matches: [{ id: "m1", match_date: "2026-10-11", opponent: null, confirmed: true, has_squad: true }],
+      matches: [
+        {
+          id: "m1",
+          match_date: "2026-10-11",
+          opponent: null,
+          confirmed: true,
+          has_squad: true,
+          quarter_scores: [{ number: 1, ours: 2, theirs: 1 }],
+        },
+      ],
       members: [
         {
           id: "a",
@@ -24,11 +33,20 @@ describe("통계 원본 읽기", () => {
           field_quarters: 3,
           keeper_quarters: 0,
           positions: ["MF", "MF", "CB"],
+          goals: 1,
+          assists: 0,
         },
       ],
     });
-    expect(source.matches[0]).toEqual({ id: "m1", date: "2026-10-11", opponent: null, confirmed: true, hasSquad: true });
+    expect(source.matches[0]).toEqual({
+      id: "m1",
+      date: "2026-10-11",
+      opponent: null,
+      confirmed: true,
+      hasSquad: true,
+      quarterScores: [{ number: 1, ours: 2, theirs: 1 }],
+    });
     expect(source.members[0]).toMatchObject({ realName: "가", memberType: "member", joinedOn: "2026-01-01" });
-    expect(source.entries[0]).toMatchObject({ fieldQuarters: 3, positions: ["MF", "MF", "CB"] });
+    expect(source.entries[0]).toMatchObject({ fieldQuarters: 3, positions: ["MF", "MF", "CB"], goals: 1, assists: 0 });
   });
 });

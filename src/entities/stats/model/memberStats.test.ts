@@ -2,12 +2,13 @@ import { describe, expect, it } from "vitest";
 import { computeMemberStats, computeTeamSummary } from "./memberStats";
 import type { StatsEntry, StatsMatch, StatsMember, StatsSource } from "./source";
 
-const match = (id: string, date: string, confirmed = true): StatsMatch => ({
+const match = (id: string, date: string, confirmed = true, quarterScores: StatsMatch["quarterScores"] = []): StatsMatch => ({
   id,
   date,
   opponent: null,
   confirmed,
   hasSquad: true,
+  quarterScores,
 });
 const member = (id: string, extra: Partial<StatsMember> = {}): StatsMember => ({
   id,
@@ -26,6 +27,8 @@ const entry = (matchId: string, memberId: string, extra: Partial<StatsEntry> = {
   fieldQuarters: 0,
   keeperQuarters: 0,
   positions: [],
+  goals: 0,
+  assists: 0,
   ...extra,
 });
 
@@ -134,5 +137,25 @@ describe("팀 요약과 매치별 추이", () => {
 
   it("확정한 매치 수와 매치당 평균 출석 인원을 낸다", () => {
     expect(computeTeamSummary(source)).toMatchObject({ matchCount: 2, confirmedCount: 1, avgAttended: 2 });
+  });
+
+  it("득점·도움을 더하고, 쿼터 전적과 합계 점수를 낸다", () => {
+    const withScores: StatsSource = {
+      matches: [
+        match("m1", "2026-10-04", true, [
+          { number: 1, ours: 2, theirs: 1 },
+          { number: 2, ours: 0, theirs: 0 },
+        ]),
+        match("m2", "2026-10-11", true, [{ number: 1, ours: 1, theirs: 3 }]),
+      ],
+      members: [member("a")],
+      entries: [entry("m1", "a", { goals: 2, assists: 1 }), entry("m2", "a", { goals: 1 })],
+    };
+    expect(computeMemberStats(withScores)[0]).toMatchObject({ goals: 3, assists: 1 });
+    expect(computeTeamSummary(withScores)).toMatchObject({
+      record: { win: 1, draw: 1, loss: 1 },
+      goalsFor: 3,
+      goalsAgainst: 4,
+    });
   });
 });
