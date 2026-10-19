@@ -1,8 +1,8 @@
 import type { Position } from "@/entities/position";
-import { bestAssignment } from "../lib/bestAssignment";
 import { canMeetBounds } from "./feasibility";
 import { guaranteedQuarters } from "./guarantees";
 import { canPlayField, isDedicatedKeeper, preferenceScore } from "./rules";
+import { seatByPreference } from "./seating";
 import type { QuarterLineup, SquadInput, SquadPlayer } from "./types";
 
 export type AutoAssignOptions = {
@@ -166,15 +166,11 @@ export const autoAssign = (
     }
   });
 
-  return input.quarters.map((quarter, current) => {
-    const players = chosen[current].map((id) => byId.get(id)!);
-    const columns = bestAssignment(
-      players.map((player) => quarter.fieldSlots.map((position) => preferenceScore(player, position))),
-    );
-    const fieldIds: (string | null)[] = quarter.fieldSlots.map(() => null);
-    columns.forEach((column, row) => {
-      fieldIds[column] = players[row].id;
-    });
-    return { keeperId: keepers[current], fieldIds };
-  });
+  return input.quarters.map((quarter, current) => ({
+    keeperId: keepers[current],
+    fieldIds: seatByPreference(
+      chosen[current].map((id) => byId.get(id)!),
+      quarter.fieldSlots,
+    ),
+  }));
 };
