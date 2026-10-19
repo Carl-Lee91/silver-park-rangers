@@ -5,6 +5,7 @@ export type RotationMark = "field" | "keeper" | null;
 export type RotationRow = {
   memberId: string;
   name: string;
+  jerseyNumber: number | null;
   /** 쿼터 순서대로 */
   marks: RotationMark[];
   fieldCount: number;
@@ -24,6 +25,7 @@ export const rotationTable = (quarters: readonly SavedQuarter[]): RotationRow[] 
       const row = rows.get(slot.memberId) ?? {
         memberId: slot.memberId,
         name: slot.memberName,
+        jerseyNumber: slot.jerseyNumber,
         marks: quarters.map(() => null),
         fieldCount: 0,
         keeperCount: 0,

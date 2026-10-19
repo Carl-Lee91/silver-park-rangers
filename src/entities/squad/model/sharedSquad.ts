@@ -44,6 +44,7 @@ const schema = z.object({
           y: z.number(),
           member_key: z.string().nullable(),
           name: z.string().nullable(),
+          jersey_number: z.number().int().nullable().default(null),
         }),
       ),
     }),
@@ -74,6 +75,7 @@ export const toSharedSquad = (json: unknown): SharedSquad | null => {
         y: slot.y,
         memberId: slot.member_key,
         memberName: slot.name,
+        jerseyNumber: slot.jersey_number,
       })),
     })),
   };

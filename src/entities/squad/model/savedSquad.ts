@@ -9,14 +9,16 @@ export type SavedSlot = {
   memberId: string | null;
   /** 볼 수 없는 멤버(휴면 등)거나 빈자리면 null */
   memberName: string | null;
+  /** 등번호. 없으면 null */
+  jerseyNumber: number | null;
 };
 
 export type SavedQuarter = { number: number; formationName: string; slots: SavedSlot[] };
 
 export const SQUAD_COLUMNS =
-  "number, formation_name, quarter_slots(slot_index, position, x, y, member_id, members(real_name))";
+  "number, formation_name, quarter_slots(slot_index, position, x, y, member_id, members(real_name, jersey_number))";
 
-const name = z.object({ real_name: z.string() });
+const name = z.object({ real_name: z.string(), jersey_number: z.number().int().nullable().default(null) });
 const slotSchema = z.object({
   slot_index: z.number().int(),
   position: z.enum(POSITION_CODES),
@@ -49,6 +51,7 @@ export const toSavedQuarters = (rows: unknown): SavedQuarter[] =>
             y: slot.y,
             memberId: slot.member_id,
             memberName: member?.real_name ?? null,
+            jerseyNumber: member?.jersey_number ?? null,
           };
         })
         .sort((a, b) => a.slotIndex - b.slotIndex),

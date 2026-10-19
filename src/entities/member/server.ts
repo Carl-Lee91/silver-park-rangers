@@ -46,3 +46,15 @@ export const createMyMember = async (input: NewMember): Promise<boolean> => {
   if (userId === null) return false;
   return insertMember(await createSupabaseServerClient(), userId, input);
 };
+
+/** 다른 사람이 이미 쓰는 등번호(내 번호는 빼고). 승인된 멤버의 번호만 보인다(RLS) — 겹치면 DB 가 막는다. */
+export const fetchTakenJerseyNumbers = async (): Promise<number[]> => {
+  const userId = await getAuthUserId();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("members").select("id, jersey_number").not("jersey_number", "is", null);
+  if (error) throw new Error(`등번호를 읽지 못했습니다 — ${error.message}`);
+  return (data as { id: string; jersey_number: number }[])
+    .filter((row) => row.id !== userId)
+    .map((row) => row.jersey_number)
+    .sort((a, b) => a - b);
+};
