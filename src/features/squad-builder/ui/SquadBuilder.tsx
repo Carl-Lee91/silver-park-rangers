@@ -34,6 +34,8 @@ type Props = {
   published: boolean;
   saveAction: Action;
   publishAction: Action;
+  /** 올해 경기당 평균 필드 출전 쿼터(관리자 통계). 없는 사람은 표시하지 않는다 */
+  seasonAverages?: Record<string, number | null>;
 };
 
 const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
@@ -51,6 +53,7 @@ export default function SquadBuilder({
   published,
   saveAction,
   publishAction,
+  seasonAverages = {},
 }: Props) {
   const [builder, setBuilder] = useState(initial);
   const [quarter, setQuarter] = useState(0);
@@ -217,6 +220,7 @@ export default function SquadBuilder({
           {bench.map((player) => {
             const stat = statOf(player);
             const note = attendanceTimeNote(player);
+            const average = seasonAverages[player.id];
             const badge = player.response === "maybe" || player.response === "no" ? RESPONSE_BADGE[player.response] : null;
             return (
               <button
@@ -233,6 +237,7 @@ export default function SquadBuilder({
                   {player.preferredPositions.join("·")}
                   {stat && ` · ${stat}`}
                   {note && ` · ${note}`}
+                  {average != null && ` · 올해 평균 ${average.toFixed(1)}`}
                 </span>
               </button>
             );

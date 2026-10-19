@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { fetchFormations } from "@/entities/formation/server";
-import { formatMatchDate, matchTitle, quarterSchedule } from "@/entities/match";
+import { formatMatchDate, matchTitle, quarterSchedule, seoulToday } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { fetchSquad } from "@/entities/squad/server";
+import { computeMemberStats, periodRange } from "@/entities/stats";
+import { fetchStatsSource } from "@/entities/stats/server";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
 import { ShareActions } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
@@ -19,12 +21,16 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, members, formations, saved] = await Promise.all([
+  const [attendance, members, formations, saved, season] = await Promise.all([
     fetchMatchAttendance(match.id),
     fetchAdminMembers(),
     fetchFormations(),
     fetchSquad(match.id),
+    fetchStatsSource(periodRange("season", seoulToday())),
   ]);
+  const seasonAverages = Object.fromEntries(
+    computeMemberStats(season).map((row) => [row.memberId, row.avgFieldQuarters]),
+  );
 
   const fallback = formations.find((formation) => formation.name === DEFAULT_FORMATION) ?? formations[0];
   if (fallback === undefined) {
@@ -59,6 +65,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         published={match.squadPublishedAt !== null}
         saveAction={saveSquad}
         publishAction={publishSquad}
+        seasonAverages={seasonAverages}
       />
       {match.squadPublishedAt !== null && current.length > 0 && (
         <section>
