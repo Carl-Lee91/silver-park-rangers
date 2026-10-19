@@ -22,6 +22,7 @@ import {
 } from "../model/builder";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
 import { warningMessage } from "../model/warnings";
+import NoteEditor from "./NoteEditor";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
@@ -36,6 +37,10 @@ type Props = {
   publishAction: Action;
   /** 올해 경기당 평균 필드 출전 쿼터(관리자 통계). 없는 사람은 표시하지 않는다 */
   seasonAverages?: Record<string, number | null>;
+  /** 이 매치의 특이사항(멤버 id → 메모). 관리자만 본다 */
+  notes?: Record<string, string>;
+  /** 특이사항 저장(features/match-note). 없으면 편집기를 띄우지 않는다 */
+  noteAction?: Action;
 };
 
 const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
@@ -54,6 +59,8 @@ export default function SquadBuilder({
   saveAction,
   publishAction,
   seasonAverages = {},
+  notes = {},
+  noteAction,
 }: Props) {
   const [builder, setBuilder] = useState(initial);
   const [quarter, setQuarter] = useState(0);
@@ -83,6 +90,9 @@ export default function SquadBuilder({
   const bench = pool.filter((player) => !placed.has(player.id) && player.availableQuarters.includes(quarter));
   const away = pool.filter((player) => !placed.has(player.id) && !player.availableQuarters.includes(quarter));
   const selectedMember = selection?.kind === "slot" ? current.slots[selection.index].memberId : null;
+  // 특이사항을 쓸 사람: 벤치에서 고른 사람이나 자리에서 고른 사람
+  const noteTarget = selection?.kind === "bench" ? selection.memberId : selectedMember;
+  const noted = Object.entries(notes).sort(([a], [b]) => nameOf(a).localeCompare(nameOf(b), "ko"));
 
   const change = (next: Builder) => {
     setBuilder(next);
@@ -191,6 +201,7 @@ export default function SquadBuilder({
                 </span>{" "}
                 <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[11px] text-white">
                   {name ?? "빈자리"}
+                  {slot.memberId !== null && notes[slot.memberId] && " ✎"}
                 </span>
               </button>
             </PitchSpot>
@@ -209,6 +220,17 @@ export default function SquadBuilder({
             빼기
           </button>
         </div>
+      )}
+
+      {noteAction && noteTarget !== null && (
+        <NoteEditor
+          key={noteTarget}
+          action={noteAction}
+          matchId={matchId}
+          memberId={noteTarget}
+          name={nameOf(noteTarget)}
+          note={notes[noteTarget] ?? null}
+        />
       )}
 
       <section>
@@ -233,6 +255,7 @@ export default function SquadBuilder({
                 <span className="font-semibold">{player.realName}</span>
                 {player.memberType === "guest" && <span className="ml-1 text-xs opacity-70">용병</span>}
                 {badge && <span className="ml-1 text-xs text-danger">{badge}</span>}
+                {notes[player.id] && <span className="ml-1 text-xs opacity-70">메모</span>}
                 <span className="block text-xs opacity-70">
                   {player.preferredPositions.join("·")}
                   {stat && ` · ${stat}`}
@@ -247,6 +270,23 @@ export default function SquadBuilder({
           <p className="mt-3 text-xs text-text-tertiary">
             이 쿼터엔 못 와요: {away.map((player) => player.realName).join(", ")}
           </p>
+        )}
+      </section>
+
+      <section aria-label="특이사항" className="rounded-xl border border-border p-3">
+        <h2 className="text-sm font-semibold">
+          특이사항 <span className="text-xs font-normal text-text-tertiary">관리자만</span>
+        </h2>
+        {noted.length === 0 ? (
+          <p className="mt-1 text-xs text-text-tertiary">아직 없어요. 선수를 누르면 메모를 쓸 수 있어요.</p>
+        ) : (
+          <ul className="mt-1 flex flex-col gap-1 text-sm">
+            {noted.map(([memberId, note]) => (
+              <li key={memberId}>
+                <span className="font-semibold">{nameOf(memberId)}</span> <span className="text-text-secondary">{note}</span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
