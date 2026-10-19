@@ -553,3 +553,8 @@ select verify.ok(exists (
      and (q ->> 'ours')::int = 2 and (q ->> 'theirs')::int = 1),
   '통계 원본에 쿼터 점수(우리 = 골 기록 수)가 들어간다');
 reset role;
+
+-- ── 가입 신청 실시간 알림 (20261019080000) ───────────────────────────
+select verify.ok(exists (
+  select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'members'),
+  'members 의 바뀜을 Realtime 으로 보낸다');

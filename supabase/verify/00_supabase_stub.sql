@@ -31,3 +31,6 @@ grant usage on schema public to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
+
+-- Supabase 가 만들어 두는 Realtime 발행. 마이그레이션이 여기에 표를 더한다.
+create publication supabase_realtime;
