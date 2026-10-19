@@ -6,7 +6,7 @@ import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/en
 import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { deleteMatch } from "@/features/match-form";
-import { adminMatchEditPath, ROUTES } from "@/shared/config";
+import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
 import { ActionButton } from "@/shared/ui";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
@@ -67,9 +67,13 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         </div>
       </section>
 
-      <section className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">
-        스쿼드 짜기(자동 배치·드래그)는 다음 단계에서 여기에 생겨요.
-      </section>
+      <Link
+        href={adminSquadPath(match.id)}
+        className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-contrast"
+      >
+        <span className="font-semibold">스쿼드 짜기</span>
+        <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>
+      </Link>
     </div>
   );
 }

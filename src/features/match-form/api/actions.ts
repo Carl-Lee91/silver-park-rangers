@@ -48,6 +48,14 @@ export async function updateMatch(_previous: MatchFormState, formData: FormData)
   const { error } = await supabase.from("matches").update(toRow(result.value)).eq("id", id);
   if (error) return { message: dbErrorMessage(error.code) };
 
+  // 쿼터 수를 줄였으면 넘치는 쿼터의 스쿼드는 지운다. 안 지우면 보드에 없는 쿼터가 남는다.
+  const trimmed = await supabase
+    .from("quarters")
+    .delete()
+    .eq("match_id", id)
+    .gt("number", result.value.quarterCount);
+  if (trimmed.error) return { message: dbErrorMessage(trimmed.error.code) };
+
   refresh();
   redirect(adminMatchPath(id));
 }
