@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Formation } from "@/entities/formation";
 import { quarterSchedule } from "@/entities/match";
 import type { ActionState } from "@/shared/ui";
@@ -154,6 +154,36 @@ describe("스쿼드 빌더", () => {
       renderBuilder({ notes, noteAction: noop });
       await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
       expect(screen.getByLabelText("이수비 특이사항")).toHaveValue("무릎 안 좋음 — 수비만");
+    });
+  });
+
+  describe("당일 변동", () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it("2쿼터부터 다시 배치하면 1쿼터는 그대로 둔다", async () => {
+      const user = userEvent.setup();
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      renderBuilder();
+      await user.click(screen.getByRole("button", { name: "자동 배치" }));
+      const firstQuarter = within(pitch()).getAllByRole("button").map((button) => button.textContent);
+
+      await user.click(screen.getByRole("tab", { name: /2쿼터/ }));
+      await user.click(screen.getByRole("button", { name: "2쿼터부터 다시 배치" }));
+      await user.click(screen.getByRole("tab", { name: /1쿼터/ }));
+
+      expect(within(pitch()).getAllByRole("button").map((button) => button.textContent)).toEqual(firstQuarter);
+    });
+
+    it("1쿼터에서는 다시 배치 단추가 없다 — 그건 자동 배치다", () => {
+      renderBuilder();
+      expect(screen.queryByRole("button", { name: /쿼터부터 다시 배치/ })).not.toBeInTheDocument();
+    });
+
+    it("선수를 고르면 그 선수의 도착·떠나는 시간을 고칠 수 있다", async () => {
+      const user = userEvent.setup();
+      renderBuilder({ windowAction: noop });
+      await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
+      expect(screen.getByLabelText("이수비 떠나는 시간")).toBeInTheDocument();
     });
   });
 });
