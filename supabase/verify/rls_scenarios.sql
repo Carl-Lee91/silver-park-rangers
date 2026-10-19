@@ -396,3 +396,40 @@ select verify.fails($$select public.save_squad('10000000-0000-0000-0000-00000000
   '일반 멤버는 스쿼드를 저장하지 못한다');
 
 reset role;
+
+-- ── 카톡 공유용 공개 스쿼드 (20261019040000) ─────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]');
+reset role;
+
+-- anon 은 matches 를 못 읽으므로 토큰은 postgres 로 꺼내 둔다.
+select set_config('verify.token', (select share_token::text from public.matches where id = '10000000-0000-0000-0000-000000000011'), false);
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) is null,
+  '스쿼드를 공개하기 전에는 맞는 토큰이어도 공유 링크로 못 본다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+update public.matches set squad_published_at = now() where id = '10000000-0000-0000-0000-000000000011';
+reset role;
+
+set role anon;
+select verify.ok(jsonb_array_length(public.shared_squad(current_setting('verify.token')::uuid) -> 'quarters') = 1,
+  '공개하면 로그인 없이 공유 링크로 스쿼드를 본다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,1,name}' = '정거절',
+  '자리에 앉은 사람의 실명을 준다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%00000000-0000-0000-0000-000000000006%',
+  '멤버 id 는 주지 않는다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%guest%'
+  and public.shared_squad(current_setting('verify.token')::uuid)::text not like '%member_type%',
+  '멤버/용병 구분은 주지 않는다');
+select verify.ok(public.shared_squad(gen_random_uuid()) is null, '틀린 토큰이면 아무것도 주지 않는다');
+select verify.ok((select count(*) from public.quarters) = 0, '공유 함수 말고는 여전히 아무 표도 못 읽는다');
+reset role;
