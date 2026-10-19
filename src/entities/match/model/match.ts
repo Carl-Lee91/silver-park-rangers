@@ -13,10 +13,12 @@ export type Match = {
   voteDeadline: string | null;
   /** null 이면 스쿼드가 공개 전이다 */
   squadPublishedAt: string | null;
+  /** 카톡 공유 주소(/s/[shareToken])에 쓰는 추측할 수 없는 값 */
+  shareToken: string;
 };
 
 export const MATCH_COLUMNS =
-  "id, match_date, starts_at, ends_at, quarter_count, venue, opponent, vote_deadline, squad_published_at";
+  "id, match_date, starts_at, ends_at, quarter_count, venue, opponent, vote_deadline, squad_published_at, share_token";
 
 // DB 의 time 은 "10:00:00" 으로 온다. 화면과 계산은 "10:00" 을 쓴다.
 const time = z
@@ -34,6 +36,7 @@ const rowSchema = z.object({
   opponent: z.string().nullable(),
   vote_deadline: z.string().nullable(),
   squad_published_at: z.string().nullable(),
+  share_token: z.string(),
 });
 
 export const toMatch = (row: unknown): Match => {
@@ -48,6 +51,7 @@ export const toMatch = (row: unknown): Match => {
     opponent: parsed.opponent,
     voteDeadline: parsed.vote_deadline,
     squadPublishedAt: parsed.squad_published_at,
+    shareToken: parsed.share_token,
   };
 };
 

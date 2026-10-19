@@ -2,7 +2,9 @@ import { matchTitle, type Match } from "../model/match";
 import { formatMatchDate } from "../model/matchTime";
 
 /** 매치 머리글: 날짜 · 상대 · 시간 · 장소 */
-export default function MatchSummary({ match }: { match: Match }) {
+type MatchInfo = Pick<Match, "date" | "startsAt" | "endsAt" | "quarterCount" | "venue" | "opponent">;
+
+export default function MatchSummary({ match }: { match: MatchInfo }) {
   return (
     <div>
       <p className="text-sm text-text-secondary">{formatMatchDate(match.date)}</p>

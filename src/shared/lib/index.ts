@@ -1,0 +1,1 @@
+export { shortHash } from "./hash";
