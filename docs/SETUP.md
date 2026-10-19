@@ -22,6 +22,7 @@
 | `20261019060000_match_notes.sql` | |
 | `20261019070000_match_results.sql` | |
 | `20261019080000_realtime_members.sql` | |
+| `20261020000000_jersey_numbers.sql` | |
 
 ## 2. 카카오 개발자 콘솔 — 로그인 앱 만들기
 
