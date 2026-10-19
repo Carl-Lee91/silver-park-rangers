@@ -78,3 +78,6 @@
 - [ ] Environment Variables 에 [.env.example](../.env.example) 의 이름으로 값을 넣는다.
   `SITE_URL` 은 Vercel 주소다.
 - [ ] 3단계의 Redirect URLs 에 Vercel 주소의 `/auth/callback` 을 추가한다.
+- [ ] 배포한 뒤 카톡 공유를 확인한다. 미리보기 카드는 **배포 주소에서만** 뜬다(카카오 수집기는 localhost 에 못 온다).
+  - 매치 하나에 스쿼드를 저장·공개하고, 관리자 스쿼드 화면의 "공유하기"로 링크를 단톡방(또는 나와의 채팅)에 붙여 본다.
+  - 카드가 안 뜨거나 예전 그림이 뜨면 [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에서 그 주소의 캐시를 지운다.
