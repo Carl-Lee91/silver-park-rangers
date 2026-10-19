@@ -7,7 +7,7 @@
 
 프로젝트: `dgncyxocvoglinbdppul`
 
-- [ ] **SQL Editor** 에 [supabase/migrations/20261019000000_init.sql](../supabase/migrations/20261019000000_init.sql) 전체를 붙여 실행한다.
+- [ ] **SQL Editor** 에 [supabase/migrations/](../supabase/migrations/) 의 파일을 **이름 순서대로** 하나씩 붙여 실행한다. 아래 표에서 적용일이 빈 것만 실행하면 된다.
   - 실행 전에 로컬에서 `pnpm db:verify` 가 통과하는지 본다(RLS 시나리오 검증).
   - 적용한 마이그레이션은 아래 표에 적는다. 적용 여부를 기억에 맡기지 않는다.
 
@@ -15,6 +15,7 @@
 | --- | --- |
 | `20261019000000_init.sql` | |
 | `20261019010000_admin_account.sql` | |
+| `20261019020000_voting_closes_at_kickoff.sql` | |
 
 ## 2. 카카오 개발자 콘솔 — 로그인 앱 만들기
 
