@@ -1,0 +1,75 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AttendanceList, unrespondedMembers } from "@/entities/attendance";
+import { fetchMatchAttendance } from "@/entities/attendance/server";
+import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/entities/match";
+import { fetchMatch } from "@/entities/match/server";
+import { fetchAdminMembers } from "@/entities/member/server";
+import { deleteMatch } from "@/features/match-form";
+import { adminMatchEditPath, ROUTES } from "@/shared/config";
+import { ActionButton } from "@/shared/ui";
+
+export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
+  const match = await fetchMatch(matchId);
+  if (match === null) notFound();
+
+  const [attendance, members] = await Promise.all([fetchMatchAttendance(match.id), fetchAdminMembers()]);
+  const waiting = unrespondedMembers(
+    members.filter((member) => member.status === "approved"),
+    attendance,
+  );
+  const open = isVotingOpen(match);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <Link href={ROUTES.adminMatches} className="text-sm text-text-secondary">
+        ← 매치 목록
+      </Link>
+      <MatchSummary match={match} />
+      <p className="-mt-6 text-xs text-text-tertiary">
+        투표 {open ? `${formatDeadline(votingClosesAt(match).toISOString())} 마감` : "마감됨"}
+      </p>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Link
+          href={adminMatchEditPath(match.id)}
+          className="flex h-10 items-center justify-center rounded-lg border border-border text-sm font-medium"
+        >
+          고치기
+        </Link>
+        <ActionButton
+          action={deleteMatch}
+          fields={{ matchId: match.id }}
+          label="지우기"
+          tone="danger"
+          confirmMessage="이 매치를 지울까요? 참석 투표도 함께 지워져요."
+        />
+      </div>
+
+      <section>
+        <h2 className="mb-3 font-semibold">참석 투표</h2>
+        <AttendanceList attendance={attendance} />
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold">
+            아직 투표 안 함 <span className="text-text-secondary">{waiting.length}</span>
+          </h3>
+          {waiting.length === 0 ? (
+            <p className="mt-1 text-sm text-text-tertiary">모두 투표했어요.</p>
+          ) : (
+            <ul className="mt-2 flex flex-wrap gap-1.5">
+              {waiting.map((member) => (
+                <li key={member.id} className="rounded-lg border border-border px-2 py-1 text-sm">
+                  {member.realName}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+
+      <section className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">
+        스쿼드 짜기(자동 배치·드래그)는 다음 단계에서 여기에 생겨요.
+      </section>
+    </div>
+  );
+}

@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { MatchCard } from "@/entities/match";
+import { fetchUpcomingMatches } from "@/entities/match/server";
 import { groupForAdmin } from "@/entities/member";
 import { fetchAdminMembers } from "@/entities/member/server";
-import { ROUTES } from "@/shared/config";
+import { adminMatchPath, ROUTES } from "@/shared/config";
 
 export default async function AdminHomeView() {
-  const groups = groupForAdmin(await fetchAdminMembers());
+  const [members, upcoming] = await Promise.all([fetchAdminMembers(), fetchUpcomingMatches()]);
+  const groups = groupForAdmin(members);
+  const next = upcoming[0];
   const waiting = groups.pending.length;
 
   return (
@@ -30,7 +34,19 @@ export default async function AdminHomeView() {
         <span className="block text-sm text-text-secondary">멤버</span>
         <span className="mt-1 block text-lg font-bold">{groups.approved.length}명</span>
       </Link>
-      <p className="text-sm text-text-tertiary">매치·스쿼드 관리는 다음에 여기에 생겨요.</p>
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-text-secondary">다음 매치</h2>
+          <Link href={ROUTES.adminMatchNew} className="text-sm font-semibold text-primary">
+            매치 만들기
+          </Link>
+        </div>
+        {next ? (
+          <MatchCard match={next} href={adminMatchPath(next.id)} />
+        ) : (
+          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
+        )}
+      </section>
     </div>
   );
 }
