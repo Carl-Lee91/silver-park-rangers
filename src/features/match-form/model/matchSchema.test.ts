@@ -88,6 +88,7 @@ describe("폼 ↔ 매치", () => {
         opponent: "FC 서울",
         voteDeadline: "2026-10-24T13:00:00+00:00",
         squadPublishedAt: null,
+        shareToken: "t",
       }),
     ).toEqual({ ...valid, venue: "" });
   });

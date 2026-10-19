@@ -11,6 +11,7 @@ const row = {
   opponent: "FC 서울",
   vote_deadline: null,
   squad_published_at: null,
+  share_token: "20000000-0000-0000-0000-000000000001",
 };
 
 describe("DB 행 → 매치", () => {
@@ -25,6 +26,7 @@ describe("DB 행 → 매치", () => {
       opponent: "FC 서울",
       voteDeadline: null,
       squadPublishedAt: null,
+      shareToken: "20000000-0000-0000-0000-000000000001",
     });
   });
 
