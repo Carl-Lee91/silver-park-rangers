@@ -14,7 +14,7 @@ export type AutoAssignOptions = {
 
 /**
  * 전담 키퍼를 쿼터에 앉힌다. 둘 이상이면 키퍼 쿼터가 적은 사람부터, 같으면 먼저 떠나는
- * 사람부터 맡긴다. 전담 키퍼가 없는 쿼터는 비워 둔다 — 운영진이 직접 차출한다.
+ * 사람부터 맡긴다. 전담 키퍼가 없는 쿼터는 비워 둔다 — 관리자가 직접 차출한다.
  */
 const assignKeepers = (input: SquadInput, fixed: readonly (string | null)[]) => {
   const dedicated = input.players.filter(isDedicatedKeeper);

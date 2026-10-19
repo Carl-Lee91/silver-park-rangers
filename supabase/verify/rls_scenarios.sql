@@ -43,7 +43,7 @@ $$;
 grant execute on all functions in schema verify to anon, authenticated;
 
 -- 등장인물
---   …01 운영진   …02 멤버   …03 가입 대기   …04 로그인만 한 외부인   …05 용병   …06 거절될 사람
+--   …01 관리자   …02 멤버   …03 가입 대기   …04 로그인만 한 외부인   …05 용병   …06 거절될 사람
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-000000000001', '{"name": "관리자카톡", "avatar_url": "https://example.com/a.png"}'),
   ('00000000-0000-0000-0000-000000000002', '{"name": "멤버카톡"}'),
@@ -84,7 +84,7 @@ select verify.fails($$insert into public.members (id, real_name, feet, preferred
   '스스로 승인 상태로 가입할 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions, role)
   values ('00000000-0000-0000-0000-000000000004', '셀프운영', '{left}', '{FW}', 'admin')$$,
-  '스스로 운영진으로 가입할 수 없다');
+  '스스로 관리자로 가입할 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
   values ('00000000-0000-0000-0000-000000000004', '욕심쟁이', '{left}', '{FW,CB,MF,WB}')$$,
   '선호 포지션은 3개까지다');
@@ -119,24 +119,24 @@ select verify.ok((select count(*) from public.formations) = 0, '가입 대기 �
 select verify.fails($$update public.members set status = 'approved' where id = '00000000-0000-0000-0000-000000000003'$$,
   '스스로 승인할 수 없다');
 select verify.fails($$update public.members set role = 'admin' where id = '00000000-0000-0000-0000-000000000003'$$,
-  '스스로 운영진이 될 수 없다');
+  '스스로 관리자가 될 수 없다');
 select verify.fails($$update public.members set real_name = '바꾼이름' where id = '00000000-0000-0000-0000-000000000003'$$,
   '실명은 스스로 못 바꾼다');
 update public.members set feet = '{left}' where id = '00000000-0000-0000-0000-000000000003';
 select verify.ok((select feet from public.members where id = '00000000-0000-0000-0000-000000000003') = '{left}',
   '주발은 스스로 바꾼다');
 select verify.fails($$select public.approve_member('00000000-0000-0000-0000-000000000003', 'member')$$,
-  '운영진이 아니면 승인할 수 없다');
+  '관리자가 아니면 승인할 수 없다');
 reset role;
 
--- ── 첫 운영진은 SQL 편집기(postgres)에서 지정한다 ─────────────────────
+-- ── 첫 관리자는 SQL 편집기(postgres)에서 지정한다 ─────────────────────
 update public.members set role = 'admin', status = 'approved'
  where id = '00000000-0000-0000-0000-000000000001';
 
--- ── 운영진 승인 · 거절 ───────────────────────────────────────────────
+-- ── 관리자 승인 · 거절 ───────────────────────────────────────────────
 set role authenticated;
 select verify.login('00000000-0000-0000-0000-000000000001');
-select verify.ok((select count(*) from public.members) = 5, '운영진은 가입 대기 중인 사람까지 모두 본다');
+select verify.ok((select count(*) from public.members) = 5, '관리자는 가입 대기 중인 사람까지 모두 본다');
 select public.approve_member('00000000-0000-0000-0000-000000000002', 'member');
 select public.approve_member('00000000-0000-0000-0000-000000000005', 'guest');
 select public.reject_member('00000000-0000-0000-0000-000000000006');
@@ -154,7 +154,7 @@ select verify.fails($$select public.approve_member('00000000-0000-0000-0000-0000
 -- ── 승인된 일반 멤버 ─────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000002');
 select verify.ok((select count(*) from public.members) = 3, '승인된 사람은 승인된 멤버만 본다');
-select verify.ok((select count(*) from public.member_admin_info) = 0, '멤버/용병 구분은 운영진만 본다');
+select verify.ok((select count(*) from public.member_admin_info) = 0, '멤버/용병 구분은 관리자만 본다');
 select verify.ok((select count(*) from public.formations where is_preset) = 2, '기본 포메이션 두 개를 본다');
 select verify.fails($$insert into public.matches (match_date) values ('2026-10-25')$$,
   '일반 멤버는 매치를 못 만든다');
@@ -163,7 +163,7 @@ select verify.fails($$insert into public.formations (name, slots) values ('3-5-2
 select verify.fails($$select public.approve_member('00000000-0000-0000-0000-000000000003', 'member')$$,
   '일반 멤버는 승인할 수 없다');
 select verify.fails($$update public.members set role = 'admin' where id = '00000000-0000-0000-0000-000000000002'$$,
-  '승인된 뒤에도 스스로 운영진이 될 수 없다');
+  '승인된 뒤에도 스스로 관리자가 될 수 없다');
 
 -- ── 매치와 참석 투표 ─────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000001');
@@ -208,12 +208,12 @@ update public.match_attendance set attended = true
  where match_id = '10000000-0000-0000-0000-000000000001' and member_id = '00000000-0000-0000-0000-000000000002';
 select verify.ok((select attended from public.match_attendance
   where match_id = '10000000-0000-0000-0000-000000000001' and member_id = '00000000-0000-0000-0000-000000000002'),
-  '운영진은 실제 출석을 확정한다');
+  '관리자는 실제 출석을 확정한다');
 insert into public.match_attendance (match_id, member_id, attended)
 values ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', true);
 select verify.ok((select count(*) from public.match_attendance
   where match_id = '10000000-0000-0000-0000-000000000002') = 1,
-  '운영진은 마감 뒤에도 투표 안 한 사람의 출석을 기록한다');
+  '관리자는 마감 뒤에도 투표 안 한 사람의 출석을 기록한다');
 
 -- ── 스쿼드 공개 전후 ─────────────────────────────────────────────────
 insert into public.quarters (id, match_id, number, formation_name)
@@ -242,13 +242,13 @@ select verify.fails($$insert into public.quarter_slots (quarter_id, slot_index, 
 -- ── 포메이션 ─────────────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000001');
 insert into public.formations (name, slots) values ('3-5-2', '[{"position": "GK", "x": 50, "y": 92}]');
-select verify.ok((select count(*) from public.formations) = 3, '운영진은 커스텀 포메이션을 저장한다');
+select verify.ok((select count(*) from public.formations) = 3, '관리자는 커스텀 포메이션을 저장한다');
 update public.formations set name = '4-3-3 수정' where name = '4-3-3';
 select verify.ok(exists (select 1 from public.formations where name = '4-3-3'),
-  '기본 포메이션은 운영진도 못 고친다');
+  '기본 포메이션은 관리자도 못 고친다');
 delete from public.formations where name = '4-4-2';
 select verify.ok(exists (select 1 from public.formations where name = '4-4-2'),
-  '기본 포메이션은 운영진도 못 지운다');
+  '기본 포메이션은 관리자도 못 지운다');
 select verify.fails($$insert into public.formations (name, is_preset, slots) values ('가짜기본', true, '[{"position":"GK","x":50,"y":92}]')$$,
   '기본 포메이션을 새로 만들 수 없다');
 

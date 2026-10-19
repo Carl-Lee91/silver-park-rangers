@@ -76,7 +76,7 @@ describe("자동 배치 (PLAN.md §6)", () => {
     });
   });
 
-  describe("운영진이 정한 키퍼", () => {
+  describe("관리자가 정한 키퍼", () => {
     const noDedicatedKeeper: SquadInput = { players: fieldPlayers(18), quarters: sixQuarters() };
     const keepers = ["p1", null, null, null, null, null];
 
@@ -98,7 +98,7 @@ describe("자동 배치 (PLAN.md §6)", () => {
       const input: SquadInput = { players: [keeper("gk"), ...fieldPlayers(17)], quarters: sixQuarters() };
       const first = autoAssign(input, { random: seeded(1) });
       const edited = first.map((quarter) => quarter.keeperId);
-      edited[5] = "p1"; // 마지막 쿼터는 운영진이 p1 을 키퍼로 바꿨다
+      edited[5] = "p1"; // 마지막 쿼터는 관리자가 p1 을 키퍼로 바꿨다
 
       const second = autoAssign(input, { keepers: edited, random: seeded(2) });
       expect(second.map((quarter) => quarter.keeperId)).toEqual(edited);

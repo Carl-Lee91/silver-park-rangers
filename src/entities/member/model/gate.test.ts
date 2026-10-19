@@ -19,11 +19,11 @@ describe("승인 게이트 상태 (PLAN.md §4)", () => {
     expect(gateOf(true, { status, role: "user" })).toBe(gate);
   });
 
-  it("승인된 운영진은 admin", () => {
+  it("승인된 관리자는 admin", () => {
     expect(gateOf(true, { status: "approved", role: "admin" })).toBe("admin");
   });
 
-  it("승인 전인 운영진 역할은 운영진이 아니다 — DB 의 is_admin() 과 같다", () => {
+  it("승인 전인 관리자 역할은 관리자가 아니다 — DB 의 is_admin() 과 같다", () => {
     expect(gateOf(true, { status: "pending", role: "admin" })).toBe("pending");
     expect(isAdmin({ status: "inactive", role: "admin" })).toBe(false);
   });
@@ -59,7 +59,7 @@ describe("게이트에 따른 이동", () => {
     ["approved", "/pending", "/"],
     ["approved", "/admin", "/"],
     ["approved", "/admin/members", "/"],
-    // 운영진
+    // 관리자
     ["admin", "/admin", null],
     ["admin", "/admin/members", null],
     ["admin", "/pending", "/"],

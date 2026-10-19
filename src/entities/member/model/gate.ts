@@ -16,7 +16,7 @@ export type Gate =
 /** 🔴 DB 의 `is_approved()` 와 같은 정의다. 둘이 어긋나면 화면은 열리는데 데이터가 빈다. */
 export const isApproved = (member: GateMember | null) => member?.status === "approved";
 
-/** 🔴 DB 의 `is_admin()` 과 같은 정의다. 승인되지 않은 운영진 역할은 운영진이 아니다. */
+/** 🔴 DB 의 `is_admin()` 과 같은 정의다. 승인되지 않은 관리자 역할은 관리자가 아니다. */
 export const isAdmin = (member: GateMember | null) => isApproved(member) && member?.role === "admin";
 
 export const gateOf = (signedIn: boolean, member: GateMember | null): Gate => {

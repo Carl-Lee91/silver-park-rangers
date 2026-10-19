@@ -11,7 +11,7 @@ export type SquadReport = {
 };
 
 /**
- * 지금 배치를 점검한다. 자동 배치 직후에도, 운영진이 드래그로 고친 뒤에도 같은 기준으로 본다.
+ * 지금 배치를 점검한다. 자동 배치 직후에도, 관리자가 드래그로 고친 뒤에도 같은 기준으로 본다.
  */
 export const evaluateSquad = (input: SquadInput, lineup: readonly QuarterLineup[]): SquadReport => {
   const guaranteed = guaranteedQuarters(

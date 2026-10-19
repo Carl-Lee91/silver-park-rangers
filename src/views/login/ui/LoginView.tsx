@@ -23,7 +23,7 @@ export default async function LoginView({ error }: { error: string | null }) {
       </div>
 
       <p className="text-xs leading-5 text-text-tertiary">
-        처음이면 로그인한 뒤 실명을 입력하고 운영진 승인을 기다려 주세요. 승인된 사람만 쓸 수 있어요.
+        처음이면 로그인한 뒤 실명을 입력하고 관리자 승인을 기다려 주세요. 승인된 사람만 쓸 수 있어요.
       </p>
     </main>
   );

@@ -61,7 +61,7 @@ export default function OnboardingForm({ action }: Props) {
           autoComplete="name"
           className="mt-2 h-12 w-full rounded-xl border border-border px-4 text-base"
         />
-        <p className="mt-2 text-xs text-text-tertiary">운영진이 본인인지 확인할 때 봐요.</p>
+        <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>
         <FieldError message={state.errors?.realName} />
       </div>
 
