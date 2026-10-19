@@ -33,6 +33,16 @@ export const getAuthUserId = async () => {
   return typeof data?.claims?.sub === "string" ? data.claims.sub : null;
 };
 
+/**
+ * 이메일·비밀번호 로그인. 어드민 전용 계정만 쓴다 — 팀원은 카카오로 로그인한다.
+ * 계정은 Supabase 대시보드에서만 만든다(docs/SETUP.md §4).
+ */
+export const signInWithPassword = async (email: string, password: string) => {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  return error === null ? ({ ok: true } as const) : ({ ok: false, code: error.code } as const);
+};
+
 export const signOut = async () => {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();

@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { KakaoLoginButton, KakaoLoginUnavailable, loginErrorMessage } from "@/features/kakao-login";
 import { isKakaoLoginReady } from "@/features/kakao-login/server";
+import { ROUTES } from "@/shared/config";
 
 export default async function LoginView({ error }: { error: string | null }) {
   const ready = await isKakaoLoginReady();
@@ -25,6 +27,10 @@ export default async function LoginView({ error }: { error: string | null }) {
       <p className="text-xs leading-5 text-text-tertiary">
         처음이면 로그인한 뒤 실명을 입력하고 관리자 승인을 기다려 주세요. 승인된 사람만 쓸 수 있어요.
       </p>
+
+      <Link href={ROUTES.adminLogin} className="text-xs text-text-tertiary underline underline-offset-4">
+        어드민 계정으로 로그인
+      </Link>
     </main>
   );
 }
