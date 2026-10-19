@@ -22,6 +22,7 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
         <nav className="flex items-center gap-4 text-sm">
           <Link href={ROUTES.adminMatches}>매치</Link>
           <Link href={ROUTES.adminMembers}>멤버</Link>
+          <Link href={ROUTES.adminStats}>통계</Link>
           {viewer === "admin" && <Link href={ROUTES.home}>팀 화면</Link>}
           <SignOutButton />
         </nav>
