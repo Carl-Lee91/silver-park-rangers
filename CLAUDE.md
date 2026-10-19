@@ -131,6 +131,10 @@ entities/match/
 `@/entities/match/server` 처럼 두 번째 진입점을 쓰는 것은 이 경우에만 허용한다.
 그 밖의 깊은 경로 import 는 여전히 금지다.
 
+반대로 **브라우저 전용**(Supabase Realtime 같은 것)은 `browser.ts`·`realtime.ts` 로 연다
+(`@/shared/api/browser`, `@/entities/member/realtime`). `shared/api` 의 기본 진입점은 서버 전용이라
+클라이언트 컴포넌트가 가져오면 `next/headers` 가 딸려 간다.
+
 ### 🔴 Server Component 가 기본이다
 
 - **`"use client"` 는 필요한 곳에만 붙인다.** 상태·이벤트 핸들러·브라우저 API 가
