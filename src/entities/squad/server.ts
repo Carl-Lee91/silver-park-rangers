@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/shared/api";
+import { isUuid } from "@/shared/lib";
 import { SQUAD_COLUMNS, toSavedQuarters, type SavedQuarter } from "./model/savedSquad";
 import { toSharedSquad, type SharedSquad } from "./model/sharedSquad";
 
@@ -17,9 +18,9 @@ export const fetchSquad = async (matchId: string): Promise<SavedQuarter[]> => {
  * 공개 전이거나 틀린 토큰이면 null.
  */
 export const fetchSharedSquad = async (token: string): Promise<SharedSquad | null> => {
+  if (!isUuid(token)) return null;
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("shared_squad", { token });
-  if (error?.code === "22P02") return null; // uuid 가 아닌 주소
   if (error) throw new Error(`공유 스쿼드를 읽지 못했습니다 — ${error.message}`);
   return toSharedSquad(data);
 };
