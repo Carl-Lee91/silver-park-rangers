@@ -433,3 +433,47 @@ select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::tex
 select verify.ok(public.shared_squad(gen_random_uuid()) is null, '틀린 토큰이면 아무것도 주지 않는다');
 select verify.ok((select count(*) from public.quarters) = 0, '공유 함수 말고는 여전히 아무 표도 못 읽는다');
 reset role;
+
+-- ── 관리자 통계 원본 (20261019050000) ────────────────────────────────
+-- 지난 매치(…12, 7일 전)에 스쿼드와 출석을 남겨 둔다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000012', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000002"}]},
+  {"number": 2, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000002"}]}
+]');
+insert into public.match_attendance (match_id, member_id, attended)
+values ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', true);
+
+select set_config('verify.stats', public.admin_stats_source(current_date - 30, current_date)::text, false);
+select verify.ok(jsonb_array_length(current_setting('verify.stats')::jsonb -> 'matches') =
+  (select count(*) from public.matches where match_date between current_date - 30 and current_date - 1),
+  '기간 안의 지난 매치만 준다(오늘·앞으로의 매치는 빼고)');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'entries') e
+   where e ->> 'match_id' = '10000000-0000-0000-0000-000000000012'
+     and e ->> 'member_id' = '00000000-0000-0000-0000-000000000002'
+     and (e ->> 'field_quarters')::int = 2 and (e ->> 'attended')::boolean),
+  '매치 × 멤버마다 필드 쿼터와 실제 출석을 준다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000006'
+     and (e ->> 'keeper_quarters')::int = 1 and (e ->> 'field_quarters')::int = 0),
+  '키퍼 쿼터는 따로 센다 — 투표가 없어도 스쿼드에 들었으면 나온다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'members') m
+   where m ->> 'id' = '00000000-0000-0000-0000-000000000006' and m ->> 'member_type' = 'guest'),
+  '멤버/용병 구분을 준다(관리자 화면 전용)');
+select verify.ok(not exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'members') m
+   where m ->> 'id' = '00000000-0000-0000-0000-000000000003'),
+  '가입 대기 중인 사람은 통계에 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$select public.admin_stats_source(current_date - 30, current_date)$$,
+  '일반 멤버는 통계 원본을 못 읽는다');
+reset role;
