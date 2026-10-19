@@ -26,6 +26,7 @@ const player = (id: string, realName: string, preferredPositions: BuilderPlayer[
   id,
   realName,
   memberType: "member",
+  jerseyNumber: null,
   preferredPositions,
   feet: ["right"],
   response: "yes",

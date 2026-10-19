@@ -54,7 +54,7 @@ describe("처음 상태", () => {
         {
           number: 2,
           formationName: "저장된",
-          slots: [{ slotIndex: 0, position: "GK", x: 50, y: 90, memberId: "k", memberName: "키퍼" }],
+          slots: [{ slotIndex: 0, position: "GK", x: 50, y: 90, memberId: "k", memberName: "키퍼", jerseyNumber: null }],
         },
       ],
       F442,

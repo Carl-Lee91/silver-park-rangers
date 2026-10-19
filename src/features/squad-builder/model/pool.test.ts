@@ -17,6 +17,7 @@ const member = (id: string, realName: string, extra: Partial<AdminMember> = {}):
   role: "user",
   status: "approved",
   memberType: "member",
+  jerseyNumber: null,
   createdAt: "2026-10-19T00:00:00Z",
   ...extra,
 });
@@ -35,7 +36,7 @@ const members = [
   member("a", "가참석"),
   member("b", "나미정"),
   member("c", "다불참"),
-  member("d", "라일찍", { memberType: "guest" }),
+  member("d", "라일찍", { memberType: "guest", jerseyNumber: 9 }),
 ];
 
 describe("빌더 후보 명단", () => {
@@ -49,6 +50,7 @@ describe("빌더 후보 명단", () => {
     expect(pool.map((player) => player.id)).toEqual(["a", "d", "b"]);
     expect(pool.find((player) => player.id === "d")).toMatchObject({
       memberType: "guest",
+      jerseyNumber: 9,
       availableQuarters: [0, 1, 2, 3],
     });
   });

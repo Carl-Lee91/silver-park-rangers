@@ -14,8 +14,8 @@ const json = {
       number: 1,
       formation_name: "4-3-3",
       slots: [
-        { slot_index: 0, position: "GK", x: 50, y: 92, member_key: "abc", name: "김키퍼" },
-        { slot_index: 1, position: "FW", x: 50, y: 18, member_key: null, name: null },
+        { slot_index: 0, position: "GK", x: 50, y: 92, member_key: "abc", name: "김키퍼", jersey_number: 1 },
+        { slot_index: 1, position: "FW", x: 50, y: 18, member_key: null, name: null, jersey_number: null },
       ],
     },
   ],
@@ -40,6 +40,7 @@ describe("공유 링크용 스쿼드", () => {
       y: 92,
       memberId: "abc",
       memberName: "김키퍼",
+      jerseyNumber: 1,
     });
   });
 
