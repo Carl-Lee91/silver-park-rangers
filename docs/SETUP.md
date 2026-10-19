@@ -20,6 +20,7 @@
 | `20261019040000_shared_squad.sql` | |
 | `20261019050000_admin_stats_source.sql` | |
 | `20261019060000_match_notes.sql` | |
+| `20261019070000_match_results.sql` | |
 
 ## 2. 카카오 개발자 콘솔 — 로그인 앱 만들기
 
