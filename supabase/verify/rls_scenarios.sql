@@ -359,3 +359,40 @@ select verify.fails($$insert into public.match_attendance (match_id, member_id, 
   '마감을 안 정한 매치도 시작한 뒤에는 투표하지 못한다');
 
 reset role;
+
+-- ── 스쿼드 저장 (20261019030000) ─────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]},
+  {"number": 2, "formation_name": "4-4-2", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 2,
+  '어드민·관리자는 스쿼드를 한 번에 저장한다');
+select verify.ok((select count(*) from public.quarter_slots s join public.quarters q on q.id = s.quarter_id
+  where q.match_id = '10000000-0000-0000-0000-000000000011') = 3, '배치도 함께 저장된다');
+
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-4-2", "slots": []}
+]');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 1,
+  '다시 저장하면 전의 스쿼드를 통째로 바꾼다');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011',
+  '[{"number": 7, "formation_name": "4-3-3", "slots": []}]')$$,
+  '쿼터 수를 넘는 쿼터는 저장하지 않는다');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 1,
+  '저장이 실패하면 전의 스쿼드가 그대로 남는다');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]')$$, '한 쿼터에 같은 사람을 두 번 넣을 수 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011', '[]')$$,
+  '일반 멤버는 스쿼드를 저장하지 못한다');
+
+reset role;
