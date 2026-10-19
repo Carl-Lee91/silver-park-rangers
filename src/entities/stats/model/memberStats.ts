@@ -25,6 +25,8 @@ export type MemberStats = {
   positionCounts: Partial<Record<Position, number>>;
   /** 필드 쿼터 중 선호 포지션에서 뛴 비율 */
   preferredShare: number | null;
+  goals: number;
+  assists: number;
 };
 
 /** 나눌 수 없으면 null — 0 으로 보이면 "한 번도 안 왔다"로 오해한다. */
@@ -87,6 +89,8 @@ export const computeMemberStats = (source: StatsSource): MemberStats[] => {
         avgFieldQuarters: ratio(fieldQuarters, squad.length),
         positionCounts,
         preferredShare: ratio(preferred, fieldQuarters),
+        goals: mine.reduce((sum, entry) => sum + entry.goals, 0),
+        assists: mine.reduce((sum, entry) => sum + entry.assists, 0),
       };
     });
 };
@@ -118,7 +122,16 @@ export const computeTeamSummary = (source: StatsSource) => {
     };
   });
   const confirmed = trend.filter((point) => point.attended !== null);
+  const scores = source.matches.flatMap((match) => match.quarterScores);
   return {
+    /** 쿼터를 한 경기로 센 전적(결과를 남긴 쿼터만) */
+    record: {
+      win: scores.filter((score) => score.ours > score.theirs).length,
+      draw: scores.filter((score) => score.ours === score.theirs).length,
+      loss: scores.filter((score) => score.ours < score.theirs).length,
+    },
+    goalsFor: scores.reduce((sum, score) => sum + score.ours, 0),
+    goalsAgainst: scores.reduce((sum, score) => sum + score.theirs, 0),
     matchCount: trend.length,
     confirmedCount: confirmed.length,
     avgAttended: ratio(
