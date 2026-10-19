@@ -2,9 +2,12 @@
 export const ROUTES = {
   home: "/",
   login: "/login",
+  /** 어드민 전용 계정(이메일·비밀번호) 로그인. `/login` 아래라 로그인 전에도 열린다. */
+  adminLogin: "/login/admin",
   onboarding: "/onboarding",
   pending: "/pending",
   admin: "/admin",
+  adminMembers: "/admin/members",
   authCallback: "/auth/callback",
 } as const;
 

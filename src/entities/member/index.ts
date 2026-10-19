@@ -1,4 +1,11 @@
-export { selectGateMember, type NewMember } from "./api/queries";
+export { selectGateAccess, type NewMember } from "./api/queries";
+export {
+  groupForAdmin,
+  toAdminMember,
+  type AdminMember,
+  type AdminMemberGroups,
+  type MemberType,
+} from "./model/adminMember";
 export {
   gateOf,
   gateRedirect,
@@ -6,6 +13,7 @@ export {
   isApproved,
   isPublicPath,
   type Gate,
+  type GateAccess,
   type GateMember,
 } from "./model/gate";
 export {
@@ -17,3 +25,4 @@ export {
   type MemberRole,
   type MemberStatus,
 } from "./model/member";
+export { canChangeRole, canChangeStatus, canManageMembers } from "./model/permissions";

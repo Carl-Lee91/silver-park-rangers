@@ -1,23 +1,27 @@
 import type { DbClient } from "@/shared/api";
-import type { Foot } from "../model/member";
-import type { GateMember } from "../model/gate";
 import type { Position } from "@/entities/position";
+import type { GateAccess } from "../model/gate";
+import type { Foot, MemberRole, MemberStatus } from "../model/member";
+
+type AccessRow = { status: MemberStatus | null; role: MemberRole | null; is_owner: boolean };
 
 /**
- * 게이트 판단에 필요한 것만 읽는다. proxy 가 요청마다 부르므로 가볍게 둔다.
+ * 게이트 판단에 필요한 것(멤버 상태·역할, 어드민 계정 여부)을 한 번에 읽는다.
+ * proxy 가 요청마다 부르므로 RPC 하나로 끝낸다(`my_access`).
  * 읽지 못하면 `ok: false` — 그때 proxy 는 막지도 보내지도 않는다(데이터는 RLS 가 지킨다).
  */
-export const selectGateMember = async (
+export const selectGateAccess = async (
   client: DbClient,
-  userId: string,
-): Promise<{ ok: true; member: GateMember | null } | { ok: false }> => {
-  const { data, error } = await client
-    .from("members")
-    .select("status, role")
-    .eq("id", userId)
-    .maybeSingle();
-  if (error) return { ok: false };
-  return { ok: true, member: data as GateMember | null };
+): Promise<{ ok: true; access: GateAccess } | { ok: false }> => {
+  const { data, error } = await client.rpc("my_access").single<AccessRow>();
+  if (error || data === null) return { ok: false };
+  return {
+    ok: true,
+    access: {
+      member: data.status === null || data.role === null ? null : { status: data.status, role: data.role },
+      isOwner: data.is_owner,
+    },
+  };
 };
 
 export type NewMember = {

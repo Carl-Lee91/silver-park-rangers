@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { gateOf, gateRedirect, isPublicPath, selectGateMember } from "@/entities/member";
+import { gateOf, gateRedirect, isPublicPath, selectGateAccess, type GateAccess } from "@/entities/member";
 import { updateSession, withSessionCookies } from "@/shared/api";
 
 /**
@@ -15,15 +15,15 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (isPublicPath(pathname)) return response;
 
-  let member = null;
+  let access: GateAccess = { member: null, isOwner: false };
   if (userId !== null) {
-    const result = await selectGateMember(supabase, userId);
-    // 멤버 정보를 못 읽으면 막지도 보내지도 않는다. 잘못 보내면 승인된 사람이 온보딩으로 간다.
+    const result = await selectGateAccess(supabase);
+    // 권한을 못 읽으면 막지도 보내지도 않는다. 잘못 보내면 승인된 사람이 온보딩으로 간다.
     if (!result.ok) return response;
-    member = result.member;
+    access = result.access;
   }
 
-  const target = gateRedirect(gateOf(userId !== null, member), pathname);
+  const target = gateRedirect(gateOf(userId !== null, access), pathname);
   if (target === null) return response;
   return withSessionCookies(response, NextResponse.redirect(new URL(target, request.url)));
 }

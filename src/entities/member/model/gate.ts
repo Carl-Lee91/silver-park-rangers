@@ -3,7 +3,10 @@ import type { MemberRole, MemberStatus } from "./member";
 
 export type GateMember = { status: MemberStatus; role: MemberRole };
 
-/** 승인 게이트에서 본 지금 사람의 상태(PLAN.md §4) */
+/** 게이트가 보는 지금 사람. 멤버 행이 없으면 member 는 null(온보딩 전 또는 어드민 계정). */
+export type GateAccess = { member: GateMember | null; isOwner: boolean };
+
+/** 승인 게이트에서 본 지금 사람의 상태(PLAN.md §3·§4) */
 export type Gate =
   | "signed-out"
   | "needs-onboarding"
@@ -11,16 +14,19 @@ export type Gate =
   | "rejected"
   | "inactive"
   | "approved"
-  | "admin";
+  | "admin"
+  | "owner";
 
-/** 🔴 DB 의 `is_approved()` 와 같은 정의다. 둘이 어긋나면 화면은 열리는데 데이터가 빈다. */
+/** 🔴 멤버 쪽 정의는 DB 의 `is_approved()` 와 같다(어드민 계정은 `isOwner` 로 따로 본다). */
 export const isApproved = (member: GateMember | null) => member?.status === "approved";
 
 /** 🔴 DB 의 `is_admin()` 과 같은 정의다. 승인되지 않은 관리자 역할은 관리자가 아니다. */
 export const isAdmin = (member: GateMember | null) => isApproved(member) && member?.role === "admin";
 
-export const gateOf = (signedIn: boolean, member: GateMember | null): Gate => {
+export const gateOf = (signedIn: boolean, { member, isOwner }: GateAccess): Gate => {
   if (!signedIn) return "signed-out";
+  // 어드민 계정이 먼저다. DB 의 is_admin() 도 어드민이면 멤버 상태를 보지 않는다.
+  if (isOwner) return "owner";
   if (member === null) return "needs-onboarding";
   if (isAdmin(member)) return "admin";
   return member.status;
@@ -58,5 +64,8 @@ export const gateRedirect = (gate: Gate, pathname: string): string | null => {
       return GATE_PAGES.some(at) || at(ROUTES.admin) ? ROUTES.home : null;
     case "admin":
       return GATE_PAGES.some(at) ? ROUTES.home : null;
+    case "owner":
+      // 선수가 아니라서 멤버 화면(참석 투표 등)이 없다. 관리 화면만 쓴다.
+      return only(ROUTES.admin);
   }
 };
