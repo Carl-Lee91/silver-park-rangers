@@ -16,6 +16,7 @@
 | `20261019000000_init.sql` | |
 | `20261019010000_admin_account.sql` | |
 | `20261019020000_voting_closes_at_kickoff.sql` | |
+| `20261019030000_save_squad.sql` | |
 
 ## 2. 카카오 개발자 콘솔 — 로그인 앱 만들기
 
