@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { fetchMyMember } from "@/entities/member/server";
+import { fetchMyMember, fetchTakenJerseyNumbers } from "@/entities/member/server";
 import { ProfileForm, updateProfile } from "@/features/profile-edit";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
@@ -8,6 +8,7 @@ import { ROUTES } from "@/shared/config";
 export default async function MeView() {
   const me = await fetchMyMember();
   if (me === null) redirect(ROUTES.onboarding);
+  const takenNumbers = await fetchTakenJerseyNumbers();
 
   return (
     <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-8">
@@ -21,7 +22,13 @@ export default async function MeView() {
         </p>
         <p className="mt-1 text-xs text-text-tertiary">실명은 관리자에게 바꿔 달라고 해 주세요.</p>
       </header>
-      <ProfileForm action={updateProfile} feet={me.feet} preferredPositions={me.preferredPositions} />
+      <ProfileForm
+        action={updateProfile}
+        feet={me.feet}
+        preferredPositions={me.preferredPositions}
+        jerseyNumber={me.jerseyNumber}
+        takenNumbers={takenNumbers}
+      />
       <SignOutButton />
     </main>
   );
