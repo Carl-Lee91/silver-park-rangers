@@ -127,4 +127,10 @@ describe("스쿼드 빌더", () => {
     await user.click(screen.getByRole("button", { name: "자동 배치" }));
     expect(screen.getByRole("button", { name: "공개하기" })).toBeDisabled();
   });
+
+  it("올해 평균 출전 쿼터를 벤치에 보여 준다 — 최근 덜 뛴 사람을 고르기 쉽게", () => {
+    renderBuilder({ seasonAverages: { c: 3.4 } });
+    expect(within(bench()).getByRole("button", { name: /이수비/ })).toHaveTextContent("올해 평균 3.4");
+    expect(within(bench()).getByRole("button", { name: /박공격/ })).not.toHaveTextContent("올해 평균");
+  });
 });
