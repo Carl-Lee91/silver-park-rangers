@@ -6,6 +6,7 @@ export const ROUTES = {
   adminLogin: "/login/admin",
   onboarding: "/onboarding",
   pending: "/pending",
+  me: "/me",
   admin: "/admin",
   adminMembers: "/admin/members",
   adminMatches: "/admin/matches",

@@ -30,9 +30,14 @@ export default async function HomeView() {
 
   return (
     <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-10">
-      <header>
-        <p className="text-sm text-text-secondary">Silver Park Rangers</p>
-        <h1 className="mt-1 text-xl font-bold">{me.realName}님, 안녕하세요</h1>
+      <header className="flex items-start justify-between">
+        <div>
+          <p className="text-sm text-text-secondary">Silver Park Rangers</p>
+          <h1 className="mt-1 text-xl font-bold">{me.realName}님, 안녕하세요</h1>
+        </div>
+        <Link href={ROUTES.me} className="text-sm text-text-secondary underline underline-offset-4">
+          내 정보
+        </Link>
       </header>
 
       <section>
