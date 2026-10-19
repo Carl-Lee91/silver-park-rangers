@@ -66,7 +66,7 @@ export default function AttendanceTrendChart({ trend }: { trend: readonly MatchT
                     <span className="text-[10px] text-text-tertiary">–</span>
                   ) : (
                     <span
-                      className={`w-full rounded-t-[4px] bg-primary ${active === index ? "opacity-70" : ""}`}
+                      className={`w-full rounded-t-[4px] bg-chart ${active === index ? "opacity-70" : ""}`}
                       style={{ height, maxWidth: BAR_MAX }}
                     />
                   )}

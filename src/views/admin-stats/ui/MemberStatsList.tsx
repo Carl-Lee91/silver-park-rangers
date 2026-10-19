@@ -61,7 +61,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
               </span>
             </div>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-primary-soft" aria-hidden="true">
-              <div className="h-full rounded-full bg-primary" style={{ width: `${(row.attendanceRate ?? 0) * 100}%` }} />
+              <div className="h-full rounded-full bg-chart" style={{ width: `${(row.attendanceRate ?? 0) * 100}%` }} />
             </div>
             <p className="mt-2 text-xs text-text-secondary">
               응답 {percent(row.responseRate)} · 노쇼 {row.noShows}

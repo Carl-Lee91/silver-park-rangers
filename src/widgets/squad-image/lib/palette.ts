@@ -3,8 +3,8 @@
  * @theme 토큰과 **같은 값**을 여기 둔다. 토큰을 바꾸면 여기도 같이 바꾼다.
  */
 export const PALETTE = {
-  primary: "#1f6f43",
-  primarySoft: "#dcefe4",
+  primary: "#171717",
+  primarySoft: "#e5e5e5",
   bgBase: "#ffffff",
   bgSubtle: "#f4f5f7",
   textPrimary: "#171717",

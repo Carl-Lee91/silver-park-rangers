@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // globals.css 의 --color-primary 와 같은 값
-  themeColor: "#1f6f43",
+  themeColor: "#171717",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
