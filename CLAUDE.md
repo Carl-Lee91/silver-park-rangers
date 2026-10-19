@@ -24,7 +24,8 @@
 | 매치 | `match` | 하루 일정 하나 (기본 10:00~13:00) |
 | 쿼터 | `quarter` | 매치 안의 경기 하나(25~30분). 기본 6개 |
 | 멤버 · 용병 | `member` / `guest` (`member_type`) | 관리자만 보는 구분 |
-| 관리자 · 일반 | `admin` / `user` (`role`) | 권한 |
+| 어드민 | `owner` (`owners` 테이블) | 선수가 아닌 운영용 전용 계정. 관리자를 지정한다 |
+| 관리자 · 일반 | `admin` / `user` (`role`) | 멤버의 권한 |
 | 포지션 | `FW` `AM` `WG` `MF` `WB` `CB` `GK` | PLAN.md §5 |
 
 ## 🔴 비용은 0원이다
@@ -190,10 +191,12 @@ entities/match/
 
 ## 🔴 사용자 판단 기준 (승인 게이트)
 
-- **서비스를 쓸 수 있는 사람 = `status === 'approved'`.** 판단 함수는 `entities/member`
-  한 곳에 두고, DB 의 `is_approved()` 와 정의를 같게 유지한다. 둘이 어긋나면 화면은
-  열리는데 데이터가 비거나, 그 반대가 된다.
-- **관리자 = 승인됨 + `role === 'admin'`.** DB 의 `is_admin()` 과 같다.
+- 판단은 `entities/member` 의 `gate`·`permissions` 한 곳에 두고, DB 의 판단 함수·RPC 검사와
+  정의를 같게 유지한다. 둘이 어긋나면 화면은 열리는데 데이터가 비거나, 누를 수 없는 단추가 생긴다.
+- **어드민 = `owners` 에 있는 계정.** DB 의 `is_owner()`. 멤버 행이 없고 관리 화면만 쓴다.
+- **서비스를 쓸 수 있는 사람 = 어드민 또는 `status === 'approved'` 인 멤버.** DB 의 `is_approved()`.
+- **관리자 = 어드민 또는 승인됨 + `role === 'admin'`.** DB 의 `is_admin()`.
+- **관리자 지정·해제는 어드민만**, 관리자의 휴면도 어드민만 한다(`set_member_role`·`set_member_status`).
 - 🔴 **멤버/용병 구분(`member_type`)은 관리자 전용이다.** 관리자만 읽는
   `member_admin_info` 테이블에만 둔다. 일반 사용자에게 가는 응답·화면·공유 이미지에
   절대 섞지 않는다.
