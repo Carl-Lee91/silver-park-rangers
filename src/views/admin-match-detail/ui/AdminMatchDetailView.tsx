@@ -5,6 +5,8 @@ import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
+import { fetchSquad } from "@/entities/squad/server";
+import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
 import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
 import { ActionButton } from "@/shared/ui";
@@ -13,11 +15,14 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, members] = await Promise.all([fetchMatchAttendance(match.id), fetchAdminMembers()]);
-  const waiting = unrespondedMembers(
-    members.filter((member) => member.status === "approved"),
-    attendance,
-  );
+  const [attendance, members, squad] = await Promise.all([
+    fetchMatchAttendance(match.id),
+    fetchAdminMembers(),
+    fetchSquad(match.id),
+  ]);
+  const approved = members.filter((member) => member.status === "approved");
+  const waiting = unrespondedMembers(approved, attendance);
+  const squadIds = new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   const open = isVotingOpen(match);
 
   return (
@@ -74,6 +79,17 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         <span className="font-semibold">스쿼드 짜기</span>
         <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>
       </Link>
+
+      <section>
+        <h2 className="mb-3 font-semibold">실제 출석</h2>
+        <p className="mb-3 text-xs text-text-tertiary">매치가 끝나면 정해 주세요. 참석률·노쇼 통계가 이 값을 써요.</p>
+        <AttendanceConfirm
+          matchId={match.id}
+          rows={confirmRows(attendance, squadIds, members)}
+          members={approved}
+          hasSquad={squadIds.size > 0}
+        />
+      </section>
     </div>
   );
 }
