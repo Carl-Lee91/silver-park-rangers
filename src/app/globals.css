@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/*
+  디자인 토큰. 색·간격은 여기 있는 이름으로만 쓴다(CLAUDE.md).
+  화면 작업을 시작할 때 팀 색에 맞춰 채운다.
+*/
+@theme {
+  --color-bg-base: #ffffff;
+  --color-text-primary: #171717;
+}
+
+body {
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
