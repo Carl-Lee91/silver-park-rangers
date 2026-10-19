@@ -7,7 +7,10 @@ import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
-import { adminMatchPath, ROUTES } from "@/shared/config";
+import { ShareActions } from "@/features/squad-share";
+import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
+import { shortHash } from "@/shared/lib";
+import { squadImagePath } from "@/widgets/squad-image";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -57,6 +60,19 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         saveAction={saveSquad}
         publishAction={publishSquad}
       />
+      {match.squadPublishedAt !== null && current.length > 0 && (
+        <section>
+          <h2 className="mb-2 text-sm font-semibold">단톡방에 공유</h2>
+          <ShareActions
+            shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
+            title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
+            imageUrls={{
+              quarters: squadImagePath(match.shareToken, "quarters", shortHash(JSON.stringify(current))),
+              rotation: squadImagePath(match.shareToken, "rotation", shortHash(JSON.stringify(current))),
+            }}
+          />
+        </section>
+      )}
     </div>
   );
 }

@@ -2,13 +2,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AttendanceList } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
-import { formatDeadline, isVotingOpen, MatchSummary, quarterSchedule, votingClosesAt } from "@/entities/match";
+import {
+  formatDeadline,
+  formatMatchDate,
+  isVotingOpen,
+  matchTitle,
+  MatchSummary,
+  quarterSchedule,
+  votingClosesAt,
+} from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
+import { ShareActions } from "@/features/squad-share";
 import { getAuthUserId } from "@/shared/api";
-import { ROUTES } from "@/shared/config";
+import { getServerEnv, ROUTES } from "@/shared/config";
+import { shortHash } from "@/shared/lib";
 import { QuarterBoard } from "@/widgets/quarter-board";
+import { squadImagePath } from "@/widgets/squad-image";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -52,7 +63,17 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
       <section>
         <h2 className="mb-3 font-semibold">스쿼드</h2>
         {squad.length > 0 ? (
-          <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
+          <div className="flex flex-col gap-5">
+            <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
+            <ShareActions
+              shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
+              title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
+              imageUrls={{
+                quarters: squadImagePath(match.shareToken, "quarters", shortHash(JSON.stringify(squad))),
+                rotation: squadImagePath(match.shareToken, "rotation", shortHash(JSON.stringify(squad))),
+              }}
+            />
+          </div>
         ) : (
           <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
         )}
