@@ -7,7 +7,7 @@ import { fetchMatch } from "@/entities/match/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
-import { adminMatchPath } from "@/shared/config";
+import { adminMatchPath, ROUTES } from "@/shared/config";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -41,7 +41,12 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
       <Link href={adminMatchPath(match.id)} className="text-sm text-text-secondary">
         ← {formatMatchDate(match.date)} {matchTitle(match)}
       </Link>
-      <h1 className="text-xl font-bold">스쿼드 짜기</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">스쿼드 짜기</h1>
+        <Link href={ROUTES.adminFormations} className="text-sm text-primary">
+          포메이션 관리
+        </Link>
+      </div>
       <SquadBuilder
         matchId={match.id}
         schedule={schedule}

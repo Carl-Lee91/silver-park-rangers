@@ -34,6 +34,10 @@ export default async function AdminHomeView() {
         <span className="block text-sm text-text-secondary">멤버</span>
         <span className="mt-1 block text-lg font-bold">{groups.approved.length}명</span>
       </Link>
+      <Link href={ROUTES.adminFormations} className="rounded-xl border border-border p-4">
+        <span className="block text-sm text-text-secondary">포메이션</span>
+        <span className="mt-1 block font-semibold">기본 4-3-3 · 4-4-2 + 커스텀 만들기</span>
+      </Link>
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-text-secondary">다음 매치</h2>

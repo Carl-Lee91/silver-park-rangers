@@ -10,6 +10,7 @@ export const ROUTES = {
   adminMembers: "/admin/members",
   adminMatches: "/admin/matches",
   adminMatchNew: "/admin/matches/new",
+  adminFormations: "/admin/formations",
   authCallback: "/auth/callback",
 } as const;
 
