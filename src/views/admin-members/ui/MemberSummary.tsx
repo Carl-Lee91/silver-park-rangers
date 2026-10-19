@@ -33,7 +33,10 @@ export default function MemberSummary({ member, showApplied = false }: { member:
       )}
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-1.5">
-          <span className="font-semibold">{member.realName}</span>
+          <span className="font-semibold">
+            {member.jerseyNumber !== null && <span className="mr-1 text-text-tertiary">{member.jerseyNumber}</span>}
+            {member.realName}
+          </span>
           {member.role === "admin" && <Badge tone="primary">관리자</Badge>}
           {member.memberType === "guest" && <Badge tone="neutral">용병</Badge>}
         </p>

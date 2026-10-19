@@ -45,7 +45,9 @@ export default function RotationImage({ squad }: { squad: SharedSquad }) {
       </div>
       {rows.map((row) => (
         <div key={row.memberId} style={{ ...line, fontSize: 26 }}>
-          <div style={{ display: "flex", width: NAME, fontWeight: 700 }}>{row.name}</div>
+          <div style={{ display: "flex", width: NAME, fontWeight: 700 }}>
+            {row.jerseyNumber === null ? row.name : `${row.jerseyNumber} ${row.name}`}
+          </div>
           {row.marks.map((mark, index) => (
             <div
               key={index}

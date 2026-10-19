@@ -84,6 +84,11 @@ export default function SquadBuilder({
 
   const byId = new Map(pool.map((player) => [player.id, player]));
   const nameOf = (memberId: string) => byId.get(memberId)?.realName ?? "알 수 없음";
+  /** 경기장 이름표: 등번호가 있으면 앞에 붙인다 */
+  const labelOf = (memberId: string) => {
+    const number = byId.get(memberId)?.jerseyNumber;
+    return number == null ? nameOf(memberId) : `${number} ${nameOf(memberId)}`;
+  };
   const input = { players: squadPlayersFor(pool, builder), quarters: toSquadQuarters(builder) };
   const inSquad = new Set(input.players.map((player) => player.id));
   const report = evaluateSquad(input, toLineup(builder));
@@ -222,7 +227,7 @@ export default function SquadBuilder({
       >
         <Pitch label="경기장">
           {current.slots.map((slot, index) => {
-            const name = slot.memberId === null ? null : nameOf(slot.memberId);
+            const name = slot.memberId === null ? null : labelOf(slot.memberId);
             const selected = selection?.kind === "slot" && selection.index === index;
             const keeper = index === keeperSlotIndex(current.slots);
             return (
@@ -307,7 +312,10 @@ export default function SquadBuilder({
                   onClick={() => tap({ kind: "bench", memberId: player.id })}
                   className="rounded-lg border border-border px-2.5 py-1.5 text-left text-sm aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast"
                 >
-                  <span className="font-semibold">{player.realName}</span>
+                  <span className="font-semibold">
+                    {player.jerseyNumber !== null && <span className="mr-1 text-xs opacity-70">{player.jerseyNumber}</span>}
+                    {player.realName}
+                  </span>
                   {player.memberType === "guest" && <span className="ml-1 text-xs opacity-70">용병</span>}
                   {badge && <span className="ml-1 text-xs text-danger">{badge}</span>}
                   {notes[player.id] && <span className="ml-1 text-xs opacity-70">메모</span>}

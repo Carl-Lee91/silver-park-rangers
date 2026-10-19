@@ -60,7 +60,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
                           : "bg-white text-text-primary"
                     }`}
                   >
-                    {slot.position}
+                    {slot.jerseyNumber ?? slot.position}
                   </span>
                   {slot.memberName && (
                     <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[11px] text-white">
@@ -89,7 +89,10 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
             <tbody>
               {rows.map((row) => (
                 <tr key={row.memberId} className="border-b border-border">
-                  <td className="py-2 text-left">{row.name}</td>
+                  <td className="py-2 text-left">
+                    {row.jerseyNumber !== null && `${row.jerseyNumber} `}
+                    {row.name}
+                  </td>
                   {row.marks.map((mark, index) => (
                     <td key={index} className={mark === "keeper" ? "text-xs font-bold text-text-secondary" : "text-primary"}>
                       {mark === "field" ? "●" : mark === "keeper" ? "GK" : ""}

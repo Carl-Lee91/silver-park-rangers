@@ -69,7 +69,7 @@ export default function PitchImage({ quarter, width }: { quarter: SavedQuarter; 
                 border: empty ? `2px dashed ${PALETTE.bgBase}` : "none",
               }}
             >
-              {slot.position}
+              {slot.jerseyNumber === null ? slot.position : String(slot.jerseyNumber)}
             </div>
             {!empty && (
               <div

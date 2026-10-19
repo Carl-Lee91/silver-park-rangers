@@ -11,6 +11,7 @@ export type BuilderPlayer = {
   realName: string;
   /** 관리자만 보는 구분(용병 표시) */
   memberType: MemberType | null;
+  jerseyNumber: number | null;
   preferredPositions: Position[];
   feet: Foot[];
   /** 저장된 스쿼드에 있는데 투표를 바꾼 사람은 no·null 일 수 있다 */
@@ -43,6 +44,7 @@ export const buildPool = (
           id: member.id,
           realName: member.realName,
           memberType: member.memberType,
+          jerseyNumber: member.jerseyNumber,
           preferredPositions: member.preferredPositions,
           feet: member.feet,
           response: row.response,
