@@ -10,6 +10,7 @@ const row = {
   preferred_positions: ["MF"],
   role: "user",
   status: "approved",
+  jersey_number: null,
   created_at: "2026-10-19T01:00:00+00:00",
   member_admin_info: { member_type: "guest" },
 };
@@ -44,6 +45,7 @@ describe("관리 화면 묶음", () => {
     role: "user",
     status: "approved",
     memberType: "member",
+    jerseyNumber: null,
     createdAt: "2026-10-19T00:00:00Z",
     ...overrides,
   });

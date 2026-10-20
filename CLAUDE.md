@@ -50,6 +50,8 @@
   전용 배치를 따로 만들지 않는다. 예외가 필요해 보이면(예: 스쿼드 빌더) 먼저 보고한다.
 - 색·간격은 `src/app/globals.css` 의 `@theme` 토큰으로만 쓴다. 컴포넌트에 값을
   하드코딩하지 않는다.
+  - 예외: 서버 이미지(`next/og`, Satori)는 CSS 변수를 못 읽는다. 그래서
+    `widgets/squad-image/lib/palette.ts` 에 **같은 값**을 둔다. 토큰을 바꾸면 거기도 같이 바꾼다.
 
 ### 외부 연동은 키가 없어도 코드가 완성돼 있어야 한다
 
@@ -74,9 +76,10 @@ app → views → widgets → features → entities → shared
 - **상위 레이어만 하위 레이어를 import** 할 수 있다. 역방향 금지.
 - **같은 레이어 내 슬라이스 간 import 금지.**
   `features/attendance-vote` 가 `features/squad-builder` 를 import 할 수 없다.
-  - 예외: **entities 끼리는 타입만** 가져올 수 있다(`import type`). 포지션 코드처럼
-    여러 엔티티가 같은 어휘를 쓰기 때문이다. 값(함수·상수)이 필요하면 그 값을 쓰는
-    쪽을 한 레이어 올리거나, 호출하는 쪽에서 계산해 인자로 넘긴다.
+  - 예외 1: **entities 끼리는 타입만** 가져올 수 있다(`import type`). 값(함수·상수)이
+    필요하면 그 값을 쓰는 쪽을 한 레이어 올리거나, 호출하는 쪽에서 계산해 인자로 넘긴다.
+  - 예외 2: **`entities/position` 은 값도** 가져올 수 있다. 동작 없는 공통 어휘(포지션 코드·
+    이름)라서 막으면 엔티티마다 같은 목록을 베끼게 된다. 다른 엔티티에 이 예외를 늘리지 않는다.
 - `widgets` 는 cross-feature 합성 UI 가 실제로 필요해질 때까지 도입하지 않는다.
 - 여러 feature 가 같이 쓰는 도메인 규칙(예: 자동 배치, 출전 수 집계)은 순수 함수로
   `entities` 에 둔다.
@@ -127,6 +130,10 @@ entities/match/
 
 `@/entities/match/server` 처럼 두 번째 진입점을 쓰는 것은 이 경우에만 허용한다.
 그 밖의 깊은 경로 import 는 여전히 금지다.
+
+반대로 **브라우저 전용**(Supabase Realtime 같은 것)은 `browser.ts`·`realtime.ts` 로 연다
+(`@/shared/api/browser`, `@/entities/member/realtime`). `shared/api` 의 기본 진입점은 서버 전용이라
+클라이언트 컴포넌트가 가져오면 `next/headers` 가 딸려 간다.
 
 ### 🔴 Server Component 가 기본이다
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { fetchMyGate } from "@/entities/member/server";
+import { PendingWatcher } from "@/features/pending-watch";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
 
@@ -20,12 +21,15 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
           )}
         </Link>
         <nav className="flex items-center gap-4 text-sm">
+          <Link href={ROUTES.adminMatches}>매치</Link>
           <Link href={ROUTES.adminMembers}>멤버</Link>
+          <Link href={ROUTES.adminStats}>통계</Link>
           {viewer === "admin" && <Link href={ROUTES.home}>팀 화면</Link>}
           <SignOutButton />
         </nav>
       </header>
       <main className="flex-1 px-4 py-6">{children}</main>
+      <PendingWatcher />
     </div>
   );
 }

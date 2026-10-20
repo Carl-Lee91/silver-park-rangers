@@ -18,6 +18,7 @@ describe("DB 행 → 멤버", () => {
     preferred_positions: ["MF", "CB"],
     role: "user",
     status: "pending",
+    jersey_number: 7,
   };
 
   it("화면이 쓰는 이름으로 바꾼다", () => {
@@ -30,6 +31,7 @@ describe("DB 행 → 멤버", () => {
       preferredPositions: ["MF", "CB"],
       role: "user",
       status: "pending",
+      jerseyNumber: 7,
     });
   });
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Position } from "@/entities/position";
+import { POSITION_CODES, type Position } from "@/entities/position";
 
 export const FEET = [
   { code: "left", label: "왼발" },
@@ -25,20 +25,8 @@ export type Member = {
   preferredPositions: Position[];
   role: MemberRole;
   status: MemberStatus;
-};
-
-/**
- * DB 의 포지션 값 목록. entities 끼리는 값을 가져올 수 없어서(CLAUDE.md) 여기 따로 둔다.
- * `Record<Position, true>` 라서 `entities/position` 과 하나라도 어긋나면 타입 검사가 실패한다.
- */
-const KNOWN_POSITIONS: Record<Position, true> = {
-  FW: true,
-  AM: true,
-  WG: true,
-  MF: true,
-  WB: true,
-  CB: true,
-  GK: true,
+  /** 0~99. 고르지 않았으면 null */
+  jerseyNumber: number | null;
 };
 
 const rowSchema = z.object({
@@ -47,14 +35,15 @@ const rowSchema = z.object({
   kakao_nickname: z.string().nullable(),
   avatar_url: z.string().nullable(),
   feet: z.array(z.enum(["left", "right"])),
-  preferred_positions: z.array(z.enum(Object.keys(KNOWN_POSITIONS) as [Position, ...Position[]])),
+  preferred_positions: z.array(z.enum(POSITION_CODES)),
   role: z.enum(["admin", "user"]),
   status: z.enum(["pending", "approved", "rejected", "inactive"]),
+  jersey_number: z.number().int().nullable(),
 });
 
 /** 조회할 컬럼. `toMember` 가 읽는 것과 같다. */
 export const MEMBER_COLUMNS =
-  "id, real_name, kakao_nickname, avatar_url, feet, preferred_positions, role, status";
+  "id, real_name, kakao_nickname, avatar_url, feet, preferred_positions, role, status, jersey_number";
 
 /**
  * DB 행을 화면이 쓰는 모양으로 바꾼다. 모르는 값이 오면 조용히 넘기지 않고 터뜨린다 —
@@ -71,5 +60,6 @@ export const toMember = (row: unknown): Member => {
     preferredPositions: parsed.preferred_positions,
     role: parsed.role,
     status: parsed.status,
+    jerseyNumber: parsed.jersey_number,
   };
 };

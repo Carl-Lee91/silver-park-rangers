@@ -26,3 +26,10 @@ export {
   type MemberStatus,
 } from "./model/member";
 export { canChangeRole, canChangeStatus, canManageMembers } from "./model/permissions";
+export {
+  MAX_PREFERRED_POSITIONS,
+  profileFieldsSchema,
+  toggleFoot,
+  togglePosition,
+} from "./model/profileRules";
+export { FootPicker, PositionPicker } from "./ui/ProfilePickers";

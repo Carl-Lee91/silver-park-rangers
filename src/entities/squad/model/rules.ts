@@ -5,7 +5,7 @@ import type { SquadPlayer } from "./types";
 export const isDedicatedKeeper = (player: SquadPlayer) => player.preferredPositions[0] === "GK";
 
 /** 선호 1순위 3점, 2순위 2점, 3순위 1점, 그 밖은 0점 */
-export const preferenceScore = (player: SquadPlayer, position: Position) => {
+export const preferenceScore = (player: Pick<SquadPlayer, "preferredPositions">, position: Position) => {
   const rank = player.preferredPositions.indexOf(position);
   return rank === -1 ? 0 : Math.max(0, 3 - rank);
 };

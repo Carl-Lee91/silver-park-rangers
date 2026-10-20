@@ -53,4 +53,9 @@ describe("한 번 누르면 서버 동작을 부르는 단추", () => {
 
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
   });
+
+  it("막아 두면 누를 수 없다", () => {
+    render(<ActionButton action={async () => ({})} fields={{}} label="공개하기" disabled />);
+    expect(screen.getByRole("button", { name: "공개하기" })).toBeDisabled();
+  });
 });

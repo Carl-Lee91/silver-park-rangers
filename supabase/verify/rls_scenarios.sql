@@ -339,3 +339,245 @@ select verify.ok((select status from public.my_access()) is null and not (select
   '가입 안 한 사람은 멤버도 어드민도 아니다');
 
 reset role;
+
+-- ── 투표 마감 기본값 (20261019020000) ────────────────────────────────
+-- 마감을 정하지 않으면 매치 시작(한국 시간)에 마감한다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+insert into public.matches (id, match_date, starts_at) values
+  ('10000000-0000-0000-0000-000000000011', current_date + 7, '10:00'),
+  ('10000000-0000-0000-0000-000000000012', current_date - 7, '10:00');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000006', 'yes');
+select verify.ok(exists (select 1 from public.match_attendance
+  where match_id = '10000000-0000-0000-0000-000000000011' and member_id = '00000000-0000-0000-0000-000000000006'),
+  '마감을 안 정한 매치는 시작 전까지 투표한다');
+select verify.fails($$insert into public.match_attendance (match_id, member_id, response)
+  values ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000006', 'yes')$$,
+  '마감을 안 정한 매치도 시작한 뒤에는 투표하지 못한다');
+
+reset role;
+
+-- ── 스쿼드 저장 (20261019030000) ─────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]},
+  {"number": 2, "formation_name": "4-4-2", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 2,
+  '어드민·관리자는 스쿼드를 한 번에 저장한다');
+select verify.ok((select count(*) from public.quarter_slots s join public.quarters q on q.id = s.quarter_id
+  where q.match_id = '10000000-0000-0000-0000-000000000011') = 3, '배치도 함께 저장된다');
+
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-4-2", "slots": []}
+]');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 1,
+  '다시 저장하면 전의 스쿼드를 통째로 바꾼다');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011',
+  '[{"number": 7, "formation_name": "4-3-3", "slots": []}]')$$,
+  '쿼터 수를 넘는 쿼터는 저장하지 않는다');
+select verify.ok((select count(*) from public.quarters where match_id = '10000000-0000-0000-0000-000000000011') = 1,
+  '저장이 실패하면 전의 스쿼드가 그대로 남는다');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]')$$, '한 쿼터에 같은 사람을 두 번 넣을 수 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$select public.save_squad('10000000-0000-0000-0000-000000000011', '[]')$$,
+  '일반 멤버는 스쿼드를 저장하지 못한다');
+
+reset role;
+
+-- ── 카톡 공유용 공개 스쿼드 (20261019040000) ─────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000011', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000006"}]}
+]');
+reset role;
+
+-- anon 은 matches 를 못 읽으므로 토큰은 postgres 로 꺼내 둔다.
+select set_config('verify.token', (select share_token::text from public.matches where id = '10000000-0000-0000-0000-000000000011'), false);
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) is null,
+  '스쿼드를 공개하기 전에는 맞는 토큰이어도 공유 링크로 못 본다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+update public.matches set squad_published_at = now() where id = '10000000-0000-0000-0000-000000000011';
+reset role;
+
+set role anon;
+select verify.ok(jsonb_array_length(public.shared_squad(current_setting('verify.token')::uuid) -> 'quarters') = 1,
+  '공개하면 로그인 없이 공유 링크로 스쿼드를 본다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,1,name}' = '정거절',
+  '자리에 앉은 사람의 실명을 준다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%00000000-0000-0000-0000-000000000006%',
+  '멤버 id 는 주지 않는다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%guest%'
+  and public.shared_squad(current_setting('verify.token')::uuid)::text not like '%member_type%',
+  '멤버/용병 구분은 주지 않는다');
+select verify.ok(public.shared_squad(gen_random_uuid()) is null, '틀린 토큰이면 아무것도 주지 않는다');
+select verify.ok((select count(*) from public.quarters) = 0, '공유 함수 말고는 여전히 아무 표도 못 읽는다');
+reset role;
+
+-- ── 관리자 통계 원본 (20261019050000) ────────────────────────────────
+-- 지난 매치(…12, 7일 전)에 스쿼드와 출석을 남겨 둔다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000012', '[
+  {"number": 1, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": "00000000-0000-0000-0000-000000000006"},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000002"}]},
+  {"number": 2, "formation_name": "4-3-3", "slots": [
+    {"slot_index": 0, "position": "GK", "x": 50, "y": 92, "member_id": null},
+    {"slot_index": 1, "position": "FW", "x": 50, "y": 18, "member_id": "00000000-0000-0000-0000-000000000002"}]}
+]');
+insert into public.match_attendance (match_id, member_id, attended)
+values ('10000000-0000-0000-0000-000000000012', '00000000-0000-0000-0000-000000000002', true);
+
+select set_config('verify.stats', public.admin_stats_source(current_date - 30, current_date)::text, false);
+select verify.ok(jsonb_array_length(current_setting('verify.stats')::jsonb -> 'matches') =
+  (select count(*) from public.matches where match_date between current_date - 30 and current_date - 1),
+  '기간 안의 지난 매치만 준다(오늘·앞으로의 매치는 빼고)');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'entries') e
+   where e ->> 'match_id' = '10000000-0000-0000-0000-000000000012'
+     and e ->> 'member_id' = '00000000-0000-0000-0000-000000000002'
+     and (e ->> 'field_quarters')::int = 2 and (e ->> 'attended')::boolean),
+  '매치 × 멤버마다 필드 쿼터와 실제 출석을 준다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000006'
+     and (e ->> 'keeper_quarters')::int = 1 and (e ->> 'field_quarters')::int = 0),
+  '키퍼 쿼터는 따로 센다 — 투표가 없어도 스쿼드에 들었으면 나온다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'members') m
+   where m ->> 'id' = '00000000-0000-0000-0000-000000000006' and m ->> 'member_type' = 'guest'),
+  '멤버/용병 구분을 준다(관리자 화면 전용)');
+select verify.ok(not exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats')::jsonb -> 'members') m
+   where m ->> 'id' = '00000000-0000-0000-0000-000000000003'),
+  '가입 대기 중인 사람은 통계에 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$select public.admin_stats_source(current_date - 30, current_date)$$,
+  '일반 멤버는 통계 원본을 못 읽는다');
+reset role;
+
+-- ── 선수별 특이사항 (20261019060000) ─────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+insert into public.match_notes (match_id, member_id, note, updated_by)
+values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '무릎 안 좋음 — 수비만',
+        '00000000-0000-0000-0000-000000000007');
+select verify.ok((select count(*) from public.match_notes) = 1, '어드민은 특이사항을 쓰고 본다');
+select verify.fails($$insert into public.match_notes (match_id, member_id, note)
+  values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000006', '   ')$$,
+  '빈 특이사항은 저장하지 않는다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.ok((select note from public.match_notes) = '무릎 안 좋음 — 수비만', '관리자도 특이사항을 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.match_notes) = 0, '일반 멤버는 자기에 대한 특이사항도 못 본다');
+select verify.fails($$insert into public.match_notes (match_id, member_id, note)
+  values ('10000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '내가 쓴 메모')$$,
+  '일반 멤버는 특이사항을 못 쓴다');
+reset role;
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%무릎%',
+  '공유 링크에는 특이사항이 없다');
+reset role;
+
+-- ── 경기 결과 (20261019070000) ───────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.match_quarter_results (match_id, number, their_score)
+values ('10000000-0000-0000-0000-000000000012', 1, 1);
+insert into public.match_goals (match_id, quarter_number, scorer_id, assist_id) values
+  ('10000000-0000-0000-0000-000000000012', 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000006'),
+  ('10000000-0000-0000-0000-000000000012', 1, null, null);
+select verify.ok((select count(*) from public.match_goals where match_id = '10000000-0000-0000-0000-000000000012') = 2,
+  '관리자는 골을 기록한다 — 득점자를 모르는 골도');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id)
+  values ('10000000-0000-0000-0000-000000000012', 7, '00000000-0000-0000-0000-000000000002')$$,
+  '쿼터 수를 넘는 쿼터에는 기록하지 않는다');
+select verify.fails($$insert into public.match_quarter_results (match_id, number, their_score)
+  values ('10000000-0000-0000-0000-000000000012', 9, 0)$$,
+  '쿼터 수를 넘는 쿼터 점수는 기록하지 않는다');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id, assist_id)
+  values ('10000000-0000-0000-0000-000000000012', 1, '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002')$$,
+  '득점자와 도움이 같은 사람일 수 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.ok((select count(*) from public.match_goals) = 2, '승인된 팀원은 결과를 본다');
+select verify.fails($$insert into public.match_goals (match_id, quarter_number, scorer_id)
+  values ('10000000-0000-0000-0000-000000000012', 2, '00000000-0000-0000-0000-000000000006')$$,
+  '일반 멤버는 골을 기록하지 못한다');
+select verify.fails($$insert into public.match_quarter_results (match_id, number, their_score)
+  values ('10000000-0000-0000-0000-000000000012', 2, 3)$$,
+  '일반 멤버는 점수를 기록하지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000003');
+select verify.ok((select count(*) from public.match_goals) = 0, '가입 대기 중엔 결과를 못 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.stats2', public.admin_stats_source(current_date - 30, current_date)::text, false);
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000002' and (e ->> 'goals')::int = 1),
+  '통계 원본에 득점이 들어간다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'entries') e
+   where e ->> 'member_id' = '00000000-0000-0000-0000-000000000006' and (e ->> 'assists')::int = 1),
+  '통계 원본에 도움이 들어간다');
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(current_setting('verify.stats2')::jsonb -> 'matches') m,
+                jsonb_array_elements(m -> 'quarter_scores') q
+   where m ->> 'id' = '10000000-0000-0000-0000-000000000012'
+     and (q ->> 'ours')::int = 2 and (q ->> 'theirs')::int = 1),
+  '통계 원본에 쿼터 점수(우리 = 골 기록 수)가 들어간다');
+reset role;
+
+-- ── 가입 신청 실시간 알림 (20261019080000) ───────────────────────────
+select verify.ok(exists (
+  select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'members'),
+  'members 의 바뀜을 Realtime 으로 보낸다');
+
+-- ── 등번호 (20261020000000) ──────────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+update public.members set jersey_number = 7 where id = '00000000-0000-0000-0000-000000000002';
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000002') = 7,
+  '본인이 등번호를 고른다');
+select verify.fails($$update public.members set jersey_number = 100 where id = '00000000-0000-0000-0000-000000000002'$$,
+  '등번호는 0~99 다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.fails($$update public.members set jersey_number = 7 where id = '00000000-0000-0000-0000-000000000006'$$,
+  '같은 번호는 한 사람만 쓴다');
+update public.members set jersey_number = 10 where id = '00000000-0000-0000-0000-000000000006';
+update public.members set jersey_number = 55 where id = '00000000-0000-0000-0000-000000000002';
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000002') = 7,
+  '남의 등번호는 바꾸지 못한다(조용히 0행)');
+reset role;
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,1,jersey_number}' = '10',
+  '공유 링크에 등번호가 들어간다');
+reset role;

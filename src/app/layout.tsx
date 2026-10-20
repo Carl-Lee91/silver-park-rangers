@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Silver Park Rangers",
   description: "참석 투표부터 쿼터별 스쿼드 편성까지",
+};
+
+export const viewport: Viewport = {
+  // globals.css 의 --color-primary 와 같은 값
+  themeColor: "#171717",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

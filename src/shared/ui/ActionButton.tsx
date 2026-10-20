@@ -12,6 +12,7 @@ type Props = {
   tone?: "primary" | "neutral" | "danger";
   /** 있으면 보내기 전에 묻는다. 되돌리기 번거로운 일(거절·휴면·관리자 해제)에 쓴다. */
   confirmMessage?: string;
+  disabled?: boolean;
 };
 
 const TONES = {
@@ -21,7 +22,14 @@ const TONES = {
 };
 
 /** 한 번 누르면 서버 동작 하나를 부르는 단추. 실패하면 단추 아래에 이유를 보인다. */
-export default function ActionButton({ action, fields, label, tone = "neutral", confirmMessage }: Props) {
+export default function ActionButton({
+  action,
+  fields,
+  label,
+  tone = "neutral",
+  confirmMessage,
+  disabled = false,
+}: Props) {
   const [state, formAction, pending] = useActionState(action, {});
 
   const confirmFirst = (event: FormEvent<HTMLFormElement>) => {
@@ -35,7 +43,7 @@ export default function ActionButton({ action, fields, label, tone = "neutral", 
       ))}
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || disabled}
         className={`h-10 w-full rounded-lg px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
       >
         {label}

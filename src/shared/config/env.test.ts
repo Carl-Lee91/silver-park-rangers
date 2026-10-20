@@ -32,7 +32,12 @@ describe("서버 전용 환경변수", () => {
   it("끝 슬래시를 떼어 둔다 — 뒤에 경로를 붙이기 때문이다", () => {
     expect(parseServerEnv({ SITE_URL: "http://localhost:3000/" })).toEqual({
       SITE_URL: "http://localhost:3000",
+      CRON_SECRET: "",
     });
+  });
+
+  it("Cron 비밀값은 없어도 된다", () => {
+    expect(parseServerEnv({ SITE_URL: "http://localhost:3000", CRON_SECRET: "s3cret" }).CRON_SECRET).toBe("s3cret");
   });
 
   it("절대 주소가 아니면 거부한다 — 로그인 후 돌아올 주소다", () => {

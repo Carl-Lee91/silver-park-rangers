@@ -101,10 +101,11 @@ describe("게이트에 따른 이동", () => {
   });
 
   it.each(["signed-out", "pending", "approved", "owner"] as const)(
-    "로그인 콜백과 공유 링크는 어떤 상태든 막지 않는다 (%s)",
+    "로그인 콜백·공유 링크·Cron 은 어떤 상태든 막지 않는다 (%s)",
     (gate) => {
       expect(gateRedirect(gate, "/auth/callback")).toBeNull();
       expect(gateRedirect(gate, "/s/abc")).toBeNull();
+      expect(gateRedirect(gate, "/api/cron/keep-alive")).toBeNull();
     },
   );
 });

@@ -6,10 +6,20 @@ export const ROUTES = {
   adminLogin: "/login/admin",
   onboarding: "/onboarding",
   pending: "/pending",
+  me: "/me",
   admin: "/admin",
   adminMembers: "/admin/members",
+  adminMatches: "/admin/matches",
+  adminMatchNew: "/admin/matches/new",
+  adminFormations: "/admin/formations",
+  adminStats: "/admin/stats",
   authCallback: "/auth/callback",
 } as const;
+
+export const matchPath = (id: string) => `/matches/${id}`;
+export const adminMatchPath = (id: string) => `/admin/matches/${id}`;
+export const adminMatchEditPath = (id: string) => `/admin/matches/${id}/edit`;
+export const adminSquadPath = (id: string) => `/admin/matches/${id}/squad`;
 
 /**
  * `pathname` 이 `base` 이거나 그 아래 주소인지. `/admin` 은 `/admin/members` 를 품지만

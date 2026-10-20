@@ -31,6 +31,11 @@ const serverSchema = z.object({
     .url()
     // 뒤에 경로를 이어 붙이므로 끝 슬래시를 떼어 둔다. 안 떼면 `//auth/callback`.
     .transform((value) => value.replace(/\/+$/, "")),
+  /**
+   * Vercel Cron 이 보내는 비밀값. Vercel 프로젝트 환경변수에 같은 이름으로 넣으면 Vercel 이
+   * Cron 요청에 실어 보낸다. 없어도 된다(그때는 누구나 핑을 보낼 수 있다).
+   */
+  CRON_SECRET: z.string().default(""),
 });
 
 export type Env = z.infer<typeof publicSchema>;
