@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
 import type { OnboardingState } from "../model/onboardingSchema";
 
 type Props = {
   action: (state: OnboardingState, formData: FormData) => Promise<OnboardingState>;
+  /** 다른 사람이 쓰는 등번호 */
+  takenNumbers: readonly number[];
 };
 
 function FieldError({ message }: { message?: string }) {
@@ -14,18 +16,20 @@ function FieldError({ message }: { message?: string }) {
 }
 
 /**
- * 실명 · 주발 · 선호 포지션(PLAN.md §5). 실명 말고는 모두 고르는 방식이다.
+ * 신청 정보가 빠진 계정이 마저 입력한다(PLAN.md §4). 실명 · 주발 · 선호 포지션 · 등번호(§5).
+ * 실명 말고는 모두 고르는 방식이다.
  *
  * 선호 포지션은 누른 순서가 우선순위다. 숨은 입력칸을 고른 순서대로 그려서
  * 서버가 그 순서 그대로 받는다.
  */
-export default function OnboardingForm({ action }: Props) {
+export default function OnboardingForm({ action, takenNumbers }: Props) {
   const [state, formAction, pending] = useActionState(action, {});
   const [realName, setRealName] = useState("");
   const [feet, setFeet] = useState<Foot[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [number, setNumber] = useState("");
 
-  const ready = realName.trim().length > 0 && feet.length > 0 && positions.length > 0;
+  const ready = realName.trim().length > 0 && feet.length > 0 && isPositionChoiceComplete(positions);
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -55,10 +59,20 @@ export default function OnboardingForm({ action }: Props) {
 
       <fieldset>
         <legend className="text-sm font-semibold">선호 포지션</legend>
-        <p className="mt-1 text-xs text-text-tertiary">최대 3개, 누른 순서가 우선순위예요.</p>
+        <p className="mt-1 text-xs text-text-tertiary">
+          3개, 누른 순서가 우선순위예요. 1순위로 골키퍼를 고르면 골키퍼 하나만 골라요.
+        </p>
         <PositionPicker value={positions} onChange={setPositions} />
         <FieldError message={state.errors?.preferredPositions} />
       </fieldset>
+
+      <div>
+        <label htmlFor="jerseyNumber" className="text-sm font-semibold">
+          등번호 <span className="font-normal text-text-tertiary">(선택)</span>
+        </label>
+        <JerseyNumberSelect value={number} onChange={setNumber} takenNumbers={takenNumbers} />
+        <FieldError message={state.errors?.jerseyNumber} />
+      </div>
 
       {state.message && (
         <p role="alert" className="text-sm text-danger">

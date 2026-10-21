@@ -13,3 +13,9 @@ export const canChangeRole = (viewer: Gate) => viewer === "owner";
 /** 휴면·복귀 — 관리자는 일반 멤버만, 다른 관리자는 어드민만 (`set_member_status`) */
 export const canChangeStatus = (viewer: Gate, target: { role: MemberRole }) =>
   viewer === "owner" || (viewer === "admin" && target.role !== "admin");
+
+/**
+ * 임시 비밀번호 — 관리자는 일반 멤버 것만, 관리자의 것은 어드민만 (`reset_member_password`).
+ * 관리자끼리 서로의 계정에 들어가지 못하게 휴면과 같은 선을 긋는다.
+ */
+export const canResetPassword = (viewer: Gate, target: { role: MemberRole }) => canChangeStatus(viewer, target);

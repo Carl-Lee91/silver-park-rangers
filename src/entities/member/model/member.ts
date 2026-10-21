@@ -18,8 +18,6 @@ export type MemberRole = "admin" | "user";
 export type Member = {
   id: string;
   realName: string;
-  kakaoNickname: string | null;
-  avatarUrl: string | null;
   feet: Foot[];
   /** 순서가 우선순위다 */
   preferredPositions: Position[];
@@ -32,8 +30,6 @@ export type Member = {
 const rowSchema = z.object({
   id: z.string(),
   real_name: z.string(),
-  kakao_nickname: z.string().nullable(),
-  avatar_url: z.string().nullable(),
   feet: z.array(z.enum(["left", "right"])),
   preferred_positions: z.array(z.enum(POSITION_CODES)),
   role: z.enum(["admin", "user"]),
@@ -42,8 +38,7 @@ const rowSchema = z.object({
 });
 
 /** 조회할 컬럼. `toMember` 가 읽는 것과 같다. */
-export const MEMBER_COLUMNS =
-  "id, real_name, kakao_nickname, avatar_url, feet, preferred_positions, role, status, jersey_number";
+export const MEMBER_COLUMNS = "id, real_name, feet, preferred_positions, role, status, jersey_number";
 
 /**
  * DB 행을 화면이 쓰는 모양으로 바꾼다. 모르는 값이 오면 조용히 넘기지 않고 터뜨린다 —
@@ -54,8 +49,6 @@ export const toMember = (row: unknown): Member => {
   return {
     id: parsed.id,
     realName: parsed.real_name,
-    kakaoNickname: parsed.kakao_nickname,
-    avatarUrl: parsed.avatar_url,
     feet: parsed.feet,
     preferredPositions: parsed.preferred_positions,
     role: parsed.role,

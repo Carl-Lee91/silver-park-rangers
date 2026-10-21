@@ -38,10 +38,6 @@ export default async function PendingView() {
           <dt className="text-text-secondary">실명</dt>
           <dd>{me.realName}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt className="text-text-secondary">카카오</dt>
-          <dd>{me.kakaoNickname ?? "-"}</dd>
-        </div>
       </dl>
       <SignOutButton />
     </main>

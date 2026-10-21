@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
 import type { ProfileState } from "../model/profileSchema";
 
@@ -13,8 +13,6 @@ type Props = {
   /** 다른 사람이 쓰는 번호. 고를 수 없게 막는다 */
   takenNumbers: number[];
 };
-
-const NUMBERS = Array.from({ length: 100 }, (_, number) => number);
 
 /** 주발·선호 포지션·등번호 고치기. 가입 신청 때와 같은 방식으로 고른다(PLAN.md §5). */
 export default function ProfileForm({
@@ -42,7 +40,7 @@ export default function ProfileForm({
   const [positions, setPositions] = useState(initialPositions);
   const [number, setNumber] = useState(initialNumber);
   const changed = feet.join() !== saved.feet || positions.join() !== saved.positions || number !== saved.number;
-  const ready = feet.length > 0 && positions.length > 0;
+  const ready = feet.length > 0 && isPositionChoiceComplete(positions);
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -55,7 +53,9 @@ export default function ProfileForm({
 
       <fieldset>
         <legend className="text-sm font-semibold">선호 포지션</legend>
-        <p className="mt-1 text-xs text-text-tertiary">최대 3개, 누른 순서가 우선순위예요. 다음 자동 배치부터 반영돼요.</p>
+        <p className="mt-1 text-xs text-text-tertiary">
+          3개, 누른 순서가 우선순위예요. 1순위로 골키퍼를 고르면 골키퍼 하나만 골라요. 다음 자동 배치부터 반영돼요.
+        </p>
         <PositionPicker value={positions} onChange={setPositions} />
         {state.errors?.preferredPositions && (
           <p className="mt-2 text-sm text-danger">{state.errors.preferredPositions}</p>
@@ -67,23 +67,7 @@ export default function ProfileForm({
           등번호
         </label>
         <p className="mt-1 text-xs text-text-tertiary">쿼터 보드와 공유 이미지의 동그라미에 들어가요. 같은 번호는 한 사람만 써요.</p>
-        <select
-          id="jerseyNumber"
-          name="jerseyNumber"
-          value={number}
-          onChange={(event) => setNumber(event.target.value)}
-          className="mt-2 h-12 w-full rounded-xl border border-border bg-bg-base px-3 text-base"
-        >
-          <option value="">없음</option>
-          {NUMBERS.map((value) => {
-            const taken = takenNumbers.includes(value);
-            return (
-              <option key={value} value={value} disabled={taken}>
-                {taken ? `${value} (사용 중)` : value}
-              </option>
-            );
-          })}
-        </select>
+        <JerseyNumberSelect value={number} onChange={setNumber} takenNumbers={takenNumbers} />
         {state.errors?.jerseyNumber && <p className="mt-2 text-sm text-danger">{state.errors.jerseyNumber}</p>}
       </div>
 

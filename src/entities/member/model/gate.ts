@@ -33,15 +33,17 @@ export const gateOf = (signedIn: boolean, { member, isOwner }: GateAccess): Gate
 };
 
 /**
- * 게이트가 막지 않는 주소: 로그인 콜백, 카톡 공유 링크(PLAN.md §8), Vercel Cron.
+ * 게이트가 막지 않는 주소: 카톡 공유 링크(PLAN.md §8), Vercel Cron.
  * Cron 은 로그인하지 않은 Vercel 이 부른다. 대신 CRON_SECRET 으로 확인한다.
  */
-const PUBLIC_PREFIXES = ["/auth", "/s", "/api/cron"];
+const PUBLIC_PREFIXES = ["/s", "/api/cron"];
 
 export const isPublicPath = (pathname: string) =>
   PUBLIC_PREFIXES.some((prefix) => isUnder(pathname, prefix));
 
-const GATE_PAGES = [ROUTES.login, ROUTES.onboarding, ROUTES.pending];
+const GATE_PAGES = [ROUTES.login, ROUTES.signup, ROUTES.onboarding, ROUTES.pending];
+/** 로그인 전에 열리는 화면: 로그인과 가입 신청 */
+const SIGNED_OUT_PAGES = [ROUTES.login, ROUTES.signup];
 
 /**
  * 이 주소에 들어가도 되는지. 되면 null, 안 되면 보낼 곳.
@@ -56,7 +58,7 @@ export const gateRedirect = (gate: Gate, pathname: string): string | null => {
 
   switch (gate) {
     case "signed-out":
-      return only(ROUTES.login);
+      return SIGNED_OUT_PAGES.some(at) ? null : ROUTES.login;
     case "needs-onboarding":
       return only(ROUTES.onboarding);
     case "pending":

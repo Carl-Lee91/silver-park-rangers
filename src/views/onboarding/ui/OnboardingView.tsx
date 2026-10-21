@@ -1,15 +1,18 @@
+import { fetchTakenJerseyNumbers } from "@/entities/member/server";
 import { completeOnboarding, OnboardingForm } from "@/features/onboarding";
 
-export default function OnboardingView() {
+/** 신청 정보 없이 계정만 있는 사람(대시보드에서 만든 계정 등)이 온다(PLAN.md §4). */
+export default async function OnboardingView() {
+  const takenNumbers = await fetchTakenJerseyNumbers();
   return (
     <main className="mx-auto w-full max-w-100 flex-1 px-4 py-10">
       <header className="mb-8">
         <h1 className="text-xl font-bold">가입 신청</h1>
         <p className="mt-2 text-sm text-text-secondary">
-          신청하면 관리자가 확인한 뒤 승인해요. 주발과 포지션은 나중에 바꿀 수 있어요.
+          계정에 가입 정보가 없어요. 마저 입력하면 관리자가 확인한 뒤 승인해요.
         </p>
       </header>
-      <OnboardingForm action={completeOnboarding} />
+      <OnboardingForm action={completeOnboarding} takenNumbers={takenNumbers} />
     </main>
   );
 }
