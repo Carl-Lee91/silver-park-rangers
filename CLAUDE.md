@@ -66,9 +66,12 @@
     (`palette.test.ts` 가 두 값이 같은지 검사한다).
   - 🔴 서버 이미지의 그림(색·글꼴·배치)을 바꾸면 `widgets/squad-image/lib/imagePath.ts` 의 `IMAGE_DESIGN` 을
     올린다. 이미지는 주소마다 기기에 오래 캐시돼서, 안 올리면 예전 그림이 계속 보인다.
-  - 스쿼드 빌더의 어두운 전술판은 `.theme-board` 가 같은 토큰 이름(`bg-base`·`text-primary`·`primary` …)을
-    어두운 값으로 바꿔서 만든다. 그 안의 컴포넌트는 평소 토큰을 그대로 쓴다 — 어두운 색을 따로 하드코딩하지 않는다.
-  - 우리 팀 유니폼 색은 `--color-kit` 하나다(경기장 선수 동그라미 · 전술판 강조색). 바꾸면 `palette.ts` 의 `kit` 도 같이 바꾼다.
+  - 앱은 **다크 모드 하나**다(PLAN.md §7 "색"). 토큰 값 자체가 어두운 값이고 밝은 모드는 없다. 흰색·검정을
+    하드코딩하지 않는다(`text-white` 대신 `text-text-primary`). 서버 이미지는 기본 글자색이 검정이라 틀에 글자색을 준다.
+  - 우리 팀 유니폼 색은 `--color-kit` 하나다(경기장 유니폼 · 강조색 primary). 바꾸면 `palette.ts` 의 `kit`·`primary` 도
+    같이 바꾼다. 경기장 위 선수는 `entities/formation` 의 `Jersey`(유니폼 모양 안에 등번호)로 그린다.
+  - 🔴 `next.config.ts` 의 Turbopack 파일 캐시는 꺼 둔다. 켜 두면 Vercel 이 되살린 빌드 캐시 때문에 `globals.css` 에
+    새로 넣은 토큰이 운영 CSS 에서 빠진다(2026-10-21, 유니폼 색이 안 나왔다). 다시 켜지 않는다.
 
 ### 외부 연동은 키가 없어도 코드가 완성돼 있어야 한다
 
