@@ -40,3 +40,16 @@ export async function setMemberRole(_previous: ActionState, formData: FormData):
     next: formData.get("next") === "admin" ? "admin" : "user",
   });
 }
+
+export type TemporaryPasswordState = { error?: string; password?: string };
+
+/**
+ * 비밀번호를 잊은 사람의 임시 비밀번호를 만든다(PLAN.md §4). 메일을 보내지 않으므로 화면에 한 번
+ * 보여 주고, 관리자가 본인에게 알려 준다. 관리자의 것은 어드민만 만든다(`reset_member_password`).
+ */
+export async function resetPassword(_previous: TemporaryPasswordState, formData: FormData): Promise<TemporaryPasswordState> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("reset_member_password", { target: String(formData.get("memberId")) });
+  if (error) return { error: dbErrorMessage(error.code) };
+  return typeof data === "string" ? { password: data } : { error: dbErrorMessage(undefined) };
+}
