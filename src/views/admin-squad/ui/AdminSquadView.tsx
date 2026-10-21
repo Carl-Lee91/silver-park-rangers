@@ -12,7 +12,7 @@ import { fetchStatsSource } from "@/entities/stats/server";
 import { setAttendanceWindow } from "@/features/attendance-adjust";
 import { saveMatchNote } from "@/features/match-note";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
-import { ShareActions, SquadImageLinks } from "@/features/squad-share";
+import { ShareActions, SquadImageViewer } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
 import { shortHash } from "@/shared/lib";
 import { adminSquadImagePath } from "@/widgets/squad-image";
@@ -96,7 +96,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
             <p className="mt-1 mb-2 text-xs text-text-tertiary">
               공개 전이라 관리자만 볼 수 있어요. 마지막으로 저장한 배치로 그려요.
             </p>
-            <SquadImageLinks urls={imageUrls} />
+            <SquadImageViewer urls={imageUrls} fileName={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`} />
           </section>
         ))}
     </div>

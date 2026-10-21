@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import SquadImageLinks from "./SquadImageLinks";
+import SquadImageViewer from "./SquadImageViewer";
 
 type Props = {
   /** 절대 주소(https://…/s/[token]). 카톡에 붙이면 미리보기 카드가 뜬다 */
@@ -60,7 +60,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
           />
         </div>
       )}
-      <SquadImageLinks urls={imageUrls} />
+      <SquadImageViewer urls={imageUrls} fileName={title} />
     </div>
   );
 }
