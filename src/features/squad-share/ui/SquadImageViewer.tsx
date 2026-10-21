@@ -30,18 +30,20 @@ const setImageParam = (kind: ImageKind | null, mode: "push" | "replace") => {
   window.dispatchEvent(new Event(CHANGE));
 };
 
-function LoadingImage({ src, alt, onRetry }: { src: string; alt: string; onRetry: () => void }) {
+/** 만드는 동안 기다리는 표시. 보이지 않는 쪽(active=false)도 미리 불러 둔다. */
+function LoadingImage({ src, alt, active, onRetry }: { src: string; alt: string; active: boolean; onRetry: () => void }) {
   const [state, setState] = useState<"loading" | "loaded" | "error">("loading");
 
   return (
-    <>
-      {state === "loading" && (
-        <div role="status" className="flex flex-col items-center gap-3 py-24 text-sm text-text-secondary">
+    <div hidden={!active}>
+      {/* 기기에 캐시된 이미지는 바로 뜬다. 그때 기다림 표시가 깜빡이지 않게 조금 늦게 띄운다. */}
+      {active && state === "loading" && (
+        <div role="status" className="flex animate-fade-in-delayed flex-col items-center gap-3 py-24 text-sm text-text-secondary">
           <Spinner size="lg" />
           <span>이미지를 만드는 중이에요</span>
         </div>
       )}
-      {state === "error" && (
+      {active && state === "error" && (
         <div role="alert" className="flex flex-col items-center gap-3 py-24 text-sm">
           <p>이미지를 만들지 못했어요.</p>
           <button type="button" onClick={onRetry} className="h-10 rounded-lg border border-border px-4 font-medium">
@@ -59,7 +61,7 @@ function LoadingImage({ src, alt, onRetry }: { src: string; alt: string; onRetry
         style={state === "loaded" ? undefined : { display: "none" }}
         className="h-auto w-full rounded-lg"
       />
-    </>
+    </div>
   );
 }
 
@@ -76,11 +78,10 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
   const kind = readImageParam(search);
   // 이 화면에서 연 것이면 뒤로 가기로 닫는다. 주소를 달고 바로 들어왔으면 그 표시만 지운다.
   const pushed = useRef(false);
-  const [attempt, setAttempt] = useState(0);
+  const [attempts, setAttempts] = useState<Record<ImageKind, number>>({ quarters: 0, rotation: 0 });
 
   const open = (next: ImageKind) => {
     pushed.current = true;
-    setAttempt(0);
     setImageParam(next, "push");
   };
   const close = useCallback(() => {
@@ -111,7 +112,9 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
     };
   }, [kind, close]);
 
-  const src = kind === null ? "" : attempt === 0 ? urls[kind] : `${urls[kind]}${urls[kind].includes("?") ? "&" : "?"}retry=${attempt}`;
+  // 다시 시도할 때만 주소를 바꾼다. 그 밖에는 같은 주소라 기기 캐시에서 바로 나온다.
+  const srcOf = (value: ImageKind) =>
+    attempts[value] === 0 ? urls[value] : `${urls[value]}${urls[value].includes("?") ? "&" : "?"}retry=${attempts[value]}`;
 
   return (
     <>
@@ -146,10 +149,7 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
                   type="button"
                   role="tab"
                   aria-selected={value === kind}
-                  onClick={() => {
-                    setAttempt(0);
-                    setImageParam(value, "replace");
-                  }}
+                  onClick={() => setImageParam(value, "replace")}
                   className="h-8 rounded-md px-3 text-sm font-medium text-text-secondary aria-selected:bg-bg-base aria-selected:text-text-primary"
                 >
                   {LABELS[value]}
@@ -158,12 +158,16 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
             </div>
           </header>
           <div className="mx-auto w-full max-w-100 flex-1 overflow-y-auto px-4 py-4">
-            <LoadingImage
-              key={src}
-              src={src}
-              alt={`${LABELS[kind]} 이미지`}
-              onRetry={() => setAttempt((count) => count + 1)}
-            />
+            {/* 열 때 두 장을 같이 불러 둔다. 탭을 바꿔도 다시 기다리지 않는다. */}
+            {KINDS.map((value) => (
+              <LoadingImage
+                key={srcOf(value)}
+                src={srcOf(value)}
+                alt={`${LABELS[value]} 이미지`}
+                active={value === kind}
+                onRetry={() => setAttempts((count) => ({ ...count, [value]: count[value] + 1 }))}
+              />
+            ))}
           </div>
           <footer className="mx-auto flex w-full max-w-100 flex-col gap-2 border-t border-border px-4 py-3">
             <a
