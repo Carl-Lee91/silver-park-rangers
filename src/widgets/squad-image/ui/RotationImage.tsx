@@ -30,6 +30,8 @@ export default function RotationImage({ squad }: { squad: SharedSquad }) {
         flexDirection: "column",
         padding: PADDING,
         background: PALETTE.bgBase,
+        // 글자색을 따로 안 준 글자(쿼터 제목 등)도 어두운 바탕에서 보이게. Satori 의 기본 글자색은 검정이다
+        color: PALETTE.textPrimary,
         fontFamily: "Pretendard",
       }}
     >
