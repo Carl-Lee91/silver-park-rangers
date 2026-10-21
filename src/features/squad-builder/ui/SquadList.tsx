@@ -27,7 +27,7 @@ const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
   한 줄짜리 표다(풋볼매니저 24 선수 표). 같은 칸을 자리 폭에 따라 옮길 뿐 두 번 그리지 않는다.
 */
 const ROW =
-  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-0.5 rounded-lg px-2 py-1.5 text-left text-sm @xl:grid-cols-[2.25rem_minmax(0,1fr)_5.5rem_5rem_2.5rem_4.5rem_auto] @xl:gap-y-0";
+  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-0.5 rounded-lg px-2 py-1.5 text-left text-sm @xl:grid-cols-[2.25rem_minmax(0,1fr)_5.5rem_5rem_3.5rem_4.5rem_auto] @xl:gap-y-0";
 const PRESSABLE = "even:bg-bg-subtle/50 aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary";
 
 function PositionPill({ code, starter }: { code: Position | undefined; starter: boolean }) {
@@ -156,9 +156,9 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
         <span>이름</span>
         <span>선호</span>
         <span>시간</span>
-        <span>올해</span>
-        <span className="text-right">출전</span>
-        <span>쿼터</span>
+        <span>올해 평균</span>
+        <span className="text-right">출전/보장</span>
+        <span>쿼터별</span>
       </div>
 
       <section>
