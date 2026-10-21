@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/s/**": ["./src/shared/assets/fonts/**"],
   },
+  /*
+    Turbopack 파일 캐시를 끈다(이 버전은 기본으로 켜져 있다). 켜 두면 Vercel 이 되살린 빌드 캐시에서
+    Tailwind 결과를 그대로 써서, globals.css 에 새로 넣은 토큰(유니폼 색 등)만 운영 CSS 에서 빠졌다
+    (2026-10-21, 다른 파일의 새 클래스는 들어가 있었다). 개발 서버도 재시작해도 예전 토큰이 남았다.
+    작은 앱이라 매번 새로 컴파일해도 느리지 않다.
+  */
+  experimental: {
+    turbopackFileSystemCacheForDev: false,
+    turbopackFileSystemCacheForBuild: false,
+  },
   turbopack: {
     rules: {
       "*.css": {
