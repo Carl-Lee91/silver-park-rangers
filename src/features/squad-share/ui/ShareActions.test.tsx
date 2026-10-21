@@ -45,9 +45,9 @@ describe("스쿼드 공유", () => {
     expect(await screen.findByDisplayValue(props.shareUrl)).toBeInTheDocument();
   });
 
-  it("이미지는 새 창으로 연다 — 인앱 브라우저에서도 길게 눌러 저장할 수 있다", () => {
+  it("이미지는 새 창이 아니라 앱 안에서 연다 — PWA 에서 새 창은 앱을 하나 더 띄운다", () => {
     render(<ShareActions {...props} />);
-    expect(screen.getByRole("link", { name: "쿼터별 이미지" })).toHaveAttribute("href", props.imageUrls.quarters);
-    expect(screen.getByRole("link", { name: "출전표 이미지" })).toHaveAttribute("target", "_blank");
+    expect(screen.getByRole("button", { name: "쿼터별 이미지" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "출전표 이미지" })).toBeNull();
   });
 });
