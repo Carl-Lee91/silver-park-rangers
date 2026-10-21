@@ -153,7 +153,7 @@ describe("스쿼드 빌더", () => {
       expect(within(bench()).getByRole("button", { name: /이수비/ })).toBeInTheDocument();
     });
 
-    it("쿼터마다 필드 · 키퍼 · 쉼을 점으로 보여 준다", async () => {
+    it("쿼터마다 필드 · 키퍼 · 쉼을 쿼터 번호 칸으로 보여 준다", async () => {
       const user = userEvent.setup();
       renderBuilder();
       await user.click(screen.getByRole("button", { name: "자동 배치" }));
@@ -162,6 +162,7 @@ describe("스쿼드 빌더", () => {
       expect(within(keeper).getByRole("img")).toHaveAccessibleName("1쿼터 키퍼, 2쿼터 키퍼");
       const field = within(lineup()).getByRole("button", { name: /이수비/ });
       expect(within(field).getByRole("img")).toHaveAccessibleName("1쿼터 출전, 2쿼터 출전");
+      expect(within(field).getByRole("img")).toHaveTextContent("12");
     });
 
     it("자리를 고르면 벤치를 그 자리에 맞는 사람부터 놓고 몇 순위인지 보여 준다", async () => {
@@ -191,13 +192,27 @@ describe("스쿼드 빌더", () => {
       expect(within(bench()).queryByRole("button", { name: /최늦음/ })).not.toBeInTheDocument();
     });
 
-    it("경기장의 필드 선수는 우리 유니폼 색, 키퍼는 키퍼 색 동그라미다", async () => {
+    it("경기장의 선수는 유니폼 모양이다 — 필드는 우리 유니폼 색, 키퍼는 키퍼 색, 빈자리는 점선", async () => {
       const user = userEvent.setup();
       renderBuilder();
+      const jersey = (name: RegExp, label: string) =>
+        within(within(pitch()).getByRole("button", { name })).getByText(label).closest("[data-jersey]");
+      expect(jersey(/^CB/, "CB")).toHaveAttribute("data-jersey", "empty");
+
+      await user.click(screen.getByRole("button", { name: "자동 배치" }));
+      expect(jersey(/CB 이수비/, "CB")).toHaveAttribute("data-jersey", "kit");
+      expect(jersey(/GK 김키퍼/, "GK")).toHaveAttribute("data-jersey", "keeper");
+    });
+
+    it("등번호가 있으면 유니폼 안에 번호를 넣고, 자리 포지션은 왼쪽 위에 작게 둔다", async () => {
+      const user = userEvent.setup();
+      const numbered = pool.map((item) => (item.id === "c" ? { ...item, jerseyNumber: 7 } : item));
+      renderBuilder({ pool: numbered });
       await user.click(screen.getByRole("button", { name: "자동 배치" }));
 
-      expect(within(within(pitch()).getByRole("button", { name: /CB 이수비/ })).getByText("CB")).toHaveClass("bg-kit");
-      expect(within(within(pitch()).getByRole("button", { name: /GK 김키퍼/ })).getByText("GK")).toHaveClass("bg-kakao");
+      const slot = within(pitch()).getByRole("button", { name: /^CB 7 이수비/ });
+      expect(within(slot).getByText("7").closest("[data-jersey]")).toHaveAttribute("data-jersey", "kit");
+      expect(within(slot).getByText("CB")).not.toHaveAttribute("data-jersey");
     });
   });
 
