@@ -3,10 +3,16 @@ import type { ReactNode } from "react";
 /**
  * 세로 경기장(위가 상대 골문). 크기는 105×68m 비율이다. 자리는 `PitchSpot` 으로 얹는다.
  * 빌더(누르는 자리)와 쿼터 보드(보기만)가 같이 쓴다.
+ *
+ * 폭은 놓인 칸을 따르되 높이가 화면을 넘지 않게 상한(max-w-pitch)을 두고, 남는 폭은 가운데 정렬한다.
  */
 export default function Pitch({ children, label }: { children: ReactNode; label?: string }) {
   return (
-    <div role="group" aria-label={label} className="relative aspect-[68/105] w-full overflow-hidden rounded-xl bg-pitch">
+    <div
+      role="group"
+      aria-label={label}
+      className="relative mx-auto aspect-[68/105] w-full max-w-pitch overflow-hidden rounded-xl bg-pitch"
+    >
       <svg viewBox="0 0 68 105" aria-hidden="true" className="absolute inset-0 size-full">
         <g fill="none" stroke="var(--color-pitch-line)" strokeWidth="0.4">
           <rect x="1.5" y="1.5" width="65" height="102" />
