@@ -40,7 +40,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex w-full flex-col gap-2 md:max-w-narrow">
       <button
         type="button"
         onClick={share}

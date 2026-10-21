@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { quarterSchedule } from "@/entities/match";
 import type { SavedQuarter } from "@/entities/squad";
 import QuarterBoard from "./QuarterBoard";
@@ -66,4 +66,21 @@ describe("쿼터 보드", () => {
     await user.click(screen.getByRole("tab", { name: "출전표" }));
     expect(screen.getByRole("row", { name: /김키퍼/ })).toHaveTextContent("1 김키퍼");
   });
+
+  it("넓은 화면(태블릿 이상)에서는 탭 없이 모든 쿼터와 출전표를 한눈에 보여 준다", () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    render(<QuarterBoard quarters={quarters} schedule={schedule} />);
+
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(screen.getByRole("group", { name: "1쿼터 경기장" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "2쿼터 경기장" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /김키퍼/ })).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
 });
+

@@ -23,7 +23,7 @@ export default async function AdminMatchesView() {
         {upcoming.length === 0 ? (
           <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((match) => (
               <MatchCard key={match.id} match={match} href={adminMatchPath(match.id)} />
             ))}
@@ -34,7 +34,7 @@ export default async function AdminMatchesView() {
       {past.length > 0 && (
         <section>
           <h2 className="mb-3 text-sm font-semibold text-text-secondary">지난 매치</h2>
-          <div className="flex flex-col gap-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {past.map((match) => (
               <MatchCard key={match.id} match={match} href={adminMatchPath(match.id)} />
             ))}

@@ -4,7 +4,7 @@ import { ROUTES } from "@/shared/config";
 
 export default function LoginView() {
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col justify-center gap-10 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col justify-center gap-10 px-4 py-12">
       <header>
         <p className="text-sm font-medium text-primary">우리 팀 전용</p>
         <h1 className="mt-1 text-2xl font-bold">Silver Park Rangers</h1>

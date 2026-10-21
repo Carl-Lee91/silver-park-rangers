@@ -5,7 +5,7 @@ import { completeOnboarding, OnboardingForm } from "@/features/onboarding";
 export default async function OnboardingView() {
   const takenNumbers = await fetchTakenJerseyNumbers();
   return (
-    <main className="mx-auto w-full max-w-100 flex-1 px-4 py-10">
+    <main className="mx-auto w-full max-w-narrow flex-1 px-4 py-10 md:py-16">
       <header className="mb-8">
         <h1 className="text-xl font-bold">가입 신청</h1>
         <p className="mt-2 text-sm text-text-secondary">

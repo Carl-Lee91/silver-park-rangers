@@ -28,7 +28,7 @@ export default async function PendingView() {
   const copy = COPY[me.status];
 
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col justify-center gap-8 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col justify-center gap-8 px-4 py-12">
       <header>
         <h1 className="text-xl font-bold">{copy.title}</h1>
         <p className="mt-2 text-sm text-text-secondary">{copy.body}</p>

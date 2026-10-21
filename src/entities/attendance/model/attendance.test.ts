@@ -85,3 +85,18 @@ describe("아직 투표 안 한 사람", () => {
     expect(unrespondedMembers(members, [{ ...vote("x", null), memberId: "a" }])).toHaveLength(1);
   });
 });
+
+describe("매치별 참석 인원 (관리 › 스쿼드)", () => {
+  it("참석으로 투표한 사람을 매치마다 센다 — 고른 매치는 0명이어도 나온다", async () => {
+    const { countYesByMatch } = await import("./attendance");
+    expect(
+      countYesByMatch(["m1", "m2", "m3"], [
+        { match_id: "m1", response: "yes" },
+        { match_id: "m1", response: "yes" },
+        { match_id: "m1", response: "maybe" },
+        { match_id: "m2", response: "no" },
+        { match_id: "m3", response: null },
+      ]),
+    ).toEqual({ m1: 2, m2: 0, m3: 0 });
+  });
+});

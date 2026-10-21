@@ -157,7 +157,7 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
               ))}
             </div>
           </header>
-          <div className="mx-auto w-full max-w-100 flex-1 overflow-y-auto px-4 py-4">
+          <div className="mx-auto w-full max-w-page flex-1 overflow-y-auto px-4 py-4">
             {/* 열 때 두 장을 같이 불러 둔다. 탭을 바꿔도 다시 기다리지 않는다. */}
             {KINDS.map((value) => (
               <LoadingImage
@@ -169,15 +169,17 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
               />
             ))}
           </div>
-          <footer className="mx-auto flex w-full max-w-100 flex-col gap-2 border-t border-border px-4 py-3">
-            <a
-              href={urls[kind]}
-              download={`${fileName} ${LABELS[kind]}.png`}
-              className="flex h-11 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-contrast"
-            >
-              이미지 저장
-            </a>
-            <p className="text-center text-xs text-text-tertiary">저장이 안 되면 이미지를 길게 눌러 저장해 주세요.</p>
+          <footer className="border-t border-border">
+            <div className="mx-auto flex w-full max-w-narrow flex-col gap-2 px-4 py-3">
+              <a
+                href={urls[kind]}
+                download={`${fileName} ${LABELS[kind]}.png`}
+                className="flex h-11 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-contrast"
+              >
+                이미지 저장
+              </a>
+              <p className="text-center text-xs text-text-tertiary">저장이 안 되면 이미지를 길게 눌러 저장해 주세요.</p>
+            </div>
           </footer>
         </div>
       )}

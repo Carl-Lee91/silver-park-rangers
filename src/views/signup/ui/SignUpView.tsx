@@ -13,7 +13,7 @@ async function SignUpBody() {
 
 export default function SignUpView() {
   return (
-    <main className="mx-auto w-full max-w-100 flex-1 px-4 py-10">
+    <main className="mx-auto w-full max-w-narrow flex-1 px-4 py-10 md:py-16">
       <Link href={ROUTES.login} className="text-sm text-text-secondary">
         ← 로그인
       </Link>

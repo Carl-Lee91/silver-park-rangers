@@ -12,7 +12,7 @@ export default async function MeView() {
   const takenNumbers = await fetchTakenJerseyNumbers();
 
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-8">
+    <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col gap-8 px-4 py-8">
       <Link href={ROUTES.home} className="text-sm text-text-secondary">
         ← 홈
       </Link>

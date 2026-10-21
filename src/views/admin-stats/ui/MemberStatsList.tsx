@@ -46,7 +46,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
           ))}
         </select>
       </div>
-      <ul className="flex flex-col gap-2">
+      <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {sorted.map((row) => (
           <li key={row.memberId} className="rounded-xl border border-border p-3">
             <div className="flex items-baseline justify-between gap-2">

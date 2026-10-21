@@ -14,7 +14,7 @@ type Props = { token: string; squad: SharedSquad; shareUrl: string; title: strin
  */
 export default function SharedSquadView({ token, squad, shareUrl, title, version }: Props) {
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-4 md:px-6 lg:px-8 py-8">
       <p className="text-sm font-medium text-primary">Silver Park Rangers</p>
       <MatchSummary match={squad.match} />
       <QuarterBoard quarters={squad.quarters} schedule={quarterSchedule(squad.match)} />

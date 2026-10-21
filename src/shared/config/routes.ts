@@ -12,6 +12,8 @@ export const ROUTES = {
   adminMembers: "/admin/members",
   adminMatches: "/admin/matches",
   adminMatchNew: "/admin/matches/new",
+  /** 매치별 스쿼드 상태를 모아 보고 빌더로 바로 간다 */
+  adminSquads: "/admin/squads",
   adminFormations: "/admin/formations",
   adminStats: "/admin/stats",
 } as const;

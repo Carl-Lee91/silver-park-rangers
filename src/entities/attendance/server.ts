@@ -1,5 +1,11 @@
 import { createSupabaseServerClient, getAuthUserId } from "@/shared/api";
-import { ATTENDANCE_COLUMNS, toAttendance, type Attendance, type AttendanceResponse } from "./model/attendance";
+import {
+  ATTENDANCE_COLUMNS,
+  countYesByMatch,
+  toAttendance,
+  type Attendance,
+  type AttendanceResponse,
+} from "./model/attendance";
 
 export const fetchMatchAttendance = async (matchId: string): Promise<Attendance[]> => {
   const supabase = await createSupabaseServerClient();
@@ -39,4 +45,17 @@ export const fetchMyAttendance = async (matchId: string): Promise<Attendance | n
   if (userId === null) return null;
   const all = await fetchMatchAttendance(matchId);
   return all.find((row) => row.memberId === userId) ?? null;
+};
+
+/** 매치마다 참석으로 투표한 사람 수(관리 › 스쿼드). */
+export const fetchYesCounts = async (matchIds: readonly string[]): Promise<Record<string, number>> => {
+  if (matchIds.length === 0) return {};
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("match_attendance")
+    .select("match_id, response")
+    .in("match_id", matchIds)
+    .eq("response", "yes");
+  if (error) throw new Error(`참석 인원을 읽지 못했습니다 — ${error.message}`);
+  return countYesByMatch(matchIds, data);
 };

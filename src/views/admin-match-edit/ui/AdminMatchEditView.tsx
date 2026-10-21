@@ -7,7 +7,7 @@ export default async function AdminMatchEditView({ matchId }: { matchId: string 
   if (match === null) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-narrow flex-col gap-6">
       <h1 className="text-xl font-bold">매치 고치기</h1>
       <MatchForm action={updateMatch} submitLabel="저장" initial={matchToFormValues(match)} matchId={match.id} />
     </div>
