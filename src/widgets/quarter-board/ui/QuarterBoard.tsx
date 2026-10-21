@@ -25,7 +25,7 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
                   ? "border border-dashed border-white/80 text-white"
                   : slot.position === "GK"
                     ? "bg-kakao text-kakao-label"
-                    : "bg-white text-text-primary"
+                    : "bg-kit text-kit-label"
               }`}
             >
               {slot.jerseyNumber ?? slot.position}

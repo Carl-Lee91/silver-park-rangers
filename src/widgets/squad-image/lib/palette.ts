@@ -15,4 +15,7 @@ export const PALETTE = {
   pitchLine: "rgba(255, 255, 255, 0.55)",
   keeper: "#fee500",
   keeperLabel: "#191919",
+  /** 우리 팀 유니폼(--color-kit): 필드 선수 동그라미 */
+  kit: "#80c4ee",
+  kitLabel: "#0f2a44",
 } as const;

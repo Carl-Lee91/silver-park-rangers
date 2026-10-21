@@ -6,7 +6,7 @@ import { shortHash } from "@/shared/lib";
  * 이미지 그림을 바꾸면(글꼴·배치·색 등) 올린다. 이미지는 주소마다 기기에 오래 캐시되므로(`cacheControl`),
  * 안 올리면 예전 그림이 계속 보인다.
  */
-const IMAGE_DESIGN = 1;
+const IMAGE_DESIGN = 2;
 
 /**
  * 이미지 주소에 붙일 내용 버전. **그려지는 것만** 본다 — 이미지 위쪽의 매치 정보(날짜·시간·장소·상대)와
