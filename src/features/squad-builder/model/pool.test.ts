@@ -10,14 +10,14 @@ const schedule = quarterSchedule({ startsAt: "10:00", endsAt: "13:00", quarterCo
 const member = (id: string, realName: string, extra: Partial<AdminMember> = {}): AdminMember => ({
   id,
   realName,
-  kakaoNickname: null,
-  avatarUrl: null,
   feet: ["right"],
-  preferredPositions: ["MF"],
+  preferredPositions: ["MF", "CB", "WB"],
   role: "user",
   status: "approved",
   memberType: "member",
   jerseyNumber: null,
+  guestMatchId: null,
+  email: null,
   createdAt: "2026-10-19T00:00:00Z",
   ...extra,
 });
@@ -94,5 +94,22 @@ describe("배치 문제", () => {
       "다불참님은 불참으로 바꿨어요.",
       "라일찍님은 6쿼터에 못 와요.",
     ]);
+  });
+
+  it("같은 매치에 같은 등번호가 둘 이상이면 알린다 — 그날 용병은 멤버 번호와 겹칠 수 있다(PLAN.md §4)", () => {
+    const numbered = [
+      member("a", "가참석", { jerseyNumber: 7 }),
+      member("e", "마용병", { jerseyNumber: 7, memberType: "guest", guestMatchId: "m1" }),
+      member("f", "바불참", { jerseyNumber: 7 }),
+      member("g", "사미정", { jerseyNumber: 7 }),
+    ];
+    const pool = buildPool(
+      [vote("a", "yes"), vote("e", "yes"), vote("f", "no"), vote("g", "maybe")],
+      numbered,
+      schedule,
+      new Set(),
+    );
+    const empty: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: null }] }];
+    expect(placementIssues(pool, empty)).toEqual(["7번을 가참석·마용병님이 같이 써요."]);
   });
 });

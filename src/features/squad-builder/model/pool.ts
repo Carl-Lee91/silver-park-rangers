@@ -75,7 +75,23 @@ export const squadPlayersFor = (pool: readonly BuilderPlayer[], builder: Builder
     }));
 };
 
-/** 자동 배치·점검이 못 보는 문제: 불참으로 바꾼 사람, 못 오는 쿼터에 들어간 사람 */
+/**
+ * 같은 등번호를 쓰는 사람(참석했거나 스쿼드에 든 사람만). 멤버끼리는 DB 가 막지만
+ * 그날 용병은 멤버 번호와 겹칠 수 있다(PLAN.md §4).
+ */
+const duplicateNumbers = (pool: readonly BuilderPlayer[], placed: ReadonlySet<string>): string[] => {
+  const byNumber = new Map<number, string[]>();
+  for (const player of pool) {
+    if (player.jerseyNumber === null || !(player.response === "yes" || placed.has(player.id))) continue;
+    byNumber.set(player.jerseyNumber, [...(byNumber.get(player.jerseyNumber) ?? []), player.realName]);
+  }
+  return [...byNumber]
+    .filter(([, names]) => names.length > 1)
+    .sort(([a], [b]) => a - b)
+    .map(([number, names]) => `${number}번을 ${names.join("·")}님이 같이 써요.`);
+};
+
+/** 자동 배치·점검이 못 보는 문제: 불참으로 바꾼 사람, 못 오는 쿼터에 들어간 사람, 겹친 등번호 */
 export const placementIssues = (pool: readonly BuilderPlayer[], builder: Builder): string[] => {
   const issues: string[] = [];
   const placed = placedAnywhere(builder);
@@ -90,5 +106,5 @@ export const placementIssues = (pool: readonly BuilderPlayer[], builder: Builder
       }
     }
   });
-  return issues;
+  return [...issues, ...duplicateNumbers(pool, placed)];
 };

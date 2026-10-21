@@ -12,10 +12,8 @@ describe("DB 행 → 멤버", () => {
   const row = {
     id: "00000000-0000-0000-0000-000000000001",
     real_name: "김운영",
-    kakao_nickname: "운영카톡",
-    avatar_url: null,
     feet: ["right"],
-    preferred_positions: ["MF", "CB"],
+    preferred_positions: ["MF", "CB", "WB"],
     role: "user",
     status: "pending",
     jersey_number: 7,
@@ -25,10 +23,8 @@ describe("DB 행 → 멤버", () => {
     expect(toMember(row)).toEqual({
       id: row.id,
       realName: "김운영",
-      kakaoNickname: "운영카톡",
-      avatarUrl: null,
       feet: ["right"],
-      preferredPositions: ["MF", "CB"],
+      preferredPositions: ["MF", "CB", "WB"],
       role: "user",
       status: "pending",
       jerseyNumber: 7,

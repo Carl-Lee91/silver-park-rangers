@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canChangeRole, canChangeStatus, canManageMembers } from "./permissions";
+import { canChangeRole, canChangeStatus, canManageMembers, canResetPassword } from "./permissions";
 
 describe("멤버 관리 권한 (PLAN.md §3) — DB 의 RPC 검사와 같다", () => {
   it("어드민과 관리자는 가입 승인·멤버 관리를 한다", () => {
@@ -19,5 +19,12 @@ describe("멤버 관리 권한 (PLAN.md §3) — DB 의 RPC 검사와 같다", (
     expect(canChangeStatus("admin", { role: "admin" })).toBe(false);
     expect(canChangeStatus("owner", { role: "admin" })).toBe(true);
     expect(canChangeStatus("approved", { role: "user" })).toBe(false);
+  });
+
+  it("임시 비밀번호: 관리자는 일반 멤버 것만, 관리자의 것은 어드민만 만든다 (reset_member_password)", () => {
+    expect(canResetPassword("admin", { role: "user" })).toBe(true);
+    expect(canResetPassword("admin", { role: "admin" })).toBe(false);
+    expect(canResetPassword("owner", { role: "admin" })).toBe(true);
+    expect(canResetPassword("approved", { role: "user" })).toBe(false);
   });
 });

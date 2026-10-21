@@ -2,13 +2,20 @@ import type { ReactNode } from "react";
 import {
   canChangeRole,
   canChangeStatus,
+  canResetPassword,
   groupForAdmin,
   type AdminMember,
   type Gate,
 } from "@/entities/member";
 import { fetchAdminMembers, fetchMyGate } from "@/entities/member/server";
 import { approveMember, rejectMember } from "@/features/member-approval";
-import { setMemberRole, setMemberStatus, setMemberType } from "@/features/member-management";
+import {
+  resetPassword,
+  setMemberRole,
+  setMemberStatus,
+  setMemberType,
+  TemporaryPasswordButton,
+} from "@/features/member-management";
 import { ActionButton } from "@/shared/ui";
 import MemberSummary from "./MemberSummary";
 
@@ -96,6 +103,9 @@ function MemberCard({ member, viewer }: { member: AdminMember; viewer: Gate }) {
                 confirmMessage={`${member.realName}님을 관리자로 지정할까요? 가입 승인과 멤버 관리를 할 수 있게 돼요.`}
               />
             ))}
+          {canResetPassword(viewer, member) && member.email !== null && (
+            <TemporaryPasswordButton action={resetPassword} memberId={member.id} memberName={member.realName} />
+          )}
         </div>
       </details>
     </article>

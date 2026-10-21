@@ -1,6 +1,7 @@
 export { selectGateAccess, type NewMember } from "./api/queries";
 export {
   groupForAdmin,
+  regularMembers,
   toAdminMember,
   type AdminMember,
   type AdminMemberGroups,
@@ -25,11 +26,17 @@ export {
   type MemberRole,
   type MemberStatus,
 } from "./model/member";
-export { canChangeRole, canChangeStatus, canManageMembers } from "./model/permissions";
+export { canChangeRole, canChangeStatus, canManageMembers, canResetPassword } from "./model/permissions";
 export {
+  isPositionChoiceComplete,
+  isPositionLocked,
+  jerseyNumberField,
   MAX_PREFERRED_POSITIONS,
+  memberProfileSchema,
   profileFieldsSchema,
+  realNameField,
   toggleFoot,
   togglePosition,
 } from "./model/profileRules";
+export { default as JerseyNumberSelect } from "./ui/JerseyNumberSelect";
 export { FootPicker, PositionPicker } from "./ui/ProfilePickers";

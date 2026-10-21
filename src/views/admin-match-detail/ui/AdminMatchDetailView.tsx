@@ -4,11 +4,13 @@ import { AttendanceList, unrespondedMembers } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
+import { regularMembers } from "@/entities/member";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { fetchMatchResult } from "@/entities/result/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
+import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
 import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
 import { ActionButton } from "@/shared/ui";
@@ -23,7 +25,9 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
     fetchSquad(match.id),
     fetchMatchResult(match.id),
   ]);
-  const approved = members.filter((member) => member.status === "approved");
+  // 이 매치에서 볼 사람: 승인된 멤버와 이 매치의 그날 용병. 다른 매치의 그날 용병은 뺀다.
+  const approved = regularMembers(members, match.id);
+  const guests = approved.filter((member) => member.guestMatchId === match.id);
   const waiting = unrespondedMembers(approved, attendance);
   const squadIds = new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   const open = isVotingOpen(match);
@@ -73,6 +77,25 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
             </ul>
           )}
         </div>
+      </section>
+
+      <section>
+        <h2 className="mb-1 font-semibold">
+          그날 용병 <span className="text-text-secondary">{guests.length}</span>
+        </h2>
+        <p className="mb-3 text-xs text-text-tertiary">
+          가입하지 않고 이번 매치만 뛰는 용병이에요. 넣으면 참석으로 잡혀요. 팀원에게는 이름만 보여요.
+        </p>
+        <MatchGuests
+          matchId={match.id}
+          guests={guests.map(({ id, realName, feet, preferredPositions, jerseyNumber }) => ({
+            id,
+            realName,
+            feet,
+            preferredPositions,
+            jerseyNumber,
+          }))}
+        />
       </section>
 
       <Link

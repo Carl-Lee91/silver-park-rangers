@@ -1,12 +1,8 @@
 import Link from "next/link";
-import { KakaoLoginButton, KakaoLoginUnavailable, loginErrorMessage } from "@/features/kakao-login";
-import { isKakaoLoginReady } from "@/features/kakao-login/server";
+import { passwordLogin, PasswordLoginForm } from "@/features/password-login";
 import { ROUTES } from "@/shared/config";
 
-export default async function LoginView({ error }: { error: string | null }) {
-  const ready = await isKakaoLoginReady();
-  const message = loginErrorMessage(error);
-
+export default function LoginView() {
   return (
     <main className="mx-auto flex w-full max-w-100 flex-1 flex-col justify-center gap-10 px-4 py-12">
       <header>
@@ -15,22 +11,19 @@ export default async function LoginView({ error }: { error: string | null }) {
         <p className="mt-2 text-sm text-text-secondary">참석 투표부터 쿼터별 스쿼드까지 한곳에서.</p>
       </header>
 
+      <PasswordLoginForm action={passwordLogin} />
+
       <div className="flex flex-col gap-3">
-        {message && (
-          <p role="alert" className="text-sm text-danger">
-            {message}
-          </p>
-        )}
-        {ready ? <KakaoLoginButton /> : <KakaoLoginUnavailable />}
+        <Link
+          href={ROUTES.signup}
+          className="flex h-12 items-center justify-center rounded-xl border border-border text-base font-semibold"
+        >
+          처음이면 가입 신청
+        </Link>
+        <p className="text-xs leading-5 text-text-tertiary">
+          관리자가 승인한 사람만 쓸 수 있어요. 비밀번호를 잊었으면 관리자에게 임시 비밀번호를 받아 주세요.
+        </p>
       </div>
-
-      <p className="text-xs leading-5 text-text-tertiary">
-        처음이면 로그인한 뒤 실명을 입력하고 관리자 승인을 기다려 주세요. 승인된 사람만 쓸 수 있어요.
-      </p>
-
-      <Link href={ROUTES.adminLogin} className="text-xs text-text-tertiary underline underline-offset-4">
-        어드민 계정으로 로그인
-      </Link>
     </main>
   );
 }

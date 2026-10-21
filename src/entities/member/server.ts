@@ -1,5 +1,6 @@
+import { z } from "zod";
 import { createSupabaseServerClient, getAuthUserId } from "@/shared/api";
-import { insertMember, selectGateAccess, type NewMember } from "./api/queries";
+import { insertMember, selectGateAccess, type InsertMemberResult, type NewMember } from "./api/queries";
 import { ADMIN_MEMBER_COLUMNS, toAdminMember, type AdminMember } from "./model/adminMember";
 import { gateOf, type Gate } from "./model/gate";
 import { MEMBER_COLUMNS, toMember, type Member } from "./model/member";
@@ -29,32 +30,42 @@ export const fetchMyGate = async (): Promise<Gate> => {
   return gateOf(true, result.access);
 };
 
+const emailRows = z.array(z.object({ member_id: z.string(), email: z.string().nullable() }));
+
 /**
- * 관리 화면의 멤버 전체(멤버/용병 구분 포함). 관리자 이상만 부른다 —
- * 그 밖의 사람이 부르면 RLS 때문에 구분이 비어 오고, 다른 멤버도 보이지 않는다.
+ * 관리 화면의 멤버 전체(멤버/용병 구분·그날 용병·로그인 이메일 포함). 관리자 이상만 부른다 —
+ * 그 밖의 사람이 부르면 RLS 때문에 구분이 비어 오고, 이메일 함수는 거부한다.
  */
 export const fetchAdminMembers = async (): Promise<AdminMember[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("members").select(ADMIN_MEMBER_COLUMNS);
-  if (error) throw new Error(`멤버 목록을 읽지 못했습니다 — ${error.message}`);
-  return data.map(toAdminMember);
+  const [members, emails] = await Promise.all([
+    supabase.from("members").select(ADMIN_MEMBER_COLUMNS),
+    supabase.rpc("member_emails"),
+  ]);
+  if (members.error) throw new Error(`멤버 목록을 읽지 못했습니다 — ${members.error.message}`);
+  if (emails.error) throw new Error(`이메일을 읽지 못했습니다 — ${emails.error.message}`);
+
+  const emailOf = new Map(emailRows.parse(emails.data).map((row) => [row.member_id, row.email]));
+  return members.data.map((row) => {
+    const member = toAdminMember(row);
+    return { ...member, email: emailOf.get(member.id) ?? null };
+  });
 };
 
-/** 지금 로그인한 사람의 멤버 행을 만든다(온보딩). 로그인하지 않았으면 false. */
-export const createMyMember = async (input: NewMember): Promise<boolean> => {
+/** 지금 로그인한 사람의 멤버 행을 만든다(온보딩). 로그인하지 않았으면 실패. */
+export const createMyMember = async (input: NewMember): Promise<InsertMemberResult> => {
   const userId = await getAuthUserId();
-  if (userId === null) return false;
+  if (userId === null) return { ok: false, reason: "failed" };
   return insertMember(await createSupabaseServerClient(), userId, input);
 };
 
-/** 다른 사람이 이미 쓰는 등번호(내 번호는 빼고). 승인된 멤버의 번호만 보인다(RLS) — 겹치면 DB 가 막는다. */
+/**
+ * 다른 사람이 이미 쓰는 등번호(내 번호와 그날 용병 번호는 빼고). 로그인 전(가입 신청)에도 부른다 —
+ * RLS 로는 다른 사람 행을 못 보므로 번호만 주는 함수로 읽는다. 겹치면 DB 가 막는다.
+ */
 export const fetchTakenJerseyNumbers = async (): Promise<number[]> => {
-  const userId = await getAuthUserId();
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.from("members").select("id, jersey_number").not("jersey_number", "is", null);
+  const { data, error } = await supabase.rpc("taken_jersey_numbers");
   if (error) throw new Error(`등번호를 읽지 못했습니다 — ${error.message}`);
-  return (data as { id: string; jersey_number: number }[])
-    .filter((row) => row.id !== userId)
-    .map((row) => row.jersey_number)
-    .sort((a, b) => a - b);
+  return z.array(z.number().int()).parse(data);
 };

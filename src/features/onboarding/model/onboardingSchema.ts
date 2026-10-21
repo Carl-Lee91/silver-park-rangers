@@ -1,16 +1,8 @@
 import { z } from "zod";
-import { profileFieldsSchema, type NewMember } from "@/entities/member";
+import { memberProfileSchema, type NewMember } from "@/entities/member";
 
 /** DB 제약(members 테이블)과 같은 규칙이다. 화면에서 먼저 걸러 알맞은 안내를 띄운다. */
-const schema = z
-  .object({
-    realName: z
-      .string()
-      .trim()
-      .min(1, "실명을 입력해 주세요.")
-      .max(20, "실명은 20자까지 입력할 수 있어요."),
-  })
-  .extend(profileFieldsSchema.shape);
+const schema = memberProfileSchema;
 
 export type OnboardingField = keyof z.infer<typeof schema>;
 
@@ -20,7 +12,7 @@ export type OnboardingState = {
   message?: string;
 };
 
-export type OnboardingInput = { realName: string; feet: string[]; preferredPositions: string[] };
+export type OnboardingInput = { realName: string; feet: string[]; preferredPositions: string[]; jerseyNumber: string };
 
 export const validateOnboarding = (
   input: OnboardingInput,
@@ -44,4 +36,5 @@ export const readOnboardingForm = (formData: FormData): OnboardingInput => ({
   realName: String(formData.get("realName") ?? ""),
   feet: formData.getAll("feet").map(String),
   preferredPositions: formData.getAll("preferredPositions").map(String),
+  jerseyNumber: String(formData.get("jerseyNumber") ?? ""),
 });

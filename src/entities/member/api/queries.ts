@@ -28,20 +28,29 @@ export type NewMember = {
   realName: string;
   feet: Foot[];
   preferredPositions: Position[];
+  jerseyNumber: number | null;
 };
 
+export type InsertMemberResult = { ok: true } | { ok: false; reason: "jersey-taken" | "failed" };
+
 /**
- * 온보딩. 역할·상태는 보내지 않는다 — DB 기본값(일반·승인 대기)이 들어가고,
- * 다른 값을 보내면 RLS 가 거부한다. 카카오 닉네임·사진은 DB 트리거가 채운다.
+ * 온보딩(신청 정보가 빠진 계정). 역할·상태는 보내지 않는다 — DB 기본값(일반·승인 대기)이
+ * 들어가고, 다른 값을 보내면 RLS 가 거부한다.
  *
- * 두 번 눌러 이미 행이 있으면(23505) 성공으로 본다.
+ * 두 번 눌러 이미 행이 있으면 성공으로 본다(on conflict do nothing). 그래서 남는 23505 는
+ * 등번호 겹침이다 — DB 트리거가 같은 코드로 막는다.
  */
-export const insertMember = async (client: DbClient, userId: string, input: NewMember) => {
-  const { error } = await client.from("members").insert({
-    id: userId,
-    real_name: input.realName,
-    feet: input.feet,
-    preferred_positions: input.preferredPositions,
-  });
-  return error === null || error.code === "23505";
+export const insertMember = async (client: DbClient, userId: string, input: NewMember): Promise<InsertMemberResult> => {
+  const { error } = await client.from("members").upsert(
+    {
+      id: userId,
+      real_name: input.realName,
+      feet: input.feet,
+      preferred_positions: input.preferredPositions,
+      jersey_number: input.jerseyNumber,
+    },
+    { onConflict: "id", ignoreDuplicates: true },
+  );
+  if (error === null) return { ok: true };
+  return { ok: false, reason: error.code === "23505" ? "jersey-taken" : "failed" };
 };

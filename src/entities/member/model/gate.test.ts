@@ -55,14 +55,16 @@ describe("게이트에 따른 이동", () => {
     ["signed-out", "/", "/login"],
     ["signed-out", "/matches/1", "/login"],
     ["signed-out", "/login", null],
-    ["signed-out", "/login/admin", null],
+    ["signed-out", "/signup", null],
     // 온보딩 전
     ["needs-onboarding", "/", "/onboarding"],
     ["needs-onboarding", "/login", "/onboarding"],
+    ["needs-onboarding", "/signup", "/onboarding"],
     ["needs-onboarding", "/onboarding", null],
     // 승인 전에는 대기 화면만
     ["pending", "/", "/pending"],
     ["pending", "/onboarding", "/pending"],
+    ["pending", "/signup", "/pending"],
     ["pending", "/pending", null],
     ["rejected", "/admin", "/pending"],
     ["inactive", "/matches/1", "/pending"],
@@ -70,7 +72,7 @@ describe("게이트에 따른 이동", () => {
     ["approved", "/", null],
     ["approved", "/matches/1", null],
     ["approved", "/login", "/"],
-    ["approved", "/login/admin", "/"],
+    ["approved", "/signup", "/"],
     ["approved", "/onboarding", "/"],
     ["approved", "/pending", "/"],
     ["approved", "/admin", "/"],
@@ -80,13 +82,14 @@ describe("게이트에 따른 이동", () => {
     ["admin", "/admin", null],
     ["admin", "/admin/members", null],
     ["admin", "/pending", "/"],
+    ["admin", "/signup", "/"],
     // 어드민 계정은 선수가 아니라서 관리 화면만 쓴다
     ["owner", "/admin", null],
     ["owner", "/admin/members", null],
     ["owner", "/", "/admin"],
     ["owner", "/matches/1", "/admin"],
     ["owner", "/login", "/admin"],
-    ["owner", "/login/admin", "/admin"],
+    ["owner", "/signup", "/admin"],
     ["owner", "/onboarding", "/admin"],
     ["owner", "/pending", "/admin"],
   ];
@@ -101,9 +104,8 @@ describe("게이트에 따른 이동", () => {
   });
 
   it.each(["signed-out", "pending", "approved", "owner"] as const)(
-    "로그인 콜백·공유 링크·Cron 은 어떤 상태든 막지 않는다 (%s)",
+    "공유 링크·Cron 은 어떤 상태든 막지 않는다 (%s)",
     (gate) => {
-      expect(gateRedirect(gate, "/auth/callback")).toBeNull();
       expect(gateRedirect(gate, "/s/abc")).toBeNull();
       expect(gateRedirect(gate, "/api/cron/keep-alive")).toBeNull();
     },

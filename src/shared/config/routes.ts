@@ -2,8 +2,9 @@
 export const ROUTES = {
   home: "/",
   login: "/login",
-  /** 어드민 전용 계정(이메일·비밀번호) 로그인. `/login` 아래라 로그인 전에도 열린다. */
-  adminLogin: "/login/admin",
+  /** 가입 신청. 로그인 전에 열린다 */
+  signup: "/signup",
+  /** 신청 정보가 빠진 계정만 온다(PLAN.md §4) */
   onboarding: "/onboarding",
   pending: "/pending",
   me: "/me",
@@ -13,7 +14,6 @@ export const ROUTES = {
   adminMatchNew: "/admin/matches/new",
   adminFormations: "/admin/formations",
   adminStats: "/admin/stats",
-  authCallback: "/auth/callback",
 } as const;
 
 export const matchPath = (id: string) => `/matches/${id}`;

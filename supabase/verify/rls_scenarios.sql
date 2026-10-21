@@ -44,13 +44,15 @@ grant execute on all functions in schema verify to anon, authenticated;
 
 -- 등장인물
 --   …01 관리자   …02 멤버   …03 가입 대기   …04 로그인만 한 외부인   …05 용병   …06 거절될 사람
-insert into auth.users (id, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-000000000001', '{"name": "관리자카톡", "avatar_url": "https://example.com/a.png"}'),
-  ('00000000-0000-0000-0000-000000000002', '{"name": "멤버카톡"}'),
-  ('00000000-0000-0000-0000-000000000003', '{"name": "대기카톡"}'),
-  ('00000000-0000-0000-0000-000000000004', '{"name": "외부인카톡"}'),
-  ('00000000-0000-0000-0000-000000000005', '{"name": "용병카톡"}'),
-  ('00000000-0000-0000-0000-000000000006', '{"name": "거절카톡"}');
+-- 가입 신청 정보(real_name 등)가 없는 계정이라 멤버 행은 아래에서 직접 만든다(온보딩 경로).
+insert into auth.users (id, email) values
+  ('00000000-0000-0000-0000-000000000001', 'admin@example.com'),
+  ('00000000-0000-0000-0000-000000000002', 'member@example.com'),
+  ('00000000-0000-0000-0000-000000000003', 'pending@example.com'),
+  ('00000000-0000-0000-0000-000000000004', 'outsider@example.com'),
+  ('00000000-0000-0000-0000-000000000005', 'guest@example.com'),
+  ('00000000-0000-0000-0000-000000000006', 'rejected@example.com');
+select verify.ok((select count(*) from public.members) = 0, '가입 신청 정보가 없는 계정은 멤버 행이 생기지 않는다');
 
 -- ── 로그인 안 한 사람 ────────────────────────────────────────────────
 set role anon;
@@ -60,57 +62,61 @@ select verify.fails($$select public.approve_member('00000000-0000-0000-0000-0000
   '로그인 안 하면 승인 함수를 못 부른다');
 reset role;
 
--- ── 온보딩 ───────────────────────────────────────────────────────────
+-- ── 온보딩(신청 정보가 빠진 계정) ────────────────────────────────────
 set role authenticated;
 
 select verify.login('00000000-0000-0000-0000-000000000001');
-insert into public.members (id, real_name, feet, preferred_positions, kakao_nickname, avatar_url)
-values ('00000000-0000-0000-0000-000000000001', '  김운영 ', '{right}', '{MF,CB}', '가짜닉네임', 'https://evil.example');
-select verify.ok((select kakao_nickname from public.members where id = '00000000-0000-0000-0000-000000000001') = '관리자카톡',
-  '카카오 닉네임은 보낸 값이 아니라 로그인 정보로 채운다');
-select verify.ok((select avatar_url from public.members where id = '00000000-0000-0000-0000-000000000001') = 'https://example.com/a.png',
-  '카카오 사진도 로그인 정보로 채운다');
+insert into public.members (id, real_name, feet, preferred_positions)
+values ('00000000-0000-0000-0000-000000000001', '  김운영 ', '{right}', '{MF,CB,WB}');
 select verify.ok((select real_name from public.members where id = '00000000-0000-0000-0000-000000000001') = '김운영',
   '실명 앞뒤 공백을 지운다');
 select verify.ok((select status from public.members where id = '00000000-0000-0000-0000-000000000001') = 'pending',
   '가입하면 승인 대기 상태다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
-  values ('00000000-0000-0000-0000-000000000004', '남의행', '{left}', '{FW}')$$,
+  values ('00000000-0000-0000-0000-000000000004', '남의행', '{left}', '{FW,WG,AM}')$$,
   '남의 멤버 행은 만들 수 없다');
 
 select verify.login('00000000-0000-0000-0000-000000000004');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions, status)
-  values ('00000000-0000-0000-0000-000000000004', '셀프승인', '{left}', '{FW}', 'approved')$$,
+  values ('00000000-0000-0000-0000-000000000004', '셀프승인', '{left}', '{FW,WG,AM}', 'approved')$$,
   '스스로 승인 상태로 가입할 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions, role)
-  values ('00000000-0000-0000-0000-000000000004', '셀프운영', '{left}', '{FW}', 'admin')$$,
+  values ('00000000-0000-0000-0000-000000000004', '셀프운영', '{left}', '{FW,WG,AM}', 'admin')$$,
   '스스로 관리자로 가입할 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
   values ('00000000-0000-0000-0000-000000000004', '욕심쟁이', '{left}', '{FW,CB,MF,WB}')$$,
-  '선호 포지션은 3개까지다');
+  '선호 포지션은 3개를 넘을 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
-  values ('00000000-0000-0000-0000-000000000004', '중복', '{left}', '{FW,FW}')$$,
+  values ('00000000-0000-0000-0000-000000000004', '두개만', '{left}', '{FW,CB}')$$,
+  '선호 포지션은 3개를 다 고른다');
+select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
+  values ('00000000-0000-0000-0000-000000000004', '키퍼먼저', '{left}', '{GK,CB,MF}')$$,
+  '1순위가 골키퍼면 다른 포지션을 고를 수 없다');
+select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
+  values ('00000000-0000-0000-0000-000000000004', '중복', '{left}', '{FW,FW,CB}')$$,
   '선호 포지션은 겹칠 수 없다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
-  values ('00000000-0000-0000-0000-000000000004', '발없음', '{}', '{FW}')$$,
+  values ('00000000-0000-0000-0000-000000000004', '발없음', '{}', '{FW,WG,AM}')$$,
   '주발은 하나 이상 고른다');
 select verify.fails($$insert into public.members (id, real_name, feet, preferred_positions)
-  values ('00000000-0000-0000-0000-000000000004', '   ', '{left}', '{FW}')$$,
+  values ('00000000-0000-0000-0000-000000000004', '   ', '{left}', '{FW,WG,AM}')$$,
   '실명은 비울 수 없다');
 select verify.ok((select count(*) from public.members) = 0, '가입 안 한 사람은 아무 멤버도 못 본다');
 
 select verify.login('00000000-0000-0000-0000-000000000002');
 insert into public.members (id, real_name, feet, preferred_positions)
-values ('00000000-0000-0000-0000-000000000002', '이멤버', '{left,right}', '{FW}');
+values ('00000000-0000-0000-0000-000000000002', '이멤버', '{left,right}', '{FW,WG,AM}');
 select verify.login('00000000-0000-0000-0000-000000000003');
 insert into public.members (id, real_name, feet, preferred_positions)
 values ('00000000-0000-0000-0000-000000000003', '박대기', '{right}', '{GK}');
 select verify.login('00000000-0000-0000-0000-000000000005');
 insert into public.members (id, real_name, feet, preferred_positions)
-values ('00000000-0000-0000-0000-000000000005', '최용병', '{left}', '{WG,FW}');
+values ('00000000-0000-0000-0000-000000000005', '최용병', '{left}', '{WG,GK,FW}');
+select verify.ok((select preferred_positions from public.members where id = '00000000-0000-0000-0000-000000000005') = '{WG,GK,FW}',
+  '골키퍼를 2·3순위로는 고를 수 있다');
 select verify.login('00000000-0000-0000-0000-000000000006');
 insert into public.members (id, real_name, feet, preferred_positions)
-values ('00000000-0000-0000-0000-000000000006', '정거절', '{right}', '{CB}');
+values ('00000000-0000-0000-0000-000000000006', '정거절', '{right}', '{CB,WB,MF}');
 
 -- ── 가입 대기 중 ─────────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000003');
@@ -581,3 +587,164 @@ set role anon;
 select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,1,jersey_number}' = '10',
   '공유 링크에 등번호가 들어간다');
 reset role;
+
+-- ── 이메일 가입 신청 (20261021000000) ────────────────────────────────
+-- 가입 신청은 계정을 만들 때 멤버 행도 같이 만든다(auth.users 트리거). 계정은 인증 서버가 만든다.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000008', 'new@example.com',
+   '{"real_name": " 한신입 ", "feet": ["left"], "preferred_positions": ["CB", "WB", "MF"], "jersey_number": 23,
+     "status": "approved", "role": "admin"}');
+select verify.ok((select real_name from public.members where id = '00000000-0000-0000-0000-000000000008') = '한신입',
+  '가입 신청 정보로 멤버 행을 같이 만든다');
+select verify.ok((select (status, role) = ('pending', 'user') from public.members where id = '00000000-0000-0000-0000-000000000008'),
+  '신청 정보에 상태·역할을 넣어도 승인 대기·일반으로 만든다');
+select verify.ok((select (preferred_positions, jersey_number) = ('{CB,WB,MF}', 23)
+  from public.members where id = '00000000-0000-0000-0000-000000000008'),
+  '선호 포지션(보낸 순서)과 등번호도 같이 넣는다');
+select verify.fails($$insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000009', 'bad@example.com',
+   '{"real_name": "두개만", "feet": ["left"], "preferred_positions": ["CB", "WB"]}')$$,
+  '신청 정보가 규칙에 안 맞으면 계정도 만들지 않는다');
+select verify.fails($$insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000009', 'dup@example.com',
+   '{"real_name": "번호중복", "feet": ["left"], "preferred_positions": ["GK"], "jersey_number": 7}')$$,
+  '다른 멤버가 쓰는 등번호로는 가입하지 못한다');
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000000009', 'nonumber@example.com',
+   '{"real_name": "번호없음", "feet": ["left", "right"], "preferred_positions": ["GK"]}');
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000009') is null,
+  '등번호는 비워도 된다');
+
+-- 로그인 전이라 요청에 사용자 id 가 없다. 앞 단계의 로그인 흔적을 지운다.
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.ok(public.taken_jersey_numbers() @> '{7,10,23}',
+  '로그인 전(가입 신청 화면)에도 쓰고 있는 등번호를 본다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok(not (7 = any(public.taken_jersey_numbers())), '내 번호는 사용 중으로 치지 않는다');
+select verify.fails($$select * from public.member_emails()$$, '일반 멤버는 다른 사람의 이메일을 못 본다');
+select verify.fails($$select public.reset_member_password('00000000-0000-0000-0000-000000000006')$$,
+  '일반 멤버는 임시 비밀번호를 만들지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.ok((select email from public.member_emails() where member_id = '00000000-0000-0000-0000-000000000002') = 'member@example.com',
+  '관리자는 멤버의 이메일(로그인 아이디)을 본다');
+select set_config('verify.temp', public.reset_member_password('00000000-0000-0000-0000-000000000006'), false);
+select verify.ok(char_length(current_setting('verify.temp')) >= 8, '임시 비밀번호는 8자 이상이다');
+reset role;
+select verify.ok((select encrypted_password like '$2a$%'
+                     and encrypted_password = extensions.crypt(current_setting('verify.temp'), encrypted_password)
+                  from auth.users where id = '00000000-0000-0000-0000-000000000006'),
+  '임시 비밀번호로 바꾼다 — 로그인 서버가 읽는 bcrypt 로 저장한다');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'admin');
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.fails($$select public.reset_member_password('00000000-0000-0000-0000-000000000002')$$,
+  '관리자는 다른 관리자의 임시 비밀번호를 만들지 못한다');
+select verify.login('00000000-0000-0000-0000-000000000007');
+select verify.ok(char_length(public.reset_member_password('00000000-0000-0000-0000-000000000002')) >= 8,
+  '어드민은 관리자의 임시 비밀번호도 만든다');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'user');
+reset role;
+
+-- ── 그날 용병 (20261021010000) ───────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.guest',
+  public.add_match_guest('10000000-0000-0000-0000-000000000011', ' 오늘용병 ', '{right}', '{CB,MF,WB}', 7)::text, false);
+select verify.ok((select (real_name, status) = ('오늘용병', 'approved')
+  from public.members where id = current_setting('verify.guest')::uuid),
+  '그날 용병은 승인된 멤버 행으로 들어간다');
+select verify.ok((select response from public.match_attendance
+  where match_id = '10000000-0000-0000-0000-000000000011' and member_id = current_setting('verify.guest')::uuid) = 'yes',
+  '그 매치에 참석으로 들어간다');
+select verify.ok((select member_type from public.member_admin_info where member_id = current_setting('verify.guest')::uuid) = 'guest',
+  '관리 화면에서는 용병으로 보인다');
+select verify.ok((select jersey_number from public.members where id = current_setting('verify.guest')::uuid) = 7,
+  '그날 용병은 멤버가 쓰는 번호와 겹쳐도 된다');
+select verify.ok((select match_id from public.match_guests where member_id = current_setting('verify.guest')::uuid)
+  = '10000000-0000-0000-0000-000000000011', '관리자는 그날 용병이 어느 매치 사람인지 본다');
+select verify.fails($$select public.add_match_guest('10000000-0000-0000-0000-000000000011', '두개만', '{right}', '{CB,MF}', null)$$,
+  '그날 용병도 선호 포지션 규칙이 같다');
+select verify.fails($$select public.add_match_guest(gen_random_uuid(), '없는매치', '{right}', '{GK}', null)$$,
+  '없는 매치에는 넣지 못한다');
+select verify.fails($$select public.reset_member_password(current_setting('verify.guest')::uuid)$$,
+  '계정이 없는 그날 용병은 비밀번호도 없다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.ok(exists (select 1 from public.members where id = current_setting('verify.guest')::uuid),
+  '팀원에게는 다른 멤버처럼 이름이 보인다');
+select verify.ok((select count(*) from public.match_guests) = 0, '그날 용병인지는 관리자만 안다');
+select verify.fails($$select public.add_match_guest('10000000-0000-0000-0000-000000000011', '몰래', '{right}', '{GK}', null)$$,
+  '일반 멤버는 그날 용병을 넣지 못한다');
+select verify.fails($$select public.update_match_guest(current_setting('verify.guest')::uuid, '바꿈', '{right}', '{GK}', null)$$,
+  '일반 멤버는 그날 용병을 고치지 못한다');
+select verify.fails($$select public.remove_match_guest(current_setting('verify.guest')::uuid)$$,
+  '일반 멤버는 그날 용병을 빼지 못한다');
+select verify.fails($$update public.members set jersey_number = 7 where id = '00000000-0000-0000-0000-000000000006'$$,
+  '멤버끼리는 여전히 같은 번호를 못 쓴다 — 그날 용병만 예외다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select public.update_match_guest(current_setting('verify.guest')::uuid, '바뀐용병', '{left}', '{GK}', 88);
+select verify.ok((select (real_name, feet, preferred_positions, jersey_number) = ('바뀐용병', '{left}', '{GK}', 88)
+  from public.members where id = current_setting('verify.guest')::uuid),
+  '관리자는 그날 용병의 이름·주발·포지션·번호를 고친다');
+select verify.fails($$select public.update_match_guest('00000000-0000-0000-0000-000000000002', '남의이름', '{left}', '{GK}', null)$$,
+  '가입한 멤버는 그날 용병 함수로 고치지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000006');
+select verify.ok(not (88 = any(public.taken_jersey_numbers())), '그날 용병의 번호는 사용 중으로 치지 않는다');
+update public.members set jersey_number = 88 where id = '00000000-0000-0000-0000-000000000006';
+select verify.ok((select jersey_number from public.members where id = '00000000-0000-0000-0000-000000000006') = 88,
+  '그날 용병이 쓰는 번호도 멤버가 고를 수 있다');
+update public.members set jersey_number = 10 where id = '00000000-0000-0000-0000-000000000006';
+
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.save_squad('10000000-0000-0000-0000-000000000011', jsonb_build_array(jsonb_build_object(
+  'number', 1, 'formation_name', '4-3-3', 'slots', jsonb_build_array(
+    jsonb_build_object('slot_index', 0, 'position', 'GK', 'x', 50, 'y', 92, 'member_id', current_setting('verify.guest')),
+    jsonb_build_object('slot_index', 1, 'position', 'FW', 'x', 50, 'y', 18, 'member_id', '00000000-0000-0000-0000-000000000006')))));
+reset role;
+
+set role anon;
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid) #>> '{quarters,0,slots,0,name}' = '바뀐용병',
+  '공유 링크에는 그날 용병도 다른 사람과 똑같이 이름만 나온다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%guest%',
+  '공유 링크에 그날 용병 표시가 없다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select public.remove_match_guest(current_setting('verify.guest')::uuid);
+select verify.ok(not exists (select 1 from public.members where id = current_setting('verify.guest')::uuid),
+  '빼면 멤버 행이 지워진다');
+select verify.ok(not exists (select 1 from public.match_attendance where member_id = current_setting('verify.guest')::uuid),
+  '참석도 같이 지워진다');
+select verify.ok(exists (select 1 from public.quarter_slots s join public.quarters q on q.id = s.quarter_id
+  where q.match_id = '10000000-0000-0000-0000-000000000011' and s.slot_index = 0 and s.member_id is null),
+  '스쿼드의 그 자리는 빈칸이 된다');
+select verify.fails($$select public.remove_match_guest('00000000-0000-0000-0000-000000000002')$$,
+  '가입한 멤버는 그날 용병 함수로 빼지 못한다');
+
+insert into public.matches (id, match_date) values ('10000000-0000-0000-0000-000000000021', current_date - 3);
+select set_config('verify.guest2',
+  public.add_match_guest('10000000-0000-0000-0000-000000000021', '지난용병', '{right}', '{GK}', null)::text, false);
+update public.match_attendance set attended = true
+ where match_id = '10000000-0000-0000-0000-000000000021' and member_id = current_setting('verify.guest2')::uuid;
+select verify.ok(exists (
+  select 1 from jsonb_array_elements(public.admin_stats_source(current_date - 30, current_date) -> 'members') m
+   where m ->> 'id' = current_setting('verify.guest2') and m ->> 'member_type' = 'guest'),
+  '통계에서 그날 용병은 용병으로 나온다(멤버 통계에서 빠진다)');
+delete from public.matches where id = '10000000-0000-0000-0000-000000000021';
+select verify.ok(not exists (select 1 from public.members where id = current_setting('verify.guest2')::uuid),
+  '매치를 지우면 그 매치의 그날 용병도 지워진다');
+reset role;
+
+delete from auth.users where id = '00000000-0000-0000-0000-000000000009';
+select verify.ok(not exists (select 1 from public.members where id = '00000000-0000-0000-0000-000000000009'),
+  '계정을 지우면 멤버 행도 지운다');

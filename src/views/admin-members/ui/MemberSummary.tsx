@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { footLabel, type AdminMember } from "@/entities/member";
 import { positionLabel } from "@/entities/position";
 
@@ -13,24 +12,13 @@ function Badge({ children, tone }: { children: string; tone: "primary" | "neutra
   return <span className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${color}`}>{children}</span>;
 }
 
-/** 누구인지 확인하는 데 필요한 것: 실명, 카카오 프로필, 선호 포지션·주발 */
+/** 누구인지 확인하는 데 필요한 것: 실명, 로그인 이메일, 선호 포지션·주발 */
 export default function MemberSummary({ member, showApplied = false }: { member: AdminMember; showApplied?: boolean }) {
   return (
     <div className="flex items-start gap-3">
-      {member.avatarUrl ? (
-        <Image
-          src={member.avatarUrl}
-          alt=""
-          width={40}
-          height={40}
-          unoptimized
-          className="size-10 rounded-full bg-bg-subtle object-cover"
-        />
-      ) : (
-        <span className="flex size-10 items-center justify-center rounded-full bg-bg-subtle text-sm font-bold text-text-secondary">
-          {member.realName.slice(0, 1)}
-        </span>
-      )}
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-sm font-bold text-text-secondary">
+        {member.realName.slice(0, 1)}
+      </span>
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-center gap-1.5">
           <span className="font-semibold">
@@ -41,7 +29,7 @@ export default function MemberSummary({ member, showApplied = false }: { member:
           {member.memberType === "guest" && <Badge tone="neutral">용병</Badge>}
         </p>
         <p className="mt-0.5 truncate text-xs text-text-secondary">
-          카카오 {member.kakaoNickname ?? "-"}
+          {member.email ?? "이메일 없음"}
           {showApplied && ` · ${appliedAt.format(new Date(member.createdAt))} 신청`}
         </p>
         <p className="mt-1 text-xs text-text-tertiary">
