@@ -8,12 +8,21 @@ const form = (entries: [string, string][]) => {
 };
 
 describe("온보딩 입력 검증 (PLAN.md §5)", () => {
-  const valid = { realName: "김운영", feet: ["right"], preferredPositions: ["MF", "CB"] };
+  const valid = { realName: "김운영", feet: ["right"], preferredPositions: ["MF", "CB", "WB"], jerseyNumber: "" };
 
   it("올바르면 앞뒤 공백을 지운 값을 돌려준다", () => {
     expect(validateOnboarding({ ...valid, realName: "  김운영 " })).toEqual({
       ok: true,
-      value: { realName: "김운영", feet: ["right"], preferredPositions: ["MF", "CB"] },
+      value: { realName: "김운영", feet: ["right"], preferredPositions: ["MF", "CB", "WB"], jerseyNumber: null },
+    });
+  });
+
+  it("등번호를 고르면 숫자로 돌려준다", () => {
+    const result = validateOnboarding({ ...valid, jerseyNumber: "7" });
+    expect(result.ok && result.value.jerseyNumber).toBe(7);
+    expect(validateOnboarding({ ...valid, jerseyNumber: "100" })).toEqual({
+      ok: false,
+      errors: { jerseyNumber: "등번호는 0~99 사이로 골라 주세요." },
     });
   });
 
@@ -40,19 +49,17 @@ describe("온보딩 입력 검증 (PLAN.md §5)", () => {
     expect(validateOnboarding({ ...valid, feet: ["left", "right"] }).ok).toBe(true);
   });
 
-  it("선호 포지션은 1~3개다", () => {
+  it("선호 포지션은 3개다 — 1순위가 골키퍼면 하나", () => {
     expect(validateOnboarding({ ...valid, preferredPositions: [] })).toEqual({
       ok: false,
-      errors: { preferredPositions: "선호 포지션을 하나 이상 골라 주세요." },
+      errors: { preferredPositions: "선호 포지션을 3개 골라 주세요." },
     });
-    expect(validateOnboarding({ ...valid, preferredPositions: ["FW", "AM", "WG", "MF"] })).toEqual({
-      ok: false,
-      errors: { preferredPositions: "선호 포지션은 3개까지 고를 수 있어요." },
-    });
+    expect(validateOnboarding({ ...valid, preferredPositions: ["FW", "AM", "WG", "MF"] }).ok).toBe(false);
+    expect(validateOnboarding({ ...valid, preferredPositions: ["GK"] }).ok).toBe(true);
   });
 
   it("같은 값을 두 번 고를 수 없다", () => {
-    expect(validateOnboarding({ ...valid, preferredPositions: ["FW", "FW"] }).ok).toBe(false);
+    expect(validateOnboarding({ ...valid, preferredPositions: ["FW", "FW", "CB"] }).ok).toBe(false);
     expect(validateOnboarding({ ...valid, feet: ["left", "left"] }).ok).toBe(false);
   });
 
@@ -62,7 +69,7 @@ describe("온보딩 입력 검증 (PLAN.md §5)", () => {
   });
 
   it("틀린 곳이 여럿이면 전부 알려준다", () => {
-    const result = validateOnboarding({ realName: "", feet: [], preferredPositions: [] });
+    const result = validateOnboarding({ realName: "", feet: [], preferredPositions: [], jerseyNumber: "" });
     expect(result.ok).toBe(false);
     expect(!result.ok && Object.keys(result.errors).sort()).toEqual(["feet", "preferredPositions", "realName"]);
   });
@@ -75,15 +82,17 @@ describe("폼 데이터 읽기", () => {
       ["feet", "left"],
       ["preferredPositions", "CB"],
       ["preferredPositions", "FW"],
+      ["jerseyNumber", "9"],
     ]);
     expect(readOnboardingForm(data)).toEqual({
       realName: "김운영",
       feet: ["left"],
       preferredPositions: ["CB", "FW"],
+      jerseyNumber: "9",
     });
   });
 
   it("값이 없으면 빈 값으로 읽는다", () => {
-    expect(readOnboardingForm(form([]))).toEqual({ realName: "", feet: [], preferredPositions: [] });
+    expect(readOnboardingForm(form([]))).toEqual({ realName: "", feet: [], preferredPositions: [], jerseyNumber: "" });
   });
 });

@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { groupForAdmin, toAdminMember, type AdminMember } from "./adminMember";
+import { groupForAdmin, regularMembers, toAdminMember, type AdminMember } from "./adminMember";
 
 const row = {
   id: "00000000-0000-0000-0000-000000000001",
   real_name: "김운영",
-  kakao_nickname: "운영카톡",
-  avatar_url: null,
   feet: ["right"],
-  preferred_positions: ["MF"],
+  preferred_positions: ["MF", "CB", "WB"],
   role: "user",
   status: "approved",
   jersey_number: null,
   created_at: "2026-10-19T01:00:00+00:00",
   member_admin_info: { member_type: "guest" },
+  match_guests: null,
 };
 
 describe("관리 화면용 멤버", () => {
@@ -22,6 +21,16 @@ describe("관리 화면용 멤버", () => {
       memberType: "guest",
       createdAt: "2026-10-19T01:00:00+00:00",
     });
+  });
+
+  it("그날 용병이면 그 매치 id 를 읽는다", () => {
+    expect(toAdminMember(row).guestMatchId).toBeNull();
+    expect(toAdminMember({ ...row, match_guests: { match_id: "m1" } }).guestMatchId).toBe("m1");
+    expect(toAdminMember({ ...row, match_guests: [{ match_id: "m1" }] }).guestMatchId).toBe("m1");
+  });
+
+  it("이메일은 따로 읽어 붙인다 — 처음엔 없다", () => {
+    expect(toAdminMember(row).email).toBeNull();
   });
 
   it("구분이 아직 없으면(가입 대기) null 이다", () => {
@@ -38,14 +47,14 @@ describe("관리 화면 묶음", () => {
   const make = (overrides: Partial<AdminMember>): AdminMember => ({
     id: overrides.realName ?? "id",
     realName: "이름",
-    kakaoNickname: null,
-    avatarUrl: null,
     feet: ["right"],
-    preferredPositions: ["MF"],
+    preferredPositions: ["MF", "CB", "WB"],
     role: "user",
     status: "approved",
     memberType: "member",
     jerseyNumber: null,
+    guestMatchId: null,
+    email: null,
     createdAt: "2026-10-19T00:00:00Z",
     ...overrides,
   });
@@ -71,6 +80,11 @@ describe("관리 화면 묶음", () => {
     expect(groups.pending.map((m) => m.realName)).toEqual(["일찍", "늦게"]);
   });
 
+  it("그날 용병은 멤버 관리 묶음에 넣지 않는다 — 매치 화면에서만 다룬다", () => {
+    const groups = groupForAdmin([make({ realName: "멤버" }), make({ realName: "그날", guestMatchId: "m1" })]);
+    expect(groups.approved.map((m) => m.realName)).toEqual(["멤버"]);
+  });
+
   it("멤버는 관리자 먼저, 그다음 이름순이다", () => {
     const groups = groupForAdmin([
       make({ realName: "하멤버" }),
@@ -78,5 +92,19 @@ describe("관리 화면 묶음", () => {
       make({ realName: "나관리", role: "admin" }),
     ]);
     expect(groups.approved.map((m) => m.realName)).toEqual(["나관리", "가멤버", "하멤버"]);
+  });
+});
+
+describe("매치마다 볼 사람", () => {
+  const make = (realName: string, guestMatchId: string | null, status: AdminMember["status"] = "approved") =>
+    ({ id: realName, realName, status, guestMatchId }) as AdminMember;
+
+  it("승인된 사람 중 그날 용병은 그 매치 사람만 남긴다", () => {
+    const members = [make("멤버", null), make("이번", "m1"), make("지난", "m0"), make("대기", null, "pending")];
+    expect(regularMembers(members, "m1").map((m) => m.realName)).toEqual(["멤버", "이번"]);
+  });
+
+  it("매치를 정하지 않으면 그날 용병을 모두 뺀다", () => {
+    expect(regularMembers([make("멤버", null), make("이번", "m1")]).map((m) => m.realName)).toEqual(["멤버"]);
   });
 });
