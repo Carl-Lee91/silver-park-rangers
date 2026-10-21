@@ -9,8 +9,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // globals.css 의 --color-primary 와 같은 값
-  themeColor: "#171717",
+  // 상태 표시줄 색. 다크 모드라 globals.css 의 --color-bg-base 와 같은 값이다(화면과 이어지게)
+  themeColor: "#10151c",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

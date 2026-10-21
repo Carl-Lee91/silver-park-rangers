@@ -5,46 +5,48 @@
 
       --color-primary  →  bg-primary · text-primary · border-primary
 
-  primary 는 검정, 바탕·선은 회색 단계를 쓴다. 의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강)만 색을 쓴다.
+  다크 모드 하나뿐이다(PLAN.md §7 "색"). 바탕·선은 어두운 남색 회색 단계, 강조(primary)는 우리 유니폼 하늘색이다.
+  의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강, 자리 적합도)만 따로 색을 쓴다.
 */
 @theme {
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
 
-  /* ── Brand ── */
-  --color-primary: #171717;
-  --color-primary-contrast: #ffffff;
-  /* primary 의 옅은 단계(연회색). 막대 바탕(트랙)처럼 받쳐 줄 때만 쓴다 */
-  --color-primary-soft: #e5e5e5;
-  /* 차트 막대·미터 채움. 검정은 막대로 쓰기엔 무거워 한 단계 밝은 회색(명도·대비 검증 통과) */
-  --color-chart: #525252;
-
-  /* ── Background ── */
-  --color-bg-base: #ffffff;
-  --color-bg-subtle: #f4f5f7;
-
-  /* ── Text ── */
-  --color-text-primary: #171717;
-  --color-text-secondary: #5b6270;
-  --color-text-tertiary: #8b929e;
-
-  /* ── Line · State ── */
-  --color-border: #e3e6ea;
-  --color-danger: #d93a3a;
-
-  /* ── 경기장 ── */
-  --color-pitch: #2e7d4f;
-  --color-pitch-line: rgb(255 255 255 / 0.55);
-
-  /* ── 카카오 노랑: 카톡 공유 단추, 키퍼 표시 ── */
-  --color-kakao: #fee500;
-  --color-kakao-label: #191919;
-
-  /* ── 우리 팀 유니폼: 맨시티 하늘색(#6cabdd)보다 조금 밝은 하늘색. 경기장 위 필드 선수 동그라미, 전술판 강조색 ── */
+  /* ── 우리 팀 유니폼: 맨시티 하늘색(#6cabdd)보다 조금 밝은 하늘색. 경기장 위 필드 선수 유니폼, 강조색 ── */
   --color-kit: #80c4ee;
   --color-kit-label: #0f2a44;
 
-  /* ── 자리 적합도(스쿼드 빌더): 그 자리가 선호 1·2·3순위인지, 선호가 아닌지. 어두운 전술판 위에서 읽히는 밝은 색 ── */
+  /* ── Brand ── */
+  /* 강조: 주요 단추 · 고른 탭 · 링크. 유니폼 하늘색 위에 남색 글자 */
+  --color-primary: var(--color-kit);
+  --color-primary-contrast: var(--color-kit-label);
+  /* primary 의 옅은 단계. 막대 바탕(트랙)처럼 받쳐 줄 때만 쓴다 */
+  --color-primary-soft: #2a3442;
+  /* 차트 막대·미터 채움 */
+  --color-chart: var(--color-kit);
+
+  /* ── Background ── */
+  --color-bg-base: #10151c;
+  --color-bg-subtle: #19202a;
+
+  /* ── Text ── */
+  --color-text-primary: #e9eef4;
+  --color-text-secondary: #a3aebc;
+  --color-text-tertiary: #7d8999;
+
+  /* ── Line · State ── */
+  --color-border: #29323e;
+  --color-danger: #ff7a7a;
+
+  /* ── 경기장: 어두운 바탕에 맞춘 짙은 초록 ── */
+  --color-pitch: #245e3f;
+  --color-pitch-line: rgb(255 255 255 / 0.55);
+
+  /* ── 카카오 노랑: 카톡 공유 단추, 키퍼 유니폼 ── */
+  --color-kakao: #fee500;
+  --color-kakao-label: #191919;
+
+  /* ── 자리 적합도(스쿼드 빌더): 그 자리가 선호 1·2·3순위인지, 선호가 아닌지 ── */
   --color-fit-best: #4ade80;
   --color-fit-good: #bef264;
   --color-fit-fair: #facc15;
@@ -88,29 +90,12 @@
   }
 }
 
-body {
-  background: var(--color-bg-base);
-  color: var(--color-text-primary);
+:root {
+  /* 브라우저가 그리는 것(입력칸 · 선택 목록 · 스크롤바)도 어둡게 */
+  color-scheme: dark;
 }
 
-/*
-  전술판(스쿼드 빌더). 풋볼매니저 24 전술 화면처럼 어두운 판이다(PLAN.md §7 스쿼드 빌더).
-  안쪽에서는 같은 토큰 이름을 어두운 값으로 바꾼다. 그래서 안에 들어가는 공용 컴포넌트(SubmitButton · ActionButton ·
-  시간·메모 편집기)도 손대지 않고 어두운 판에 맞춰진다. 강조색(primary)은 우리 유니폼 하늘색이다.
-*/
-.theme-board {
-  color-scheme: dark;
-  --color-primary: var(--color-kit);
-  --color-primary-contrast: var(--color-kit-label);
-  --color-primary-soft: #2a3442;
-  --color-bg-base: #10151c;
-  --color-bg-subtle: #19202a;
-  --color-text-primary: #e9eef4;
-  --color-text-secondary: #a3aebc;
-  --color-text-tertiary: #717d8d;
-  --color-border: #29323e;
-  --color-danger: #ff7a7a;
-  --color-pitch: #245e3f;
-  background-color: var(--color-bg-base);
+body {
+  background: var(--color-bg-base);
   color: var(--color-text-primary);
 }
