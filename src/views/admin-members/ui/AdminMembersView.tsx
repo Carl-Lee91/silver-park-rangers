@@ -25,7 +25,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
       <h2 className="mb-3 text-sm font-semibold text-text-secondary">
         {title} <span className="text-text-primary">{count}</span>
       </h2>
-      <div className="flex flex-col gap-3">{children}</div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{children}</div>
     </section>
   );
 }

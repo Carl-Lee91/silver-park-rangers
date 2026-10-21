@@ -29,7 +29,7 @@ export default async function HomeView() {
   const responses = await fetchMyResponses(matches.map((match) => match.id));
 
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-10">
+    <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-8 px-4 md:px-6 lg:px-8 py-10">
       <header className="flex items-start justify-between">
         <div>
           <p className="text-sm text-text-secondary">Silver Park Rangers</p>
@@ -45,7 +45,7 @@ export default async function HomeView() {
         {matches.length === 0 ? (
           <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">다가오는 매치가 없어요.</p>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {matches.map((match) => (
               <MatchCard
                 key={match.id}
@@ -59,7 +59,7 @@ export default async function HomeView() {
       </section>
 
       {isAdmin(me) && (
-        <Link href={ROUTES.admin} className="rounded-xl border border-border p-4 text-sm font-semibold">
+        <Link href={ROUTES.admin} className="rounded-xl border border-border p-4 text-sm font-semibold md:self-start md:px-6">
           관리 화면으로
         </Link>
       )}

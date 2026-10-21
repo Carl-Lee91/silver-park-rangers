@@ -42,7 +42,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         투표 {open ? `${formatDeadline(votingClosesAt(match).toISOString())} 마감` : "마감됨"}
       </p>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 md:max-w-narrow">
         <Link
           href={adminMatchEditPath(match.id)}
           className="flex h-10 items-center justify-center rounded-lg border border-border text-sm font-medium"
@@ -58,77 +58,84 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         />
       </div>
 
-      <section>
-        <h2 className="mb-3 font-semibold">참석 투표</h2>
-        <AttendanceList attendance={attendance} />
-        <div className="mt-4">
-          <h3 className="text-sm font-semibold">
-            아직 투표 안 함 <span className="text-text-secondary">{waiting.length}</span>
-          </h3>
-          {waiting.length === 0 ? (
-            <p className="mt-1 text-sm text-text-tertiary">모두 투표했어요.</p>
-          ) : (
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {waiting.map((member) => (
-                <li key={member.id} className="rounded-lg border border-border px-2 py-1 text-sm">
-                  {member.realName}
-                </li>
-              ))}
-            </ul>
-          )}
+      {/* 데스크톱: 왼쪽은 참석(투표·그날 용병), 오른쪽은 스쿼드·출석·결과 */}
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
+        <div className="flex flex-col gap-8">
+          <section>
+            <h2 className="mb-3 font-semibold">참석 투표</h2>
+            <AttendanceList attendance={attendance} />
+            <div className="mt-4">
+              <h3 className="text-sm font-semibold">
+                아직 투표 안 함 <span className="text-text-secondary">{waiting.length}</span>
+              </h3>
+              {waiting.length === 0 ? (
+                <p className="mt-1 text-sm text-text-tertiary">모두 투표했어요.</p>
+              ) : (
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {waiting.map((member) => (
+                    <li key={member.id} className="rounded-lg border border-border px-2 py-1 text-sm">
+                      {member.realName}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="mb-1 font-semibold">
+              그날 용병 <span className="text-text-secondary">{guests.length}</span>
+            </h2>
+            <p className="mb-3 text-xs text-text-tertiary">
+              가입하지 않고 이번 매치만 뛰는 용병이에요. 넣으면 참석으로 잡혀요. 팀원에게는 이름만 보여요.
+            </p>
+            <MatchGuests
+              matchId={match.id}
+              guests={guests.map(({ id, realName, feet, preferredPositions, jerseyNumber }) => ({
+                id,
+                realName,
+                feet,
+                preferredPositions,
+                jerseyNumber,
+              }))}
+            />
+          </section>
         </div>
-      </section>
 
-      <section>
-        <h2 className="mb-1 font-semibold">
-          그날 용병 <span className="text-text-secondary">{guests.length}</span>
-        </h2>
-        <p className="mb-3 text-xs text-text-tertiary">
-          가입하지 않고 이번 매치만 뛰는 용병이에요. 넣으면 참석으로 잡혀요. 팀원에게는 이름만 보여요.
-        </p>
-        <MatchGuests
-          matchId={match.id}
-          guests={guests.map(({ id, realName, feet, preferredPositions, jerseyNumber }) => ({
-            id,
-            realName,
-            feet,
-            preferredPositions,
-            jerseyNumber,
-          }))}
-        />
-      </section>
+        <div className="flex flex-col gap-8">
+          <Link
+            href={adminSquadPath(match.id)}
+            className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-contrast"
+          >
+            <span className="font-semibold">스쿼드 짜기</span>
+            <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>
+          </Link>
 
-      <Link
-        href={adminSquadPath(match.id)}
-        className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-contrast"
-      >
-        <span className="font-semibold">스쿼드 짜기</span>
-        <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>
-      </Link>
+          <section>
+            <h2 className="mb-3 font-semibold">실제 출석</h2>
+            <p className="mb-3 text-xs text-text-tertiary">매치가 끝나면 정해 주세요. 참석률·노쇼 통계가 이 값을 써요.</p>
+            <AttendanceConfirm
+              matchId={match.id}
+              rows={confirmRows(attendance, squadIds, members)}
+              members={approved}
+              hasSquad={squadIds.size > 0}
+            />
+          </section>
 
-      <section>
-        <h2 className="mb-3 font-semibold">실제 출석</h2>
-        <p className="mb-3 text-xs text-text-tertiary">매치가 끝나면 정해 주세요. 참석률·노쇼 통계가 이 값을 써요.</p>
-        <AttendanceConfirm
-          matchId={match.id}
-          rows={confirmRows(attendance, squadIds, members)}
-          members={approved}
-          hasSquad={squadIds.size > 0}
-        />
-      </section>
-
-      <section>
-        <h2 className="mb-1 font-semibold">경기 결과</h2>
-        <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
-        <ResultEditor
-          matchId={match.id}
-          quarterCount={match.quarterCount}
-          scores={result.scores}
-          goals={result.goals}
-          squad={squad}
-          members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
-        />
-      </section>
+          <section>
+            <h2 className="mb-1 font-semibold">경기 결과</h2>
+            <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
+            <ResultEditor
+              matchId={match.id}
+              quarterCount={match.quarterCount}
+              scores={result.scores}
+              goals={result.goals}
+              squad={squad}
+              members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
+            />
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

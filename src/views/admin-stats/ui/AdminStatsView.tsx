@@ -42,26 +42,29 @@ export default async function AdminStatsView({ period }: { period: StatsPeriod }
         ))}
       </nav>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Tile
-          label="쿼터 전적"
-          value={`${summary.record.win}승 ${summary.record.draw}무 ${summary.record.loss}패`}
-          note="결과를 남긴 쿼터만"
-        />
-        <Tile label="득실" value={`${summary.goalsFor} : ${summary.goalsAgainst}`} />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <Tile label="지난 매치" value={`${summary.matchCount}`} note={`출석 확정 ${summary.confirmedCount}`} />
-        <Tile
-          label="매치당 출석"
-          value={summary.avgAttended === null ? "–" : `${summary.avgAttended.toFixed(1)}명`}
-          note="용병 포함"
-        />
-        <Tile
-          label="멤버 평균 참석률"
-          value={teamRate === null ? "–" : `${Math.round(teamRate * 100)}%`}
-          note={`멤버 ${active.length}명`}
-        />
+      {/* 모바일은 2칸·3칸 두 줄, 데스크톱은 다섯 칸 한 줄(lg:contents 로 안쪽 줄을 풀어 놓는다) */}
+      <div className="flex flex-col gap-2 lg:grid lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 lg:contents">
+          <Tile
+            label="쿼터 전적"
+            value={`${summary.record.win}승 ${summary.record.draw}무 ${summary.record.loss}패`}
+            note="결과를 남긴 쿼터만"
+          />
+          <Tile label="득실" value={`${summary.goalsFor} : ${summary.goalsAgainst}`} />
+        </div>
+        <div className="grid grid-cols-3 gap-2 lg:contents">
+          <Tile label="지난 매치" value={`${summary.matchCount}`} note={`출석 확정 ${summary.confirmedCount}`} />
+          <Tile
+            label="매치당 출석"
+            value={summary.avgAttended === null ? "–" : `${summary.avgAttended.toFixed(1)}명`}
+            note="용병 포함"
+          />
+          <Tile
+            label="멤버 평균 참석률"
+            value={teamRate === null ? "–" : `${Math.round(teamRate * 100)}%`}
+            note={`멤버 ${active.length}명`}
+          />
+        </div>
       </div>
 
       <AttendanceTrendChart trend={summary.trend} />

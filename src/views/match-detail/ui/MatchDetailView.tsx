@@ -41,56 +41,61 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
   const version = image === null ? "" : squadImageVersion(image);
 
   return (
-    <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-8">
+    <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
       <Link href={ROUTES.home} className="text-sm text-text-secondary">
         ← 홈
       </Link>
       <MatchSummary match={match} />
 
-      {summary.quarters.length > 0 && (
-        <section>
-          <h2 className="mb-3 font-semibold">경기 결과</h2>
-          <ResultSummaryView summary={summary} />
-        </section>
-      )}
+      {/* 데스크톱: 왼쪽은 결과·투표·참석자, 오른쪽은 스쿼드 */}
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-5 lg:items-start lg:gap-10">
+        <div className="flex flex-col gap-8 lg:col-span-2">
+          {summary.quarters.length > 0 && (
+            <section>
+              <h2 className="mb-3 font-semibold">경기 결과</h2>
+              <ResultSummaryView summary={summary} />
+            </section>
+          )}
 
-      <section className="rounded-xl border border-border p-4">
-        <h2 className="font-semibold">참석 투표</h2>
-        <p className="mt-1 mb-4 text-xs text-text-tertiary">
-          {open ? `${formatDeadline(votingClosesAt(match).toISOString())}까지` : "마감됨"}
-        </p>
-        <AttendanceVoteForm
-          action={submitVote}
-          matchId={match.id}
-          schedule={quarterSchedule(match)}
-          current={mine ? { response: mine.response!, arriveAt: mine.arriveAt, leaveAt: mine.leaveAt } : null}
-          open={open}
-        />
-      </section>
-
-      <section>
-        <h2 className="mb-3 font-semibold">참석자</h2>
-        <AttendanceList attendance={attendance} />
-      </section>
-
-      <section>
-        <h2 className="mb-3 font-semibold">스쿼드</h2>
-        {squad.length > 0 ? (
-          <div className="flex flex-col gap-5">
-            <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
-            <ShareActions
-              shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
-              title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
-              imageUrls={{
-                quarters: squadImagePath(match.shareToken, "quarters", version),
-                rotation: squadImagePath(match.shareToken, "rotation", version),
-              }}
+          <section className="rounded-xl border border-border p-4">
+            <h2 className="font-semibold">참석 투표</h2>
+            <p className="mt-1 mb-4 text-xs text-text-tertiary">
+              {open ? `${formatDeadline(votingClosesAt(match).toISOString())}까지` : "마감됨"}
+            </p>
+            <AttendanceVoteForm
+              action={submitVote}
+              matchId={match.id}
+              schedule={quarterSchedule(match)}
+              current={mine ? { response: mine.response!, arriveAt: mine.arriveAt, leaveAt: mine.leaveAt } : null}
+              open={open}
             />
-          </div>
-        ) : (
-          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
-        )}
-      </section>
+          </section>
+
+          <section>
+            <h2 className="mb-3 font-semibold">참석자</h2>
+            <AttendanceList attendance={attendance} />
+          </section>
+        </div>
+
+        <section className="lg:col-span-3">
+          <h2 className="mb-3 font-semibold">스쿼드</h2>
+          {squad.length > 0 ? (
+            <div className="flex flex-col gap-5">
+              <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
+              <ShareActions
+                shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
+                title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
+                imageUrls={{
+                  quarters: squadImagePath(match.shareToken, "quarters", version),
+                  rotation: squadImagePath(match.shareToken, "rotation", version),
+                }}
+              />
+            </div>
+          ) : (
+            <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
+          )}
+        </section>
+      </div>
     </main>
   );
 }
