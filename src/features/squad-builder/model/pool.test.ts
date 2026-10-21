@@ -3,7 +3,7 @@ import type { Attendance } from "@/entities/attendance";
 import { quarterSchedule } from "@/entities/match";
 import type { AdminMember } from "@/entities/member";
 import type { Builder } from "./builder";
-import { buildPool, placementIssues, squadPlayersFor } from "./pool";
+import { buildPool, placementIssues, sortByFit, squadPlayersFor } from "./pool";
 
 const schedule = quarterSchedule({ startsAt: "10:00", endsAt: "13:00", quarterCount: 6 });
 
@@ -111,5 +111,23 @@ describe("배치 문제", () => {
     );
     const empty: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: null }] }];
     expect(placementIssues(pool, empty)).toEqual(["7번을 가참석·마용병님이 같이 써요."]);
+  });
+});
+
+describe("자리에 맞는 순서", () => {
+  it("고른 자리를 선호 1 · 2 · 3순위로 둔 사람부터, 같으면 원래 순서대로 놓는다", () => {
+    const players = [
+      { id: "a", preferredPositions: ["FW"] },
+      { id: "b", preferredPositions: ["MF", "CB"] },
+      { id: "c", preferredPositions: ["MF", "WB", "CB"] },
+      { id: "d", preferredPositions: ["CB"] },
+      { id: "e", preferredPositions: ["WG"] },
+    ] as const;
+    expect(sortByFit(players, "CB").map((player) => player.id)).toEqual(["d", "b", "c", "a", "e"]);
+  });
+
+  it("고른 자리가 없으면 원래 순서 그대로다", () => {
+    const players = [{ id: "a", preferredPositions: ["FW"] }, { id: "d", preferredPositions: ["CB"] }] as const;
+    expect(sortByFit(players, null).map((player) => player.id)).toEqual(["a", "d"]);
   });
 });

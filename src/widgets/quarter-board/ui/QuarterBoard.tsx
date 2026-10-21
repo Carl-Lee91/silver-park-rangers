@@ -25,7 +25,7 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
                   ? "border border-dashed border-white/80 text-white"
                   : slot.position === "GK"
                     ? "bg-kakao text-kakao-label"
-                    : "bg-white text-text-primary"
+                    : "bg-kit text-kit-label"
               }`}
             >
               {slot.jerseyNumber ?? slot.position}
@@ -84,7 +84,8 @@ function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
  *
  * 좁은 화면(모바일)은 탭으로 하나씩, 태블릿 이상은 모든 쿼터와 출전표를 한눈에 보여 준다.
  * 한 줄에 몇 쿼터를 놓을지는 놓인 자리의 폭(컨테이너 쿼리)으로 정한다 — 매치 화면의 오른쪽 칸처럼
- * 화면은 넓어도 자리가 좁을 수 있다.
+ * 화면은 넓어도 자리가 좁을 수 있다. 28rem(@md) 부터 두 쿼터, 48rem(@3xl) 부터 세 쿼터다. 매치 화면
+ * 오른쪽 칸(35rem 쯤)이 두 쿼터가 되게 잡았다 — 기준이 이보다 크면 경기장 하나가 칸 폭만큼 커진다.
  */
 export default function QuarterBoard({ quarters, schedule }: Props) {
   const wide = useMediaQuery(TABLET_UP);
@@ -94,7 +95,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
   if (wide) {
     return (
       <div className="@container flex flex-col gap-8">
-        <div className="grid gap-6 @xl:grid-cols-2 @4xl:grid-cols-3">
+        <div className="grid gap-6 @md:grid-cols-2 @3xl:grid-cols-3">
           {quarters.map((item) => (
             <figure key={item.number} className="flex flex-col gap-2">
               <figcaption className="text-sm">

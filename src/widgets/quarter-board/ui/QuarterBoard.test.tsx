@@ -52,6 +52,13 @@ describe("쿼터 보드", () => {
     expect(within(keeperRow).getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["1 김키퍼", "GK", "GK", "0"]);
   });
 
+  it("필드 선수 동그라미는 우리 유니폼 색, 키퍼는 키퍼 색이다", () => {
+    render(<QuarterBoard quarters={quarters} schedule={schedule} />);
+    const pitch = screen.getByRole("group", { name: "1쿼터 경기장" });
+    expect(within(pitch).getByText("FW")).toHaveClass("bg-kit");
+    expect(within(pitch).getByText("1")).toHaveClass("bg-kakao");
+  });
+
   it("동그라미에 등번호를 넣고, 번호가 없으면 포지션을 넣는다", () => {
     render(<QuarterBoard quarters={quarters} schedule={schedule} />);
     const pitch = screen.getByRole("group", { name: "1쿼터 경기장" });

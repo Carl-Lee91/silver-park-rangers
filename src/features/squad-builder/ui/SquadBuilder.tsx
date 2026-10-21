@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { attendanceTimeNote } from "@/entities/attendance";
 import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
+import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
 import { ActionButton, type ActionState, SubmitButton } from "@/shared/ui";
 import {
@@ -13,7 +14,6 @@ import {
   copyQuarter,
   handleDrop,
   handleTap,
-  placedIn,
   toLineup,
   toSavePayload,
   toSquadQuarters,
@@ -22,10 +22,14 @@ import {
   type Selection,
   type TapTarget,
 } from "../model/builder";
+import { fitOf } from "../model/fit";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
 import { warningMessage } from "../model/warnings";
-import { BenchChip, BenchDropZone, SlotButton } from "./dnd";
+import { SlotButton } from "./dnd";
 import NoteEditor from "./NoteEditor";
+import PitchTile from "./PitchTile";
+import SelectedPlayer from "./SelectedPlayer";
+import SquadList from "./SquadList";
 import TimeWindowEditor from "./TimeWindowEditor";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -49,11 +53,12 @@ type Props = {
   windowAction?: Action;
 };
 
-const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
-
 /**
  * 쿼터별 스쿼드를 짠다(PLAN.md §7 스쿼드 빌더). 고친 것은 화면에만 있다가 "저장"할 때 한 번에 저장된다.
  * 넣고 빼기는 탭 두 번이다 — 벤치 선수(또는 자리)를 고르고, 놓을 자리(또는 선수)를 누른다.
+ *
+ * 생김새는 풋볼매니저 24 전술 화면이다(모바일·태블릿은 풋볼매니저 모바일). 어두운 전술판(.theme-board) 위에
+ * 쿼터 탭(전술 슬롯), 경기장, 선수 표를 둔다.
  */
 export default function SquadBuilder({
   matchId,
@@ -98,12 +103,11 @@ export default function SquadBuilder({
   );
 
   const current = builder[quarter];
-  const placed = placedIn(builder, quarter);
-  const bench = pool.filter((player) => !placed.has(player.id) && player.availableQuarters.includes(quarter));
-  const away = pool.filter((player) => !placed.has(player.id) && !player.availableQuarters.includes(quarter));
-  const selectedMember = selection?.kind === "slot" ? current.slots[selection.index].memberId : null;
-  // 특이사항을 쓸 사람: 벤치에서 고른 사람이나 자리에서 고른 사람
-  const noteTarget = selection?.kind === "bench" ? selection.memberId : selectedMember;
+  const keeper = keeperSlotIndex(current.slots);
+  const selectedSlot = selection?.kind === "slot" ? current.slots[selection.index] : null;
+  // 고른 사람: 벤치에서 고른 사람이나 자리에서 고른 사람. 특이사항·시간을 고치고, 맞는 자리를 보인다
+  const selectedMember = selection?.kind === "bench" ? selection.memberId : (selectedSlot?.memberId ?? null);
+  const selectedPlayer = selectedMember === null ? undefined : byId.get(selectedMember);
   const noted = Object.entries(notes).sort(([a], [b]) => nameOf(a).localeCompare(nameOf(b), "ko"));
 
   const change = (next: Builder) => {
@@ -162,9 +166,50 @@ export default function SquadBuilder({
     return `출전 ${played}/${report.guaranteed[player.id] ?? 0}${kept > 0 ? ` · 키퍼 ${kept}` : ""}`;
   };
 
+  /** 고른 선수 칸의 둘째 줄: 선호 포지션 · 주발 · 시간 · 용병 */
+  const detailsOf = (player: BuilderPlayer) =>
+    [
+      `선호 ${player.preferredPositions.join("·")}`,
+      player.feet.map(footLabel).join("·"),
+      attendanceTimeNote(player),
+      player.memberType === "guest" ? "용병" : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+  const selected = (() => {
+    if (selection === null) return null;
+    if (selectedSlot !== null && selection.kind === "slot" && selectedSlot.memberId === null) {
+      return {
+        title: `${selectedSlot.position} 빈자리`,
+        details: null,
+        fit: null,
+        hint: "벤치에서 넣을 사람을 누르세요. 이 자리에 맞는 사람이 위에 와요.",
+      };
+    }
+    if (selectedMember === null) return null;
+    const label = labelOf(selectedMember);
+    if (selectedSlot !== null && selection.kind === "slot") {
+      return {
+        title: `${selectedSlot.position} · ${label}`,
+        details: selectedPlayer ? detailsOf(selectedPlayer) : null,
+        fit: selectedPlayer ? fitOf(selectedPlayer.preferredPositions, selectedSlot.position) : null,
+        hint: "다른 자리나 벤치 선수를 누르면 바꿔요.",
+        onRemove: () => change(removeMember(builder, quarter, selection.index)),
+      };
+    }
+    return {
+      title: label,
+      details: selectedPlayer ? detailsOf(selectedPlayer) : null,
+      fit: null,
+      hint: "놓을 자리를 누르세요. 자리 테두리 색이 이 선수에게 맞는 정도예요.",
+    };
+  })();
+
   return (
-    <div className="flex flex-col gap-5">
-      <div role="tablist" aria-label="쿼터" className="-mx-4 flex gap-2 overflow-x-auto px-4">
+    <div className="theme-board -mx-4 flex flex-col gap-4 px-4 py-4 md:mx-0 md:rounded-2xl md:p-5">
+      {/* 쿼터 탭 — 풋볼매니저의 전술 슬롯처럼 쿼터마다 포메이션을 같이 보인다 */}
+      <div role="tablist" aria-label="쿼터" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {schedule.map((time, index) => (
           <button
             key={time.startsAt}
@@ -175,9 +220,10 @@ export default function SquadBuilder({
               setQuarter(index);
               setSelection(null);
             }}
-            className="relative shrink-0 rounded-lg border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast"
+            className="relative shrink-0 rounded-lg border border-border bg-bg-subtle px-3 py-1.5 text-left text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast"
           >
-            {index + 1}쿼터 <span className="text-xs opacity-80">{time.startsAt}</span>
+            <span className="font-semibold">{index + 1}쿼터</span> <span className="text-xs opacity-80">{time.startsAt}</span>
+            <span className="block text-[11px] opacity-70">{builder[index]?.formationName}</span>
             {troubled.has(index) && (
               <span aria-hidden="true" className="absolute -top-1 -right-1 size-2.5 rounded-full bg-danger" />
             )}
@@ -194,153 +240,127 @@ export default function SquadBuilder({
           change(handleDrop(builder, quarter, String(event.active.id), event.over ? String(event.over.id) : null));
         }}
       >
-        {/* 모바일: 위에서 아래로 한 줄. 태블릿 이상: 왼쪽 경기장, 오른쪽 위 저장 줄 · 아래 벤치와 메모 */}
-        <div className="flex flex-col gap-5 md:grid md:grid-cols-2 md:items-start md:gap-x-6 lg:grid-cols-5 lg:gap-x-8">
-          <div className="flex flex-col gap-5 md:sticky md:top-20 md:row-span-2 lg:col-span-2">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label htmlFor="formation" className="text-sm font-semibold">
-                  포메이션
-                </label>
-                <select
-                  id="formation"
-                  value={current.formationName}
-                  onChange={(event) => changeFormation(event.target.value)}
-                  className="mt-2 h-10 w-full rounded-lg border border-border bg-bg-base px-3 text-sm"
-                >
-                  {formations.map((formation) => (
-                    <option key={formation.id} value={formation.name}>
-                      {formation.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {quarter > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
-                  }
-                  className="h-10 rounded-lg border border-border px-3 text-sm"
-                >
-                  이전 쿼터 복사
-                </button>
-              )}
+        {/* 모바일: 위에서 아래로 — 포메이션, 경기장, 고른 선수와 선수 표, 화면 아래에 붙는 저장 줄(풋볼매니저 모바일).
+            태블릿 이상: 첫 줄은 왼쪽 포메이션 · 오른쪽 저장 줄, 둘째 줄은 왼쪽 경기장(스크롤해도 붙어 있다) ·
+            오른쪽 고른 선수와 선수 표(풋볼매니저 24). */}
+        <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start md:gap-x-6 lg:grid-cols-5 lg:gap-x-8">
+          <div className="flex items-end gap-2 md:col-start-1 md:row-start-1 lg:col-span-2">
+            <div className="flex-1">
+              <label htmlFor="formation" className="text-xs font-semibold text-text-secondary">
+                포메이션
+              </label>
+              <select
+                id="formation"
+                value={current.formationName}
+                onChange={(event) => changeFormation(event.target.value)}
+                className="mt-1 h-10 w-full rounded-lg border border-border bg-bg-subtle px-3 text-sm font-semibold"
+              >
+                {formations.map((formation) => (
+                  <option key={formation.id} value={formation.name}>
+                    {formation.name}
+                  </option>
+                ))}
+              </select>
             </div>
+            {quarter > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
+                }
+                className="h-10 rounded-lg border border-border px-3 text-sm"
+              >
+                이전 쿼터 복사
+              </button>
+            )}
+          </div>
 
+          <div className="order-1 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
             <Pitch label="경기장">
               {current.slots.map((slot, index) => {
-                const name = slot.memberId === null ? null : labelOf(slot.memberId);
-                const selected = selection?.kind === "slot" && selection.index === index;
-                const keeper = index === keeperSlotIndex(current.slots);
+                const occupant = slot.memberId === null ? undefined : byId.get(slot.memberId);
+                const candidate = selectedPlayer ? fitOf(selectedPlayer.preferredPositions, slot.position) : null;
+                const isSelected = selection?.kind === "slot" && selection.index === index;
                 return (
                   <PitchSpot key={index} x={slot.x} y={slot.y}>
                     <SlotButton
                       index={index}
                       occupied={slot.memberId !== null}
-                      aria-pressed={selected}
+                      aria-pressed={isSelected}
                       onClick={() => tap({ kind: "slot", index })}
-                      className="flex w-16 flex-col items-center gap-0.5"
+                      className="flex w-18 flex-col items-center gap-0.5"
                     >
-                      <span
-                        className={`flex size-9 items-center justify-center rounded-full text-[11px] font-bold ${
-                          name === null ? "border border-dashed border-white/80 text-white" : keeper ? "bg-kakao text-kakao-label" : "bg-white text-text-primary"
-                        } ${selected ? "ring-3 ring-kakao" : ""}`}
-                      >
-                        {slot.position}
-                      </span>{" "}
-                      <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[11px] text-white">
-                        {name ?? "빈자리"}
-                        {slot.memberId !== null && notes[slot.memberId] && " ✎"}
-                      </span>
+                      <PitchTile
+                        position={slot.position}
+                        label={slot.memberId === null ? null : labelOf(slot.memberId)}
+                        keeper={index === keeper}
+                        fit={occupant ? fitOf(occupant.preferredPositions, slot.position) : null}
+                        candidate={candidate === "poor" || slot.memberId === selectedMember ? null : candidate}
+                        selected={isSelected}
+                        noted={slot.memberId !== null && Boolean(notes[slot.memberId])}
+                      />
                     </SlotButton>
                   </PitchSpot>
                 );
               })}
             </Pitch>
-
-            {selectedMember !== null && selection?.kind === "slot" && (
-              <div className="flex items-center justify-between rounded-lg bg-bg-subtle px-3 py-2 text-sm">
-                <span>{nameOf(selectedMember)} — 다른 자리를 누르면 바꿔요.</span>
-                <button
-                  type="button"
-                  onClick={() => change(removeMember(builder, quarter, selection.index))}
-                  className="font-semibold text-danger"
-                >
-                  빼기
-                </button>
-              </div>
-            )}
           </div>
 
-          <div className="flex flex-col gap-5 md:col-start-2 md:row-start-2 lg:col-span-3 lg:col-start-3">
-            {windowAction && noteTarget !== null && byId.has(noteTarget) && (
-              <TimeWindowEditor
-                key={`window-${noteTarget}`}
-                action={windowAction}
-                matchId={matchId}
-                memberId={noteTarget}
-                name={nameOf(noteTarget)}
-                schedule={schedule}
-                arriveAt={byId.get(noteTarget)!.arriveAt}
-                leaveAt={byId.get(noteTarget)!.leaveAt}
-              />
+          <div className="order-2 flex flex-col gap-4 md:order-none md:col-start-2 md:row-start-2 lg:col-span-3 lg:col-start-3">
+            {selected && (
+              <SelectedPlayer
+                title={selected.title}
+                details={selected.details}
+                fit={selected.fit}
+                hint={selected.hint}
+                onRemove={"onRemove" in selected ? selected.onRemove : undefined}
+              >
+                {windowAction && selectedPlayer && (
+                  <TimeWindowEditor
+                    key={`window-${selectedPlayer.id}`}
+                    action={windowAction}
+                    matchId={matchId}
+                    memberId={selectedPlayer.id}
+                    name={selectedPlayer.realName}
+                    schedule={schedule}
+                    arriveAt={selectedPlayer.arriveAt}
+                    leaveAt={selectedPlayer.leaveAt}
+                  />
+                )}
+                {noteAction && selectedMember !== null && (
+                  <NoteEditor
+                    key={selectedMember}
+                    action={noteAction}
+                    matchId={matchId}
+                    memberId={selectedMember}
+                    name={nameOf(selectedMember)}
+                    note={notes[selectedMember] ?? null}
+                  />
+                )}
+              </SelectedPlayer>
             )}
 
-            {noteAction && noteTarget !== null && (
-              <NoteEditor
-                key={noteTarget}
-                action={noteAction}
-                matchId={matchId}
-                memberId={noteTarget}
-                name={nameOf(noteTarget)}
-                note={notes[noteTarget] ?? null}
-              />
-            )}
+            <SquadList
+              builder={builder}
+              quarter={quarter}
+              pool={pool}
+              selection={selection}
+              onTap={tap}
+              statOf={statOf}
+              notes={notes}
+              seasonAverages={seasonAverages}
+            />
 
-            <section>
-              <h2 className="mb-2 text-sm font-semibold">
-                벤치 <span className="text-text-secondary">{bench.length}</span>
-              </h2>
-              <BenchDropZone role="group" aria-label="벤치" className="flex flex-wrap gap-2">
-                {bench.length === 0 && <p className="text-sm text-text-tertiary">이 쿼터에 남은 사람이 없어요.</p>}
-                {bench.map((player) => {
-                  const stat = statOf(player);
-                  const note = attendanceTimeNote(player);
-                  const average = seasonAverages[player.id];
-                  const badge = player.response === "maybe" || player.response === "no" ? RESPONSE_BADGE[player.response] : null;
-                  return (
-                    <BenchChip
-                      key={player.id}
-                      memberId={player.id}
-                      aria-pressed={selection?.kind === "bench" && selection.memberId === player.id}
-                      onClick={() => tap({ kind: "bench", memberId: player.id })}
-                      className="rounded-lg border border-border px-2.5 py-1.5 text-left text-sm aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast"
-                    >
-                      <span className="font-semibold">
-                        {player.jerseyNumber !== null && <span className="mr-1 text-xs opacity-70">{player.jerseyNumber}</span>}
-                        {player.realName}
-                      </span>
-                      {player.memberType === "guest" && <span className="ml-1 text-xs opacity-70">용병</span>}
-                      {badge && <span className="ml-1 text-xs text-danger">{badge}</span>}
-                      {notes[player.id] && <span className="ml-1 text-xs opacity-70">메모</span>}
-                      <span className="block text-xs opacity-70">
-                        {player.preferredPositions.join("·")}
-                        {stat && ` · ${stat}`}
-                        {note && ` · ${note}`}
-                        {average != null && ` · 올해 평균 ${average.toFixed(1)}`}
-                      </span>
-                    </BenchChip>
-                  );
-                })}
-              </BenchDropZone>
-              {away.length > 0 && (
-                <p className="mt-3 text-xs text-text-tertiary">
-                  이 쿼터엔 못 와요: {away.map((player) => player.realName).join(", ")}
-                </p>
-              )}
-              <p className="mt-2 text-xs text-text-tertiary">눌러서 고르고 놓거나, 길게 눌러 끌어다 놓아요.</p>
-            </section>
+            {messages.length > 0 && (
+              <section className="rounded-xl border border-danger/40 p-3">
+                <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
+                <ul className="mt-1 flex flex-col gap-0.5 text-sm">
+                  {messages.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
             <section aria-label="특이사항" className="rounded-xl border border-border p-3">
               <h2 className="text-sm font-semibold">
@@ -358,57 +378,52 @@ export default function SquadBuilder({
                 </ul>
               )}
             </section>
-
-            {messages.length > 0 && (
-              <section className="rounded-xl border border-danger/40 p-3">
-                <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
-                <ul className="mt-1 flex flex-col gap-0.5 text-sm">
-                  {messages.map((message) => (
-                    <li key={message}>{message}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
           </div>
 
-          {/* 모바일에서는 화면 아래에 붙는다. 그래서 경기장을 보면서도 누를 수 있게 칸 밖(이 줄)에 둔다. */}
-          <div className="sticky bottom-0 order-last -mx-4 flex flex-col gap-2 border-t border-border bg-bg-base px-4 py-3 md:static md:order-none md:col-start-2 md:row-start-1 md:mx-0 md:rounded-xl md:border lg:col-span-3 lg:col-start-3">
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={runAutoAssign} className="h-11 rounded-lg border border-border text-sm font-semibold">
+          {/* 저장 줄. 모바일에서는 화면 아래에 붙어 경기장을 보면서도 누를 수 있고, 태블릿 이상에서는 포메이션 옆에 온다. */}
+          <div className="sticky bottom-0 order-last -mx-4 flex flex-col gap-2 border-t border-border bg-bg-base px-4 py-3 md:static md:order-none md:col-start-2 md:row-start-1 md:mx-0 md:self-end md:border-0 md:bg-transparent md:p-0 lg:col-span-3 lg:col-start-3">
+            <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-end">
+              <button
+                type="button"
+                onClick={runAutoAssign}
+                className="h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
+              >
                 자동 배치
               </button>
               {quarter > 0 && (
                 <button
                   type="button"
                   onClick={reassignFromHere}
-                  className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold"
+                  className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
                 >
                   {quarter + 1}쿼터부터 다시 배치
                 </button>
               )}
-              <form action={saveFormAction}>
+              <form action={saveFormAction} className="md:w-24">
                 <input type="hidden" name="matchId" value={matchId} />
                 <input type="hidden" name="quarters" value={payload} />
                 <SubmitButton
                   disabled={!dirty}
-                  className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
+                  className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40 md:h-10"
                 >
                   저장
                 </SubmitButton>
               </form>
+              <div className="col-span-2 md:w-28">
+                <ActionButton
+                  action={publishAction}
+                  fields={{ matchId, publish: published ? "0" : "1" }}
+                  label={published ? "공개 취소" : "공개하기"}
+                  disabled={dirty}
+                />
+              </div>
             </div>
             {saveState.error && (
               <p role="alert" className="text-sm text-danger">
                 {saveState.error}
               </p>
             )}
-            <ActionButton
-              action={publishAction}
-              fields={{ matchId, publish: published ? "0" : "1" }}
-              label={published ? "공개 취소" : "공개하기"}
-              disabled={dirty}
-            />
-            <p className="text-xs text-text-tertiary">
+            <p className="text-xs text-text-tertiary md:text-right">
               {dirty ? "저장하지 않은 변경이 있어요. 저장한 뒤에 공개할 수 있어요." : published ? "팀원에게 공개돼 있어요." : "저장됨 · 아직 팀원에게 공개 전이에요."}
             </p>
           </div>

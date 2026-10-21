@@ -7,7 +7,9 @@ import {
   handleDrop,
   handleTap,
   initialBuilder,
+  lineupOrder,
   placeMember,
+  quarterMarks,
   removeMember,
   toLineup,
   toSavePayload,
@@ -198,5 +200,45 @@ describe("자동 배치와 저장", () => {
         ],
       },
     ]);
+  });
+});
+
+describe("선수 표(풋볼매니저 전술 화면의 선발 명단)", () => {
+  it("선발은 키퍼부터 수비 · 미드필드 · 공격 순이고, 같은 줄은 왼쪽부터다", () => {
+    const slots = [
+      { position: "FW", x: 50, y: 18 },
+      { position: "WB", x: 88, y: 72 },
+      { position: "MF", x: 50, y: 58 },
+      { position: "GK", x: 50, y: 92 },
+      { position: "WG", x: 15, y: 25 },
+      { position: "CB", x: 37, y: 78 },
+      { position: "AM", x: 30, y: 40 },
+      { position: "WB", x: 12, y: 72 },
+    ] as const;
+    expect(lineupOrder(slots).map((index) => slots[index].position + slots[index].x)).toEqual([
+      "GK50",
+      "WB12",
+      "CB37",
+      "WB88",
+      "AM30",
+      "MF50",
+      "WG15",
+      "FW50",
+    ]);
+  });
+
+  it("쿼터마다 필드 · 키퍼 · 쉼 · 못 옴을 표시한다", () => {
+    const builder: Builder = [
+      { formationName: "x", slots: [{ position: "GK", x: 50, y: 92, memberId: "a" }, { position: "FW", x: 50, y: 20, memberId: null }] },
+      { formationName: "x", slots: [{ position: "GK", x: 50, y: 92, memberId: null }, { position: "FW", x: 50, y: 20, memberId: "a" }] },
+      { formationName: "x", slots: [{ position: "GK", x: 50, y: 92, memberId: null }, { position: "FW", x: 50, y: 20, memberId: null }] },
+      { formationName: "x", slots: [{ position: "GK", x: 50, y: 92, memberId: null }, { position: "FW", x: 50, y: 20, memberId: null }] },
+    ];
+    expect(quarterMarks(builder, "a", [0, 1, 2])).toEqual(["keeper", "field", "rest", "away"]);
+  });
+
+  it("못 오는 쿼터에 들어가 있으면 들어간 대로 표시한다 — 빼야 한다는 걸 보이려고", () => {
+    const builder: Builder = [{ formationName: "x", slots: [{ position: "FW", x: 50, y: 20, memberId: "a" }] }];
+    expect(quarterMarks(builder, "a", [])).toEqual(["field"]);
   });
 });

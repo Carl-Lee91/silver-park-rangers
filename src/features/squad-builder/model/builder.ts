@@ -141,6 +141,26 @@ export const copyQuarter = (
     builder[from].formationName,
   );
 
+/** 선수 표의 줄: 키퍼 → 수비 → 미드필드 → 공격 */
+const LINE: Record<Position, number> = { GK: 0, CB: 1, WB: 1, MF: 2, AM: 2, WG: 3, FW: 3 };
+
+/** 선발 명단에 놓을 자리 순서. 풋볼매니저 선수 표처럼 뒤에서 앞으로, 같은 줄은 왼쪽부터다. */
+export const lineupOrder = (slots: readonly Pick<BuilderSlot, "position" | "x">[]): number[] =>
+  slots
+    .map((_, index) => index)
+    .sort((a, b) => LINE[slots[a].position] - LINE[slots[b].position] || slots[a].x - slots[b].x);
+
+/** 한 사람이 그 쿼터에 하는 일: 필드 · 키퍼 · 쉼(와 있지만 안 뜀) · 못 옴 */
+export type QuarterMark = "field" | "keeper" | "rest" | "away";
+
+/** 쿼터마다 무엇을 하는지. 못 오는 쿼터에 들어가 있으면 들어간 대로 보인다(빼야 한다는 걸 보이려고). */
+export const quarterMarks = (builder: Builder, memberId: string, availableQuarters: readonly number[]): QuarterMark[] =>
+  builder.map((quarter, index) => {
+    const slotIndex = quarter.slots.findIndex((slot) => slot.memberId === memberId);
+    if (slotIndex !== -1) return slotIndex === keeperSlotIndex(quarter.slots) ? "keeper" : "field";
+    return availableQuarters.includes(index) ? "rest" : "away";
+  });
+
 /** 자동 배치 결과(키퍼 + 필드 순서)를 자리에 넣는다. */
 export const applyLineup = (builder: Builder, lineup: readonly QuarterLineup[]): Builder =>
   builder.map((quarter, index) => {

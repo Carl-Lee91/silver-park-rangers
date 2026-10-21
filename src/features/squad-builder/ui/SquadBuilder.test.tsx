@@ -135,6 +135,72 @@ describe("스쿼드 빌더", () => {
     expect(within(bench()).getByRole("button", { name: /박공격/ })).not.toHaveTextContent("올해 평균");
   });
 
+  describe("선수 표(풋볼매니저 전술 화면)", () => {
+    const lineup = () => screen.getByRole("group", { name: "선발" });
+
+    it("선발 명단을 키퍼부터 뒤에서 앞으로 보여 주고, 누르면 그 자리를 고른다", async () => {
+      const user = userEvent.setup();
+      renderBuilder();
+      await user.click(screen.getByRole("button", { name: "자동 배치" }));
+
+      expect(within(lineup()).getAllByRole("button").map((row) => row.textContent)).toEqual([
+        expect.stringMatching(/^GK.*김키퍼/),
+        expect.stringMatching(/^CB.*이수비/),
+        expect.stringMatching(/^FW.*박공격/),
+      ]);
+      await user.click(within(lineup()).getByRole("button", { name: /이수비/ }));
+      await user.click(screen.getByRole("button", { name: "빼기" }));
+      expect(within(bench()).getByRole("button", { name: /이수비/ })).toBeInTheDocument();
+    });
+
+    it("쿼터마다 필드 · 키퍼 · 쉼을 점으로 보여 준다", async () => {
+      const user = userEvent.setup();
+      renderBuilder();
+      await user.click(screen.getByRole("button", { name: "자동 배치" }));
+
+      const keeper = within(lineup()).getByRole("button", { name: /김키퍼/ });
+      expect(within(keeper).getByRole("img")).toHaveAccessibleName("1쿼터 키퍼, 2쿼터 키퍼");
+      const field = within(lineup()).getByRole("button", { name: /이수비/ });
+      expect(within(field).getByRole("img")).toHaveAccessibleName("1쿼터 출전, 2쿼터 출전");
+    });
+
+    it("자리를 고르면 벤치를 그 자리에 맞는 사람부터 놓고 몇 순위인지 보여 준다", async () => {
+      const user = userEvent.setup();
+      renderBuilder();
+      await user.click(within(pitch()).getByRole("button", { name: /^CB/ }));
+
+      const rows = within(bench()).getAllByRole("button");
+      expect(rows[0]).toHaveAccessibleName(/이수비/);
+      expect(rows[0]).toHaveTextContent("1순위");
+    });
+
+    it("벤치 선수를 고르면 경기장 자리마다 그 선수에게 맞는 정도를 보여 준다", async () => {
+      const user = userEvent.setup();
+      renderBuilder();
+      await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
+
+      expect(within(pitch()).getByRole("button", { name: /^CB/ })).toHaveAccessibleName(/고른 선수 1순위/);
+      expect(within(pitch()).getByRole("button", { name: /^FW/ })).not.toHaveAccessibleName(/고른 선수/);
+    });
+
+    it("이 쿼터에 못 오는 사람은 벤치가 아니라 못 옴에 따로 보여 준다", () => {
+      const late: BuilderPlayer = { ...player("l", "최늦음", ["MF"]), arriveAt: "10:30", availableQuarters: [1] };
+      renderBuilder({ pool: [...pool, late] });
+
+      expect(within(screen.getByRole("group", { name: "못 옴" })).getByText(/최늦음/)).toBeInTheDocument();
+      expect(within(bench()).queryByRole("button", { name: /최늦음/ })).not.toBeInTheDocument();
+    });
+
+    it("경기장의 필드 선수는 우리 유니폼 색, 키퍼는 키퍼 색 동그라미다", async () => {
+      const user = userEvent.setup();
+      renderBuilder();
+      await user.click(screen.getByRole("button", { name: "자동 배치" }));
+
+      expect(within(within(pitch()).getByRole("button", { name: /CB 이수비/ })).getByText("CB")).toHaveClass("bg-kit");
+      expect(within(within(pitch()).getByRole("button", { name: /GK 김키퍼/ })).getByText("GK")).toHaveClass("bg-kakao");
+    });
+  });
+
   describe("특이사항", () => {
     const notes = { c: "무릎 안 좋음 — 수비만" };
 

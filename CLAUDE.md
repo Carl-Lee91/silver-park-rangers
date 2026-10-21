@@ -62,9 +62,13 @@
 - 색·간격은 `src/app/globals.css` 의 `@theme` 토큰으로만 쓴다. 컴포넌트에 값을
   하드코딩하지 않는다.
   - 예외: 서버 이미지(`next/og`, Satori)는 CSS 변수를 못 읽는다. 그래서
-    `widgets/squad-image/lib/palette.ts` 에 **같은 값**을 둔다. 토큰을 바꾸면 거기도 같이 바꾼다.
+    `widgets/squad-image/lib/palette.ts` 에 **같은 값**을 둔다. 토큰을 바꾸면 거기도 같이 바꾼다
+    (`palette.test.ts` 가 두 값이 같은지 검사한다).
   - 🔴 서버 이미지의 그림(색·글꼴·배치)을 바꾸면 `widgets/squad-image/lib/imagePath.ts` 의 `IMAGE_DESIGN` 을
     올린다. 이미지는 주소마다 기기에 오래 캐시돼서, 안 올리면 예전 그림이 계속 보인다.
+  - 스쿼드 빌더의 어두운 전술판은 `.theme-board` 가 같은 토큰 이름(`bg-base`·`text-primary`·`primary` …)을
+    어두운 값으로 바꿔서 만든다. 그 안의 컴포넌트는 평소 토큰을 그대로 쓴다 — 어두운 색을 따로 하드코딩하지 않는다.
+  - 우리 팀 유니폼 색은 `--color-kit` 하나다(경기장 선수 동그라미 · 전술판 강조색). 바꾸면 `palette.ts` 의 `kit` 도 같이 바꾼다.
 
 ### 외부 연동은 키가 없어도 코드가 완성돼 있어야 한다
 

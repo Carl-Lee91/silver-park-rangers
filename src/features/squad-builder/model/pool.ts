@@ -2,7 +2,7 @@ import type { Attendance, AttendanceResponse } from "@/entities/attendance";
 import { availableQuarters, type QuarterTime } from "@/entities/match";
 import type { AdminMember, Foot, MemberType } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import type { SquadPlayer } from "@/entities/squad";
+import { preferenceScore, type SquadPlayer } from "@/entities/squad";
 import type { Builder } from "./builder";
 
 /** 빌더 벤치에 오르는 사람 */
@@ -108,3 +108,15 @@ export const placementIssues = (pool: readonly BuilderPlayer[], builder: Builder
   });
   return [...issues, ...duplicateNumbers(pool, placed)];
 };
+
+/**
+ * 고른 자리를 선호 순위가 높은 사람부터 놓는다. 풋볼매니저가 자리를 고르면 맞는 선수를 위로 올리듯.
+ * 순위가 같으면 원래 순서이고, 고른 자리가 없으면 그대로다.
+ */
+export const sortByFit = <T extends { preferredPositions: readonly Position[] }>(
+  players: readonly T[],
+  position: Position | null,
+): T[] =>
+  position === null
+    ? [...players]
+    : [...players].sort((a, b) => preferenceScore(b, position) - preferenceScore(a, position));

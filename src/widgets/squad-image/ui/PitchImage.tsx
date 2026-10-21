@@ -64,8 +64,8 @@ export default function PitchImage({ quarter, width }: { quarter: SavedQuarter; 
                 justifyContent: "center",
                 fontSize: Math.round(circle * 0.34),
                 fontWeight: 700,
-                background: empty ? "transparent" : keeper ? PALETTE.keeper : PALETTE.bgBase,
-                color: empty ? PALETTE.bgBase : keeper ? PALETTE.keeperLabel : PALETTE.textPrimary,
+                background: empty ? "transparent" : keeper ? PALETTE.keeper : PALETTE.kit,
+                color: empty ? PALETTE.bgBase : keeper ? PALETTE.keeperLabel : PALETTE.kitLabel,
                 border: empty ? `2px dashed ${PALETTE.bgBase}` : "none",
               }}
             >
