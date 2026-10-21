@@ -6,6 +6,7 @@ import { formatMatchDate, matchTitle, quarterSchedule, seoulToday } from "@/enti
 import { fetchMatch } from "@/entities/match/server";
 import { fetchMatchNotes } from "@/entities/match-note/server";
 import { fetchAdminMembers } from "@/entities/member/server";
+import { squadForImage } from "@/entities/squad";
 import { fetchSquad } from "@/entities/squad/server";
 import { computeMemberStats, periodRange } from "@/entities/stats";
 import { fetchStatsSource } from "@/entities/stats/server";
@@ -14,8 +15,7 @@ import { saveMatchNote } from "@/features/match-note";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
 import { ShareActions, SquadImageViewer } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
-import { shortHash } from "@/shared/lib";
-import { adminSquadImagePath } from "@/widgets/squad-image";
+import { adminSquadImagePath, squadImageVersion } from "@/widgets/squad-image";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -49,7 +49,8 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const current = saved.filter((quarter) => quarter.number <= match.quarterCount);
   const placed = new Set(current.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   // 이미지는 저장한 배치로 그린다. 공개 전에도 관리자는 본다(관리자 전용 주소, PLAN.md §7).
-  const version = shortHash(JSON.stringify(current));
+  const image = squadForImage(match, current);
+  const version = image === null ? "" : squadImageVersion(image);
   const imageUrls = {
     quarters: adminSquadImagePath(match.id, "quarters", version),
     rotation: adminSquadImagePath(match.id, "rotation", version),

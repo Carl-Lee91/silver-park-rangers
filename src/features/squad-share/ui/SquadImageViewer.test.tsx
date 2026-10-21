@@ -90,4 +90,18 @@ describe("스쿼드 이미지 보기 — 새 창 없이 앱 안에서 연다", (
     await user.click(screen.getByRole("button", { name: "다시 시도" }));
     expect(screen.getByText("이미지를 만드는 중이에요")).toBeInTheDocument();
   });
+
+  it("열 때 두 이미지를 같이 불러 둔다 — 쿼터별·출전표를 오가도 다시 기다리지 않는다", async () => {
+    const user = userEvent.setup();
+    render(<SquadImageViewer urls={urls} fileName="스쿼드" />);
+    await user.click(screen.getByRole("button", { name: "쿼터별 이미지" }));
+
+    expect(screen.getByAltText("출전표 이미지")).toHaveAttribute("src", urls.rotation);
+    fireEvent.load(screen.getByAltText("출전표 이미지"));
+    await user.click(screen.getByRole("tab", { name: "출전표" }));
+
+    expect(screen.queryByText("이미지를 만드는 중이에요")).toBeNull();
+    expect(screen.getByRole("img", { name: "출전표 이미지" })).toBeVisible();
+  });
 });
+

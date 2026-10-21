@@ -14,14 +14,14 @@ import {
 import { fetchMatch } from "@/entities/match/server";
 import { ResultSummaryView, summarizeResult } from "@/entities/result";
 import { fetchMatchResult } from "@/entities/result/server";
+import { squadForImage } from "@/entities/squad";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
 import { ShareActions } from "@/features/squad-share";
 import { getAuthUserId } from "@/shared/api";
 import { getServerEnv, ROUTES } from "@/shared/config";
-import { shortHash } from "@/shared/lib";
 import { QuarterBoard } from "@/widgets/quarter-board";
-import { squadImagePath } from "@/widgets/squad-image";
+import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -37,6 +37,8 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
   const summary = summarizeResult(match.quarterCount, result.scores, result.goals);
   const mine = attendance.find((row) => row.memberId === userId && row.response !== null);
   const open = isVotingOpen(match);
+  const image = squadForImage(match, squad);
+  const version = image === null ? "" : squadImageVersion(image);
 
   return (
     <main className="mx-auto flex w-full max-w-100 flex-1 flex-col gap-8 px-4 py-8">
@@ -80,8 +82,8 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
               shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
               title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
               imageUrls={{
-                quarters: squadImagePath(match.shareToken, "quarters", shortHash(JSON.stringify(squad))),
-                rotation: squadImagePath(match.shareToken, "rotation", shortHash(JSON.stringify(squad))),
+                quarters: squadImagePath(match.shareToken, "quarters", version),
+                rotation: squadImagePath(match.shareToken, "rotation", version),
               }}
             />
           </div>
