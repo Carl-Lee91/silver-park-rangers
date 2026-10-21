@@ -8,10 +8,19 @@ create role service_role nologin bypassrls;
 create schema auth;
 grant usage on schema auth to anon, authenticated, service_role;
 
+-- 인증 서버가 쓰는 컬럼 중 마이그레이션이 읽고 쓰는 것만 둔다.
 create table auth.users (
   id uuid primary key,
-  raw_user_meta_data jsonb not null default '{}'
+  email text,
+  encrypted_password text,
+  raw_user_meta_data jsonb not null default '{}',
+  updated_at timestamptz
 );
+
+-- Supabase 는 pgcrypto 를 extensions 스키마에 깔아 둔다(임시 비밀번호의 bcrypt).
+create schema extensions;
+create extension pgcrypto with schema extensions;
+grant usage on schema extensions to anon, authenticated, service_role;
 
 -- Supabase 의 auth.uid() 와 같은 방식으로 요청의 JWT 에서 사용자 id 를 꺼낸다.
 create function auth.uid()
