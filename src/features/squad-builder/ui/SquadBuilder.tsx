@@ -194,40 +194,12 @@ export default function SquadBuilder({
           change(handleDrop(builder, quarter, String(event.active.id), event.over ? String(event.over.id) : null));
         }}
       >
-        {/* 모바일: 위에서 아래로 한 줄. 태블릿 이상: 왼쪽 경기장, 오른쪽 위 저장 줄 · 아래 벤치와 메모 */}
+        {/* 모바일: 위에서 아래로 한 줄 — 포메이션, 경기장, 고른 선수, 벤치와 메모, 화면 아래에 붙는 저장 줄.
+            태블릿 이상: 왼쪽은 경기장만(스크롤해도 붙어 있고, 화면 높이 안에 들어온다),
+            오른쪽은 위에서부터 저장 줄, 포메이션, 고른 선수, 벤치와 메모.
+            오른쪽 칸은 모바일에서 `contents` 라 그 안의 줄들이 order-* 로 경기장 앞뒤에 놓인다. */}
         <div className="flex flex-col gap-5 md:grid md:grid-cols-2 md:items-start md:gap-x-6 lg:grid-cols-5 lg:gap-x-8">
-          <div className="flex flex-col gap-5 md:sticky md:top-20 md:row-span-2 lg:col-span-2">
-            <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label htmlFor="formation" className="text-sm font-semibold">
-                  포메이션
-                </label>
-                <select
-                  id="formation"
-                  value={current.formationName}
-                  onChange={(event) => changeFormation(event.target.value)}
-                  className="mt-2 h-10 w-full rounded-lg border border-border bg-bg-base px-3 text-sm"
-                >
-                  {formations.map((formation) => (
-                    <option key={formation.id} value={formation.name}>
-                      {formation.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {quarter > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
-                  }
-                  className="h-10 rounded-lg border border-border px-3 text-sm"
-                >
-                  이전 쿼터 복사
-                </button>
-              )}
-            </div>
-
+          <div className="order-2 md:sticky md:top-20 md:order-none lg:col-span-2">
             <Pitch label="경기장">
               {current.slots.map((slot, index) => {
                 const name = slot.memberId === null ? null : labelOf(slot.memberId);
@@ -258,9 +230,42 @@ export default function SquadBuilder({
                 );
               })}
             </Pitch>
+          </div>
+
+          <div className="contents md:col-start-2 md:flex md:flex-col md:gap-5 lg:col-span-3 lg:col-start-3">
+            <div className="order-1 flex items-end gap-2 md:order-none">
+              <div className="flex-1">
+                <label htmlFor="formation" className="text-sm font-semibold">
+                  포메이션
+                </label>
+                <select
+                  id="formation"
+                  value={current.formationName}
+                  onChange={(event) => changeFormation(event.target.value)}
+                  className="mt-2 h-10 w-full rounded-lg border border-border bg-bg-base px-3 text-sm"
+                >
+                  {formations.map((formation) => (
+                    <option key={formation.id} value={formation.name}>
+                      {formation.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {quarter > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
+                  }
+                  className="h-10 rounded-lg border border-border px-3 text-sm"
+                >
+                  이전 쿼터 복사
+                </button>
+              )}
+            </div>
 
             {selectedMember !== null && selection?.kind === "slot" && (
-              <div className="flex items-center justify-between rounded-lg bg-bg-subtle px-3 py-2 text-sm">
+              <div className="order-3 flex items-center justify-between rounded-lg bg-bg-subtle px-3 py-2 text-sm md:order-none">
                 <span>{nameOf(selectedMember)} — 다른 자리를 누르면 바꿔요.</span>
                 <button
                   type="button"
@@ -271,146 +276,146 @@ export default function SquadBuilder({
                 </button>
               </div>
             )}
-          </div>
 
-          <div className="flex flex-col gap-5 md:col-start-2 md:row-start-2 lg:col-span-3 lg:col-start-3">
-            {windowAction && noteTarget !== null && byId.has(noteTarget) && (
-              <TimeWindowEditor
-                key={`window-${noteTarget}`}
-                action={windowAction}
-                matchId={matchId}
-                memberId={noteTarget}
-                name={nameOf(noteTarget)}
-                schedule={schedule}
-                arriveAt={byId.get(noteTarget)!.arriveAt}
-                leaveAt={byId.get(noteTarget)!.leaveAt}
-              />
-            )}
+            <div className="order-4 flex flex-col gap-5 md:order-none">
+              {windowAction && noteTarget !== null && byId.has(noteTarget) && (
+                <TimeWindowEditor
+                  key={`window-${noteTarget}`}
+                  action={windowAction}
+                  matchId={matchId}
+                  memberId={noteTarget}
+                  name={nameOf(noteTarget)}
+                  schedule={schedule}
+                  arriveAt={byId.get(noteTarget)!.arriveAt}
+                  leaveAt={byId.get(noteTarget)!.leaveAt}
+                />
+              )}
 
-            {noteAction && noteTarget !== null && (
-              <NoteEditor
-                key={noteTarget}
-                action={noteAction}
-                matchId={matchId}
-                memberId={noteTarget}
-                name={nameOf(noteTarget)}
-                note={notes[noteTarget] ?? null}
-              />
-            )}
+              {noteAction && noteTarget !== null && (
+                <NoteEditor
+                  key={noteTarget}
+                  action={noteAction}
+                  matchId={matchId}
+                  memberId={noteTarget}
+                  name={nameOf(noteTarget)}
+                  note={notes[noteTarget] ?? null}
+                />
+              )}
 
-            <section>
-              <h2 className="mb-2 text-sm font-semibold">
-                벤치 <span className="text-text-secondary">{bench.length}</span>
-              </h2>
-              <BenchDropZone role="group" aria-label="벤치" className="flex flex-wrap gap-2">
-                {bench.length === 0 && <p className="text-sm text-text-tertiary">이 쿼터에 남은 사람이 없어요.</p>}
-                {bench.map((player) => {
-                  const stat = statOf(player);
-                  const note = attendanceTimeNote(player);
-                  const average = seasonAverages[player.id];
-                  const badge = player.response === "maybe" || player.response === "no" ? RESPONSE_BADGE[player.response] : null;
-                  return (
-                    <BenchChip
-                      key={player.id}
-                      memberId={player.id}
-                      aria-pressed={selection?.kind === "bench" && selection.memberId === player.id}
-                      onClick={() => tap({ kind: "bench", memberId: player.id })}
-                      className="rounded-lg border border-border px-2.5 py-1.5 text-left text-sm aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast"
-                    >
-                      <span className="font-semibold">
-                        {player.jerseyNumber !== null && <span className="mr-1 text-xs opacity-70">{player.jerseyNumber}</span>}
-                        {player.realName}
-                      </span>
-                      {player.memberType === "guest" && <span className="ml-1 text-xs opacity-70">용병</span>}
-                      {badge && <span className="ml-1 text-xs text-danger">{badge}</span>}
-                      {notes[player.id] && <span className="ml-1 text-xs opacity-70">메모</span>}
-                      <span className="block text-xs opacity-70">
-                        {player.preferredPositions.join("·")}
-                        {stat && ` · ${stat}`}
-                        {note && ` · ${note}`}
-                        {average != null && ` · 올해 평균 ${average.toFixed(1)}`}
-                      </span>
-                    </BenchChip>
-                  );
-                })}
-              </BenchDropZone>
-              {away.length > 0 && (
-                <p className="mt-3 text-xs text-text-tertiary">
-                  이 쿼터엔 못 와요: {away.map((player) => player.realName).join(", ")}
+              <section>
+                <h2 className="mb-2 text-sm font-semibold">
+                  벤치 <span className="text-text-secondary">{bench.length}</span>
+                </h2>
+                <BenchDropZone role="group" aria-label="벤치" className="flex flex-wrap gap-2">
+                  {bench.length === 0 && <p className="text-sm text-text-tertiary">이 쿼터에 남은 사람이 없어요.</p>}
+                  {bench.map((player) => {
+                    const stat = statOf(player);
+                    const note = attendanceTimeNote(player);
+                    const average = seasonAverages[player.id];
+                    const badge = player.response === "maybe" || player.response === "no" ? RESPONSE_BADGE[player.response] : null;
+                    return (
+                      <BenchChip
+                        key={player.id}
+                        memberId={player.id}
+                        aria-pressed={selection?.kind === "bench" && selection.memberId === player.id}
+                        onClick={() => tap({ kind: "bench", memberId: player.id })}
+                        className="rounded-lg border border-border px-2.5 py-1.5 text-left text-sm aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast"
+                      >
+                        <span className="font-semibold">
+                          {player.jerseyNumber !== null && <span className="mr-1 text-xs opacity-70">{player.jerseyNumber}</span>}
+                          {player.realName}
+                        </span>
+                        {player.memberType === "guest" && <span className="ml-1 text-xs opacity-70">용병</span>}
+                        {badge && <span className="ml-1 text-xs text-danger">{badge}</span>}
+                        {notes[player.id] && <span className="ml-1 text-xs opacity-70">메모</span>}
+                        <span className="block text-xs opacity-70">
+                          {player.preferredPositions.join("·")}
+                          {stat && ` · ${stat}`}
+                          {note && ` · ${note}`}
+                          {average != null && ` · 올해 평균 ${average.toFixed(1)}`}
+                        </span>
+                      </BenchChip>
+                    );
+                  })}
+                </BenchDropZone>
+                {away.length > 0 && (
+                  <p className="mt-3 text-xs text-text-tertiary">
+                    이 쿼터엔 못 와요: {away.map((player) => player.realName).join(", ")}
+                  </p>
+                )}
+                <p className="mt-2 text-xs text-text-tertiary">눌러서 고르고 놓거나, 길게 눌러 끌어다 놓아요.</p>
+              </section>
+
+              <section aria-label="특이사항" className="rounded-xl border border-border p-3">
+                <h2 className="text-sm font-semibold">
+                  특이사항 <span className="text-xs font-normal text-text-tertiary">관리자만</span>
+                </h2>
+                {noted.length === 0 ? (
+                  <p className="mt-1 text-xs text-text-tertiary">아직 없어요. 선수를 누르면 메모를 쓸 수 있어요.</p>
+                ) : (
+                  <ul className="mt-1 flex flex-col gap-1 text-sm">
+                    {noted.map(([memberId, note]) => (
+                      <li key={memberId}>
+                        <span className="font-semibold">{nameOf(memberId)}</span> <span className="text-text-secondary">{note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              {messages.length > 0 && (
+                <section className="rounded-xl border border-danger/40 p-3">
+                  <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
+                  <ul className="mt-1 flex flex-col gap-0.5 text-sm">
+                    {messages.map((message) => (
+                      <li key={message}>{message}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+
+            {/* 저장 줄. 모바일에서는 화면 아래에 붙어 경기장을 보면서도 누를 수 있고, 태블릿 이상에서는 오른쪽 칸 맨 위에 온다. */}
+            <div className="sticky bottom-0 order-last -mx-4 flex flex-col gap-2 border-t border-border bg-bg-base px-4 py-3 md:static md:order-first md:mx-0 md:rounded-xl md:border">
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={runAutoAssign} className="h-11 rounded-lg border border-border text-sm font-semibold">
+                  자동 배치
+                </button>
+                {quarter > 0 && (
+                  <button
+                    type="button"
+                    onClick={reassignFromHere}
+                    className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold"
+                  >
+                    {quarter + 1}쿼터부터 다시 배치
+                  </button>
+                )}
+                <form action={saveFormAction}>
+                  <input type="hidden" name="matchId" value={matchId} />
+                  <input type="hidden" name="quarters" value={payload} />
+                  <SubmitButton
+                    disabled={!dirty}
+                    className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
+                  >
+                    저장
+                  </SubmitButton>
+                </form>
+              </div>
+              {saveState.error && (
+                <p role="alert" className="text-sm text-danger">
+                  {saveState.error}
                 </p>
               )}
-              <p className="mt-2 text-xs text-text-tertiary">눌러서 고르고 놓거나, 길게 눌러 끌어다 놓아요.</p>
-            </section>
-
-            <section aria-label="특이사항" className="rounded-xl border border-border p-3">
-              <h2 className="text-sm font-semibold">
-                특이사항 <span className="text-xs font-normal text-text-tertiary">관리자만</span>
-              </h2>
-              {noted.length === 0 ? (
-                <p className="mt-1 text-xs text-text-tertiary">아직 없어요. 선수를 누르면 메모를 쓸 수 있어요.</p>
-              ) : (
-                <ul className="mt-1 flex flex-col gap-1 text-sm">
-                  {noted.map(([memberId, note]) => (
-                    <li key={memberId}>
-                      <span className="font-semibold">{nameOf(memberId)}</span> <span className="text-text-secondary">{note}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            {messages.length > 0 && (
-              <section className="rounded-xl border border-danger/40 p-3">
-                <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
-                <ul className="mt-1 flex flex-col gap-0.5 text-sm">
-                  {messages.map((message) => (
-                    <li key={message}>{message}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-
-          {/* 모바일에서는 화면 아래에 붙는다. 그래서 경기장을 보면서도 누를 수 있게 칸 밖(이 줄)에 둔다. */}
-          <div className="sticky bottom-0 order-last -mx-4 flex flex-col gap-2 border-t border-border bg-bg-base px-4 py-3 md:static md:order-none md:col-start-2 md:row-start-1 md:mx-0 md:rounded-xl md:border lg:col-span-3 lg:col-start-3">
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={runAutoAssign} className="h-11 rounded-lg border border-border text-sm font-semibold">
-                자동 배치
-              </button>
-              {quarter > 0 && (
-                <button
-                  type="button"
-                  onClick={reassignFromHere}
-                  className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold"
-                >
-                  {quarter + 1}쿼터부터 다시 배치
-                </button>
-              )}
-              <form action={saveFormAction}>
-                <input type="hidden" name="matchId" value={matchId} />
-                <input type="hidden" name="quarters" value={payload} />
-                <SubmitButton
-                  disabled={!dirty}
-                  className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
-                >
-                  저장
-                </SubmitButton>
-              </form>
-            </div>
-            {saveState.error && (
-              <p role="alert" className="text-sm text-danger">
-                {saveState.error}
+              <ActionButton
+                action={publishAction}
+                fields={{ matchId, publish: published ? "0" : "1" }}
+                label={published ? "공개 취소" : "공개하기"}
+                disabled={dirty}
+              />
+              <p className="text-xs text-text-tertiary">
+                {dirty ? "저장하지 않은 변경이 있어요. 저장한 뒤에 공개할 수 있어요." : published ? "팀원에게 공개돼 있어요." : "저장됨 · 아직 팀원에게 공개 전이에요."}
               </p>
-            )}
-            <ActionButton
-              action={publishAction}
-              fields={{ matchId, publish: published ? "0" : "1" }}
-              label={published ? "공개 취소" : "공개하기"}
-              disabled={dirty}
-            />
-            <p className="text-xs text-text-tertiary">
-              {dirty ? "저장하지 않은 변경이 있어요. 저장한 뒤에 공개할 수 있어요." : published ? "팀원에게 공개돼 있어요." : "저장됨 · 아직 팀원에게 공개 전이에요."}
-            </p>
+            </div>
           </div>
         </div>
         <DragOverlay>
