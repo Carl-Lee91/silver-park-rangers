@@ -1,17 +1,17 @@
 import { FIT_LABELS, type Fit } from "../model/fit";
 
-/** 적합도 색. 점(bg) · 자리 테두리(ring) · 글자(text) */
+/** 적합도 색. 점(bg) · 유니폼 테두리(stroke) · 글자(text) */
 export const FIT_DOT: Record<Fit, string> = {
   best: "bg-fit-best",
   good: "bg-fit-good",
   fair: "bg-fit-fair",
   poor: "bg-fit-poor",
 };
-export const FIT_RING: Record<Fit, string> = {
-  best: "ring-fit-best",
-  good: "ring-fit-good",
-  fair: "ring-fit-fair",
-  poor: "ring-fit-poor",
+export const FIT_STROKE: Record<Fit, string> = {
+  best: "stroke-fit-best",
+  good: "stroke-fit-good",
+  fair: "stroke-fit-fair",
+  poor: "stroke-fit-poor",
 };
 const FIT_TEXT: Record<Fit, string> = {
   best: "text-fit-best",

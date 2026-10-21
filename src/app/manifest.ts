@@ -9,9 +9,9 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ko",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    // globals.css 의 --color-primary 와 같은 값
-    theme_color: "#171717",
+    // 다크 모드: globals.css 의 --color-bg-base 와 같은 값(시작 화면 · 상태 표시줄)
+    background_color: "#10151c",
+    theme_color: "#10151c",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

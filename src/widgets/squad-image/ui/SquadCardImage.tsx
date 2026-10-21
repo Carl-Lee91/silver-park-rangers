@@ -18,6 +18,8 @@ export default function SquadCardImage({ squad }: { squad: SharedSquad }) {
         height: CARD_SIZE.height,
         display: "flex",
         background: PALETTE.bgBase,
+        // 글자색을 따로 안 준 글자(쿼터 제목 등)도 어두운 바탕에서 보이게. Satori 의 기본 글자색은 검정이다
+        color: PALETTE.textPrimary,
         fontFamily: "Pretendard",
       }}
     >

@@ -57,8 +57,8 @@ type Props = {
  * 쿼터별 스쿼드를 짠다(PLAN.md §7 스쿼드 빌더). 고친 것은 화면에만 있다가 "저장"할 때 한 번에 저장된다.
  * 넣고 빼기는 탭 두 번이다 — 벤치 선수(또는 자리)를 고르고, 놓을 자리(또는 선수)를 누른다.
  *
- * 생김새는 풋볼매니저 24 전술 화면이다(모바일·태블릿은 풋볼매니저 모바일). 어두운 전술판(.theme-board) 위에
- * 쿼터 탭(전술 슬롯), 경기장, 선수 표를 둔다.
+ * 생김새는 풋볼매니저 24 전술 화면이다(모바일·태블릿은 풋볼매니저 모바일). 쿼터 탭(전술 슬롯), 경기장,
+ * 선수 표를 둔다.
  */
 export default function SquadBuilder({
   matchId,
@@ -89,7 +89,7 @@ export default function SquadBuilder({
 
   const byId = new Map(pool.map((player) => [player.id, player]));
   const nameOf = (memberId: string) => byId.get(memberId)?.realName ?? "알 수 없음";
-  /** 경기장 이름표: 등번호가 있으면 앞에 붙인다 */
+  /** 고른 선수 칸 제목: 등번호가 있으면 앞에 붙인다 */
   const labelOf = (memberId: string) => {
     const number = byId.get(memberId)?.jerseyNumber;
     return number == null ? nameOf(memberId) : `${number} ${nameOf(memberId)}`;
@@ -207,7 +207,7 @@ export default function SquadBuilder({
   })();
 
   return (
-    <div className="theme-board -mx-4 flex flex-col gap-4 px-4 py-4 md:mx-0 md:rounded-2xl md:p-5">
+    <div className="flex flex-col gap-4">
       {/* 쿼터 탭 — 풋볼매니저의 전술 슬롯처럼 쿼터마다 포메이션을 같이 보인다 */}
       <div role="tablist" aria-label="쿼터" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
         {schedule.map((time, index) => (
@@ -292,7 +292,8 @@ export default function SquadBuilder({
                     >
                       <PitchTile
                         position={slot.position}
-                        label={slot.memberId === null ? null : labelOf(slot.memberId)}
+                        number={occupant?.jerseyNumber ?? null}
+                        name={slot.memberId === null ? null : nameOf(slot.memberId)}
                         keeper={index === keeper}
                         fit={occupant ? fitOf(occupant.preferredPositions, slot.position) : null}
                         candidate={candidate === "poor" || slot.memberId === selectedMember ? null : candidate}
