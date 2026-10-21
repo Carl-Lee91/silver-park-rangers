@@ -40,6 +40,16 @@
   --color-kakao: #fee500;
   --color-kakao-label: #191919;
 
+  /* ── 우리 팀 유니폼: 맨시티 하늘색(#6cabdd)보다 조금 밝은 하늘색. 경기장 위 필드 선수 동그라미, 전술판 강조색 ── */
+  --color-kit: #80c4ee;
+  --color-kit-label: #0f2a44;
+
+  /* ── 자리 적합도(스쿼드 빌더): 그 자리가 선호 1·2·3순위인지, 선호가 아닌지. 어두운 전술판 위에서 읽히는 밝은 색 ── */
+  --color-fit-best: #4ade80;
+  --color-fit-good: #bef264;
+  --color-fit-fair: #facc15;
+  --color-fit-poor: #f87171;
+
   /* ── 화면 폭 ──
      모바일 < 768px(md) ≤ 태블릿 < 1024px(lg) ≤ 데스크톱(PLAN.md §7 "화면 크기").
      본문 최대 폭은 이 셋만 쓴다: max-w-narrow · max-w-page · max-w-wide */
@@ -80,5 +90,27 @@
 
 body {
   background: var(--color-bg-base);
+  color: var(--color-text-primary);
+}
+
+/*
+  전술판(스쿼드 빌더). 풋볼매니저 24 전술 화면처럼 어두운 판이다(PLAN.md §7 스쿼드 빌더).
+  안쪽에서는 같은 토큰 이름을 어두운 값으로 바꾼다. 그래서 안에 들어가는 공용 컴포넌트(SubmitButton · ActionButton ·
+  시간·메모 편집기)도 손대지 않고 어두운 판에 맞춰진다. 강조색(primary)은 우리 유니폼 하늘색이다.
+*/
+.theme-board {
+  color-scheme: dark;
+  --color-primary: var(--color-kit);
+  --color-primary-contrast: var(--color-kit-label);
+  --color-primary-soft: #2a3442;
+  --color-bg-base: #10151c;
+  --color-bg-subtle: #19202a;
+  --color-text-primary: #e9eef4;
+  --color-text-secondary: #a3aebc;
+  --color-text-tertiary: #717d8d;
+  --color-border: #29323e;
+  --color-danger: #ff7a7a;
+  --color-pitch: #245e3f;
+  background-color: var(--color-bg-base);
   color: var(--color-text-primary);
 }
