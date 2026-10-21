@@ -10,9 +10,6 @@ import { z } from "zod";
  *   anon key 는 공개되는 것이 정상이고, 실제 접근 통제는 Supabase 의 RLS 가 한다.
  * - 접두사가 없는 값은 서버에만 있다. 브라우저에서 읽으면 `undefined` 다.
  *   🔴 비밀은 반드시 이쪽에 둔다.
- *
- * 카카오 로그인 키는 여기 없다. 카카오 REST 키와 Client Secret 은 Supabase 대시보드의
- * Kakao 제공자 설정에 넣는다 — 우리 서버는 Supabase 에 "카카오로 로그인"만 요청한다.
  */
 const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
@@ -21,15 +18,14 @@ const publicSchema = z.object({
 
 const serverSchema = z.object({
   /**
-   * 이 배포본의 주소. 카카오 로그인 후 돌아올 곳을 절대 주소로 만들 때 쓴다.
+   * 이 배포본의 주소. 카톡에 붙일 공유 링크와 미리보기 이미지 주소를 절대 주소로 만들 때 쓴다.
    *
    * 요청 헤더(Host)에서 뽑지 않는 이유는, 헤더는 보내는 쪽이 정하기 때문이다.
-   * 돌아올 주소만큼은 **우리가 설정한 값**이어야 한다. Supabase 대시보드의
-   * Redirect URL 허용 목록에도 `${SITE_URL}/auth/callback` 이 있어야 한다.
+   * 밖으로 나가는 주소만큼은 **우리가 설정한 값**이어야 한다.
    */
   SITE_URL: z
     .url()
-    // 뒤에 경로를 이어 붙이므로 끝 슬래시를 떼어 둔다. 안 떼면 `//auth/callback`.
+    // 뒤에 경로를 이어 붙이므로 끝 슬래시를 떼어 둔다. 안 떼면 `//s/...`.
     .transform((value) => value.replace(/\/+$/, "")),
   /**
    * Vercel Cron 이 보내는 비밀값. Vercel 프로젝트 환경변수에 같은 이름으로 넣으면 Vercel 이
