@@ -14,5 +14,7 @@ export const readPasswordLogin = (
 export const passwordLoginErrorMessage = (code: string | undefined): string => {
   if (code === "invalid_credentials") return "이메일 또는 비밀번호가 맞지 않아요.";
   if (code === "over_request_rate_limit") return "시도가 너무 많아요. 잠시 뒤 다시 시도해 주세요.";
+  // 이메일 확인을 켜 둔 채 가입한 계정. 확인 메일은 팀원에게 가지 않는다(PLAN.md §2).
+  if (code === "email_not_confirmed") return "이메일 확인이 안 된 계정이에요. 관리자에게 알려 주세요.";
   return "로그인하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
 };

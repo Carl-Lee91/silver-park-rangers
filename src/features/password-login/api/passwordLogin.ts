@@ -9,7 +9,7 @@ import {
   type PasswordLoginState,
 } from "../lib/passwordLogin";
 
-/** 어드민 계정 로그인. 성공하면 관리 화면으로 보낸다(어드민이 아니면 게이트가 다시 보낸다). */
+/** 로그인. 성공하면 홈으로 보낸다 — 갈 곳(대기 화면, 관리 화면 등)은 게이트가 정한다. */
 export async function passwordLogin(
   _previous: PasswordLoginState,
   formData: FormData,
@@ -20,5 +20,5 @@ export async function passwordLogin(
   const result = await signInWithPassword(input.value.email, input.value.password);
   if (!result.ok) return { error: passwordLoginErrorMessage(result.code) };
 
-  redirect(ROUTES.admin);
+  redirect(ROUTES.home);
 }
