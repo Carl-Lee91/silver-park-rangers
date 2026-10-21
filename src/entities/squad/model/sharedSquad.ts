@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Match } from "@/entities/match";
 import { POSITION_CODES } from "@/entities/position";
 import type { SavedQuarter } from "./savedSquad";
 
@@ -79,6 +80,23 @@ export const toSharedSquad = (json: unknown): SharedSquad | null => {
       })),
     })),
   };
+};
+
+/**
+ * 저장된 스쿼드를 이미지 컴포넌트가 그리는 모양으로 만든다. 공개 전에도 관리자가 쿼터별·출전표
+ * 이미지를 보려고 쓴다(RLS 가 공개 전 스쿼드를 관리자에게만 준다). 매치 쿼터 수를 줄여 남은 뒤
+ * 쿼터는 빌더처럼 그리지 않는다. 저장된 쿼터가 없으면 null.
+ */
+export const squadForImage = (
+  match: Pick<Match, "id" | "date" | "startsAt" | "endsAt" | "quarterCount" | "venue" | "opponent">,
+  saved: readonly SavedQuarter[],
+): SharedSquad | null => {
+  const quarters = saved
+    .filter((quarter) => quarter.number <= match.quarterCount)
+    .sort((a, b) => a.number - b.number);
+  if (quarters.length === 0) return null;
+  const { id, date, startsAt, endsAt, quarterCount, venue, opponent } = match;
+  return { matchId: id, match: { date, startsAt, endsAt, quarterCount, venue, opponent }, quarters };
 };
 
 /** 한 쿼터라도 뛰는 사람 수 */

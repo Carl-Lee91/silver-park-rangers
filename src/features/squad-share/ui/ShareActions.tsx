@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import SquadImageLinks from "./SquadImageLinks";
 
 type Props = {
   /** 절대 주소(https://…/s/[token]). 카톡에 붙이면 미리보기 카드가 뜬다 */
@@ -16,7 +17,6 @@ type Result = "idle" | "copied" | "manual";
  *
  * 공유 시트(navigator.share)가 있으면 그것을 쓰고, 없으면 복사한다. 카톡 인앱 브라우저는
  * 둘 다 막혀 있을 때가 있어서, 그때는 주소를 보여 주고 길게 눌러 복사하게 한다.
- * 이미지는 새 창으로 연다 — 다운로드는 인앱 브라우저에서 잘 안 되지만 길게 눌러 저장은 된다.
  */
 export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
   const [result, setResult] = useState<Result>("idle");
@@ -39,8 +39,6 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
     }
   };
 
-  const link = "flex h-10 items-center justify-center rounded-lg border border-border text-sm font-medium";
-
   return (
     <div className="flex flex-col gap-2">
       <button
@@ -62,14 +60,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
           />
         </div>
       )}
-      <div className="grid grid-cols-2 gap-2">
-        <a href={imageUrls.quarters} target="_blank" rel="noopener" className={link}>
-          쿼터별 이미지
-        </a>
-        <a href={imageUrls.rotation} target="_blank" rel="noopener" className={link}>
-          출전표 이미지
-        </a>
-      </div>
+      <SquadImageLinks urls={imageUrls} />
     </div>
   );
 }
