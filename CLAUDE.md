@@ -58,6 +58,8 @@
   하드코딩하지 않는다.
   - 예외: 서버 이미지(`next/og`, Satori)는 CSS 변수를 못 읽는다. 그래서
     `widgets/squad-image/lib/palette.ts` 에 **같은 값**을 둔다. 토큰을 바꾸면 거기도 같이 바꾼다.
+  - 🔴 서버 이미지의 그림(색·글꼴·배치)을 바꾸면 `widgets/squad-image/lib/imagePath.ts` 의 `IMAGE_DESIGN` 을
+    올린다. 이미지는 주소마다 기기에 오래 캐시돼서, 안 올리면 예전 그림이 계속 보인다.
 
 ### 외부 연동은 키가 없어도 코드가 완성돼 있어야 한다
 
