@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { layoutFormation, Pitch, PitchSpot } from "@/entities/formation";
+import { Jersey, layoutFormation, Pitch, PitchSpot } from "@/entities/formation";
 import { positionLabel, type Position } from "@/entities/position";
 import { SubmitButton } from "@/shared/ui";
 import { DEFAULT_COUNTS, fieldCount, MAX_FIELD, type FormationDraftState } from "../model/formationDraft";
@@ -80,9 +80,7 @@ export default function FormationEditor({ action }: Props) {
       <Pitch label="미리보기">
         {layoutFormation(counts).map((slot, index) => (
           <PitchSpot key={index} x={slot.x} y={slot.y}>
-            <span className="flex size-8 items-center justify-center rounded-full bg-white text-[11px] font-bold text-text-primary">
-              {slot.position}
-            </span>
+            <Jersey label={slot.position} tone={slot.position === "GK" ? "keeper" : "kit"} className="size-9" />
           </PitchSpot>
         ))}
       </Pitch>

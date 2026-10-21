@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pitch, PitchSpot } from "@/entities/formation";
+import { Jersey, Pitch, PitchSpot } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { rotationTable, type SavedQuarter } from "@/entities/squad";
 import { TABLET_UP, useMediaQuery } from "@/shared/lib";
@@ -19,19 +19,12 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
       {quarter.slots.map((slot) => (
         <PitchSpot key={slot.slotIndex} x={slot.x} y={slot.y}>
           <div className="flex w-16 flex-col items-center gap-0.5">
-            <span
-              className={`flex size-9 items-center justify-center rounded-full text-[11px] font-bold ${
-                slot.memberName === null
-                  ? "border border-dashed border-white/80 text-white"
-                  : slot.position === "GK"
-                    ? "bg-kakao text-kakao-label"
-                    : "bg-kit text-kit-label"
-              }`}
-            >
-              {slot.jerseyNumber ?? slot.position}
-            </span>
+            <Jersey
+              label={String(slot.jerseyNumber ?? slot.position)}
+              tone={slot.memberName === null ? "empty" : slot.position === "GK" ? "keeper" : "kit"}
+            />
             {slot.memberName && (
-              <span className="max-w-16 truncate rounded bg-black/40 px-1 text-[11px] text-white">{slot.memberName}</span>
+              <span className="max-w-16 truncate rounded bg-bg-base/80 px-1 text-[11px] text-text-primary">{slot.memberName}</span>
             )}
           </div>
         </PitchSpot>
