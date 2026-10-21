@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
+import { SubmitButton } from "@/shared/ui";
 import type { OnboardingState } from "../model/onboardingSchema";
 
 type Props = {
@@ -23,7 +24,7 @@ function FieldError({ message }: { message?: string }) {
  * 서버가 그 순서 그대로 받는다.
  */
 export default function OnboardingForm({ action, takenNumbers }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [realName, setRealName] = useState("");
   const [feet, setFeet] = useState<Foot[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -80,13 +81,12 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={!ready || pending}
+      <SubmitButton
+        disabled={!ready}
         className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
       >
         가입 신청
-      </button>
+      </SubmitButton>
     </form>
   );
 }

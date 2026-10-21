@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { layoutFormation, Pitch, PitchSpot } from "@/entities/formation";
 import { positionLabel, type Position } from "@/entities/position";
+import { SubmitButton } from "@/shared/ui";
 import { DEFAULT_COUNTS, fieldCount, MAX_FIELD, type FormationDraftState } from "../model/formationDraft";
 
 type Props = {
@@ -14,7 +15,7 @@ const EDITABLE: Position[] = ["CB", "WB", "MF", "AM", "WG", "FW"];
 
 /** 포지션별 인원수를 + / − 로 고르면 자리가 저절로 잡힌다(entities/formation layoutFormation). */
 export default function FormationEditor({ action }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [name, setName] = useState("");
   const [counts, setCounts] = useState(DEFAULT_COUNTS);
   const field = fieldCount(counts);
@@ -91,13 +92,11 @@ export default function FormationEditor({ action }: Props) {
           {state.message}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={pending}
+      <SubmitButton
         className="h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
       >
         저장
-      </button>
+      </SubmitButton>
     </form>
   );
 }

@@ -3,6 +3,7 @@
 import { useActionState, useId, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
+import { SubmitButton } from "@/shared/ui";
 import type { GuestState } from "../model/guestSchema";
 
 export type GuestValues = {
@@ -35,7 +36,7 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
   const [feet, setFeet] = useState<Foot[]>(guest?.feet ?? []);
   const [positions, setPositions] = useState<Position[]>(guest?.preferredPositions ?? []);
   const [number, setNumber] = useState(guest?.jerseyNumber == null ? "" : String(guest.jerseyNumber));
-  const [state, formAction, pending] = useActionState<GuestState, FormData>(async (previous, formData) => {
+  const [state, formAction] = useActionState<GuestState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved && guest === undefined) {
       setRealName("");
@@ -89,13 +90,12 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
           {state.message}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={!ready || pending}
+      <SubmitButton
+        disabled={!ready}
         className="h-11 w-full rounded-xl bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
       >
         {submitLabel}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

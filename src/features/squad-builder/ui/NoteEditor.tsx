@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { ActionState } from "@/shared/ui";
+import { SubmitButton, type ActionState } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -15,7 +15,7 @@ const MAX = 200;
 
 /** 고른 선수의 이번 매치 특이사항. 비우고 저장하면 지운다. 관리자만 본다. */
 export default function NoteEditor({ action, matchId, memberId, name, note }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [text, setText] = useState(note ?? "");
   const changed = text.trim() !== (note ?? "");
   const id = `note-${memberId}`;
@@ -41,13 +41,12 @@ export default function NoteEditor({ action, matchId, memberId, name, note }: Pr
         <span className="text-xs text-text-tertiary">
           관리자만 봐요 · {text.length}/{MAX}
         </span>
-        <button
-          type="submit"
-          disabled={!changed || pending}
+        <SubmitButton
+          disabled={!changed}
           className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-40"
         >
           메모 저장
-        </button>
+        </SubmitButton>
       </div>
       {state.error && (
         <p role="alert" className="text-xs text-danger">

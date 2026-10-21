@@ -6,7 +6,7 @@ import { attendanceTimeNote } from "@/entities/attendance";
 import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, type ActionState } from "@/shared/ui";
+import { ActionButton, type ActionState, SubmitButton } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -76,7 +76,7 @@ export default function SquadBuilder({
   const payload = JSON.stringify(toSavePayload(builder));
   const dirty = payload !== savedPayload;
 
-  const [saveState, saveFormAction, saving] = useActionState<ActionState, FormData>(async (previous, formData) => {
+  const [saveState, saveFormAction] = useActionState<ActionState, FormData>(async (previous, formData) => {
     const result = await saveAction(previous, formData);
     if (!result.error) setSavedPayload(String(formData.get("quarters")));
     return result;
@@ -390,13 +390,12 @@ export default function SquadBuilder({
           <form action={saveFormAction}>
             <input type="hidden" name="matchId" value={matchId} />
             <input type="hidden" name="quarters" value={payload} />
-            <button
-              type="submit"
-              disabled={saving || !dirty}
+            <SubmitButton
+              disabled={!dirty}
               className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
             >
               저장
-            </button>
+            </SubmitButton>
           </form>
         </div>
         {saveState.error && (

@@ -291,6 +291,10 @@ pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
 - 컴포넌트는 default export, 그 외는 named export.
 - 컴포넌트 파일은 PascalCase, 그 외 ts 파일은 camelCase, 라우트 폴더는 kebab-case.
 - `@/*` path alias 를 쓴다. 슬라이스 외부 import 는 항상 슬라이스 root 까지만.
+- 🔴 폼 제출 단추는 `shared/ui` 의 **`SubmitButton`** 을 쓴다. `<button type="submit">` 을 직접 쓰지 않는다.
+  보내는 동안 막히고 스피너가 돌며 맨 위 로딩 바(`TopProgressBar`)를 켠다 — 이걸 빼먹으면 그 폼만 멈춘 것처럼 보인다.
+- 화면 이동 로딩은 `app/loading.tsx`(전체)와 `app/admin/loading.tsx`(관리 메뉴 유지)가 맡는다. 새 레이아웃을 만들면
+  그 아래에도 `loading.tsx` 를 둔다.
 
 ### shadcn/ui 예외 (도입할 때)
 

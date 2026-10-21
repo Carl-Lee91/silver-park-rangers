@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { SubmitButton } from "@/shared/ui";
 import type { PasswordChangeState } from "../model/passwordChange";
 
 type Props = {
@@ -13,7 +14,7 @@ const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
 export default function PasswordChangeForm({ action }: Props) {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [state, formAction, pending] = useActionState<PasswordChangeState, FormData>(async (previous, formData) => {
+  const [state, formAction] = useActionState<PasswordChangeState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved) {
       setPassword("");
@@ -60,13 +61,12 @@ export default function PasswordChangeForm({ action }: Props) {
         </p>
       )}
       {state.saved && password === "" && <p className="text-sm text-text-secondary">비밀번호를 바꿨어요.</p>}
-      <button
-        type="submit"
-        disabled={password === "" || passwordConfirm === "" || pending}
+      <SubmitButton
+        disabled={password === "" || passwordConfirm === ""}
         className="h-12 w-full rounded-xl border border-border text-base font-semibold disabled:opacity-40"
       >
         비밀번호 바꾸기
-      </button>
+      </SubmitButton>
     </form>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import type { ActionState } from "@/shared/ui";
+import { SubmitButton, type ActionState } from "@/shared/ui";
 import { setAttended } from "../api/actions";
 
 /** 투표 없이 온 사람을 출석으로 더한다. */
 export default function AddAttendee({ matchId, members }: { matchId: string; members: { id: string; realName: string }[] }) {
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(setAttended, {});
+  const [state, formAction] = useActionState<ActionState, FormData>(setAttended, {});
   if (members.length === 0) return null;
 
   return (
@@ -24,13 +24,11 @@ export default function AddAttendee({ matchId, members }: { matchId: string; mem
             </option>
           ))}
         </select>
-        <button
-          type="submit"
-          disabled={pending}
+        <SubmitButton
           className="h-10 rounded-lg border border-border px-3 text-sm font-medium disabled:opacity-50"
         >
           출석으로 추가
-        </button>
+        </SubmitButton>
       </div>
       {state.error && (
         <p role="alert" className="text-xs text-danger">
