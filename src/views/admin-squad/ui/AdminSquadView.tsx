@@ -12,10 +12,10 @@ import { fetchStatsSource } from "@/entities/stats/server";
 import { setAttendanceWindow } from "@/features/attendance-adjust";
 import { saveMatchNote } from "@/features/match-note";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
-import { ShareActions } from "@/features/squad-share";
+import { ShareActions, SquadImageLinks } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
 import { shortHash } from "@/shared/lib";
-import { squadImagePath } from "@/widgets/squad-image";
+import { adminSquadImagePath } from "@/widgets/squad-image";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -48,6 +48,12 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const schedule = quarterSchedule(match);
   const current = saved.filter((quarter) => quarter.number <= match.quarterCount);
   const placed = new Set(current.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
+  // 이미지는 저장한 배치로 그린다. 공개 전에도 관리자는 본다(관리자 전용 주소, PLAN.md §7).
+  const version = shortHash(JSON.stringify(current));
+  const imageUrls = {
+    quarters: adminSquadImagePath(match.id, "quarters", version),
+    rotation: adminSquadImagePath(match.id, "rotation", version),
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -74,19 +80,25 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         noteAction={saveMatchNote}
         windowAction={setAttendanceWindow}
       />
-      {match.squadPublishedAt !== null && current.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-sm font-semibold">단톡방에 공유</h2>
-          <ShareActions
-            shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
-            title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
-            imageUrls={{
-              quarters: squadImagePath(match.shareToken, "quarters", shortHash(JSON.stringify(current))),
-              rotation: squadImagePath(match.shareToken, "rotation", shortHash(JSON.stringify(current))),
-            }}
-          />
-        </section>
-      )}
+      {current.length > 0 &&
+        (match.squadPublishedAt !== null ? (
+          <section>
+            <h2 className="mb-2 text-sm font-semibold">단톡방에 공유</h2>
+            <ShareActions
+              shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
+              title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
+              imageUrls={imageUrls}
+            />
+          </section>
+        ) : (
+          <section>
+            <h2 className="text-sm font-semibold">이미지</h2>
+            <p className="mt-1 mb-2 text-xs text-text-tertiary">
+              공개 전이라 관리자만 볼 수 있어요. 마지막으로 저장한 배치로 그려요.
+            </p>
+            <SquadImageLinks urls={imageUrls} />
+          </section>
+        ))}
     </div>
   );
 }

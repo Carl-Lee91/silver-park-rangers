@@ -71,11 +71,42 @@
 
 ## 6. Vercel — 배포
 
-- [ ] GitHub 저장소(`Carl-Lee91/silver-park-rangers`)를 Import 한다. Production 브랜치는 `main`.
-- [ ] Environment Variables 에 [.env.example](../.env.example) 의 이름으로 값을 넣는다.
-  `SITE_URL` 은 Vercel 주소다. `CRON_SECRET` 은 아무 긴 문자열(비밀번호 생성기 등)이면 된다.
-- [ ] 배포 뒤 Vercel › Settings › Cron Jobs 에 `/api/cron/keep-alive`(매일 1회)가 보이는지 본다.
+- [ ] [vercel.com](https://vercel.com) › Add New › Project 에서 GitHub 저장소(`Carl-Lee91/silver-park-rangers`)를 Import 한다.
+  - Framework 는 Next.js 로 자동으로 잡힌다. Build·Install 명령은 건드리지 않는다.
+  - Project Name 이 주소가 된다: `https://<Project Name>.vercel.app`. 아래 `SITE_URL` 에 그대로 쓴다.
+- [ ] Import 화면의 **Environment Variables** 에 아래 5개를 넣는다(나중에는 Settings › Environment Variables).
+  적용 범위는 **Production · Preview** 둘 다 체크한다.
+
+  | 이름 | 값 | 어디서 |
+  | --- | --- | --- |
+  | `NEXT_PUBLIC_SUPABASE_URL` | `https://dgncyxocvoglinbdppul.supabase.co` | `.env.local` 과 같다 |
+  | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ…` 로 시작하는 긴 값 | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 anon) |
+  | `SITE_URL` | `https://<Project Name>.vercel.app` | 🔴 `.env.local` 의 `localhost` 를 그대로 넣지 않는다. 끝에 `/` 는 없어도 된다 |
+  | `CRON_SECRET` | 아무 긴 문자열 | 터미널에서 `openssl rand -hex 32` 로 만든다. 여기에만 넣고 어디에도 적지 않는다 |
+  | `ENABLE_EXPERIMENTAL_COREPACK` | `1` | 이 저장소는 pnpm 11 을 쓴다(`packageManager`). 이걸 켜야 Vercel 도 같은 버전으로 설치한다 |
+
+  - `.env.local` 내용을 키 칸에 통째로 붙여 넣으면 한 번에 들어간다. 붙인 뒤 `SITE_URL` 만 고친다.
+  - anon key 는 원래 브라우저에 공개되는 값이다(접근 통제는 RLS 가 한다). 그래도 저장소에는 넣지 않는다.
+  - 🔴 `NEXT_PUBLIC_` 값은 빌드할 때 박힌다. 값을 바꾸면 Deployments › 최신 배포 › **Redeploy** 를 눌러야 반영된다.
+- [ ] Deploy 를 누른다. 끝나면 실제 주소가 `SITE_URL` 과 같은지 본다. 다르면 고치고 Redeploy 한다.
+- [ ] Settings › General › **Production Branch** 가 `main` 인지 본다(기본값).
+- [ ] 배포 뒤 Settings › Cron Jobs 에 `/api/cron/keep-alive`(매일 1회)가 보이는지 본다.
   Supabase 무료 프로젝트가 7일 동안 요청이 없어 멈추는 것을 막는다. `vercel.json` 에 이미 들어 있다.
-- [ ] 배포한 뒤 카톡 공유를 확인한다. 미리보기 카드는 **배포 주소에서만** 뜬다(카카오 수집기는 localhost 에 못 온다).
+- [ ] 배포한 뒤 카톡 공유를 확인한다. 미리보기 카드는 **운영 주소에서만** 뜬다(카카오 수집기는 localhost 와 미리보기 배포에 못 온다).
   - 매치 하나에 스쿼드를 저장·공개하고, 관리자 스쿼드 화면의 "공유하기"로 링크를 단톡방(또는 나와의 채팅)에 붙여 본다.
   - 카드가 안 뜨거나 예전 그림이 뜨면 [카카오 공유 디버거](https://developers.kakao.com/tool/debugger/sharing)에서 그 주소의 캐시를 지운다.
+
+## 7. CI/CD — 어떻게 돌아가나
+
+따로 켤 것은 없다. 위 6단계까지 하면 아래처럼 돈다.
+
+| 할 때 | 무엇이 | 어디서 |
+| --- | --- | --- |
+| `dev`·`main` 에 푸시, PR | 린트 · 타입 검사 · 테스트 · 마이그레이션+RLS 검사 | GitHub Actions(`.github/workflows/ci.yml`). 공개 저장소라 무료 |
+| `dev` 에 푸시 | **미리보기 배포**(주소가 따로 나온다) | Vercel. 기본 설정상 Vercel 에 로그인한 나만 열린다 |
+| `main` 에 머지 | **운영 배포**(`SITE_URL`) | Vercel |
+
+- 흐름: `dev` 에서 작업 → 미리보기 주소에서 확인 → `dev` → `main` PR(CI 통과 확인) → 머지하면 운영에 나간다.
+- 🔴 미리보기 배포도 **운영과 같은 Supabase DB** 를 쓴다(무료 프로젝트 하나). 미리보기에서 만든 매치·데이터는 실제 데이터다.
+- 🔴 **DB 마이그레이션은 자동으로 나가지 않는다.** 새 마이그레이션이 든 변경은 `main` 에 머지하기 **전에** SQL Editor 로 먼저 적용하고 §1 표에 적는다. 코드가 먼저 나가면 새 표·함수가 없어서 화면이 깨진다.
+- 선택: GitHub › Settings › Branches 에서 `main` 에 규칙을 걸고 "Require status checks to pass" 에 `check` 를 고르면, CI 가 실패한 PR 은 머지되지 않는다(공개 저장소는 무료).
