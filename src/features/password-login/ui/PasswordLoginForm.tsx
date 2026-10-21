@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { SubmitButton } from "@/shared/ui";
 import type { PasswordLoginState } from "../lib/passwordLogin";
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
 
 export default function PasswordLoginForm({ action }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -31,13 +32,11 @@ export default function PasswordLoginForm({ action }: Props) {
           {state.error}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={pending}
+      <SubmitButton
         className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
       >
         로그인
-      </button>
+      </SubmitButton>
     </form>
   );
 }

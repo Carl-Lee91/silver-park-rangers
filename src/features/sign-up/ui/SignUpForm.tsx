@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
+import { SubmitButton } from "@/shared/ui";
 import type { SignUpState } from "../model/signUpSchema";
 
 type Props = {
@@ -22,7 +23,7 @@ function FieldError({ message }: { message?: string }) {
  * 입력칸은 모두 상태로 들고 있다 — 서버가 오류를 돌려줘도 입력한 값이 지워지지 않게.
  */
 export default function SignUpForm({ action, takenNumbers }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -138,13 +139,12 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={!ready || pending}
+      <SubmitButton
+        disabled={!ready}
         className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
       >
         가입 신청
-      </button>
+      </SubmitButton>
     </form>
   );
 }

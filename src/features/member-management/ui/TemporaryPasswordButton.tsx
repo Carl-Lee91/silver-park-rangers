@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, type FormEvent } from "react";
+import { SubmitButton } from "@/shared/ui";
 import type { TemporaryPasswordState } from "../api/actions";
 
 type Props = {
@@ -14,7 +15,7 @@ type Props = {
  * 클립보드는 카톡 인앱 브라우저에서 막힐 수 있어서, 글자를 그대로 보여 주고 길게 눌러 복사하게 한다.
  */
 export default function TemporaryPasswordButton({ action, memberId, memberName }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
 
   const confirmFirst = (event: FormEvent<HTMLFormElement>) => {
     const ok = window.confirm(`${memberName}님의 비밀번호를 임시 비밀번호로 바꿀까요? 지금 비밀번호는 더 못 써요.`);
@@ -24,13 +25,11 @@ export default function TemporaryPasswordButton({ action, memberId, memberName }
   return (
     <form action={formAction} onSubmit={confirmFirst} className="col-span-2 flex flex-col gap-2">
       <input type="hidden" name="memberId" value={memberId} />
-      <button
-        type="submit"
-        disabled={pending}
+      <SubmitButton
         className="h-10 rounded-lg border border-border text-sm font-medium disabled:opacity-50"
       >
         임시 비밀번호 만들기
-      </button>
+      </SubmitButton>
       {state.password && (
         <div role="status" className="rounded-lg bg-bg-subtle p-3 text-sm leading-6">
           <p className="select-all font-mono text-base font-bold">{state.password}</p>

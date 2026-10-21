@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { quarterSchedule } from "@/entities/match";
+import { SubmitButton } from "@/shared/ui";
 import { DEFAULT_MATCH_FORM, type MatchField, type MatchFormState, type MatchFormValues } from "../model/matchSchema";
 
 type Props = {
@@ -24,7 +25,7 @@ const previewOf = ({ startsAt, endsAt, quarterCount }: MatchFormValues) => {
 };
 
 export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH_FORM, matchId }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [values, setValues] = useState(initial);
   const set = (field: MatchField) => (event: { target: { value: string } }) =>
     setValues((current) => ({ ...current, [field]: event.target.value }));
@@ -128,13 +129,11 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
+      <SubmitButton
         className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
       >
         {submitLabel}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

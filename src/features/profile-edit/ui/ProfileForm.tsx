@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
+import { SubmitButton } from "@/shared/ui";
 import type { ProfileState } from "../model/profileSchema";
 
 type Props = {
@@ -25,7 +26,7 @@ export default function ProfileForm({
   const initialNumber = initialJersey === null ? "" : String(initialJersey);
   // 비교 기준은 "마지막으로 저장한 값"이다. 처음 값과 비교하면 저장한 뒤에도 바뀐 것으로 보인다.
   const [saved, setSaved] = useState({ feet: initialFeet.join(), positions: initialPositions.join(), number: initialNumber });
-  const [state, formAction, pending] = useActionState<ProfileState, FormData>(async (previous, formData) => {
+  const [state, formAction] = useActionState<ProfileState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved) {
       setSaved({
@@ -78,13 +79,12 @@ export default function ProfileForm({
       )}
       {state.saved && !changed && <p className="text-sm text-text-secondary">저장했어요.</p>}
 
-      <button
-        type="submit"
-        disabled={!changed || !ready || pending}
+      <SubmitButton
+        disabled={!changed || !ready}
         className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
       >
         저장
-      </button>
+      </SubmitButton>
     </form>
   );
 }

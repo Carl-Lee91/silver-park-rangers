@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { RESPONSE_LABELS, type AttendanceResponse } from "@/entities/attendance";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
+import { SubmitButton } from "@/shared/ui";
 import { playableQuarters, type Vote, type VoteState } from "../model/attendanceVote";
 
 type Props = {
@@ -27,7 +28,7 @@ const playableSummary = (schedule: readonly QuarterTime[], quarters: number[]) =
 
 /** 참석 · 미정 · 불참을 고르고, 오는 사람은 도착·떠나는 시간을 고른다(PLAN.md §6). */
 export default function AttendanceVoteForm({ action, matchId, schedule, current, open }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [response, setResponse] = useState<AttendanceResponse | "">(current?.response ?? "");
   const [arriveAt, setArriveAt] = useState(current?.arriveAt ?? "");
   const [leaveAt, setLeaveAt] = useState(current?.leaveAt ?? "");
@@ -110,13 +111,12 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
       )}
 
       {open ? (
-        <button
-          type="submit"
-          disabled={!ready || pending}
+        <SubmitButton
+          disabled={!ready}
           className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
         >
           {current ? "투표 바꾸기" : "투표하기"}
-        </button>
+        </SubmitButton>
       ) : (
         <p className="text-sm text-text-secondary">투표가 마감됐어요.</p>
       )}

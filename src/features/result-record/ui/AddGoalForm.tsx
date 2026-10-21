@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { ActionState } from "@/shared/ui";
+import { SubmitButton, type ActionState } from "@/shared/ui";
 
 type Person = { id: string; realName: string };
 
@@ -44,7 +44,7 @@ function People({ played, others }: { played: Person[]; others: Person[] }) {
 
 /** 골 하나 남기기. 득점자를 모르거나 상대 자책골이면 "모름"으로 둔다. */
 export default function AddGoalForm({ action, matchId, quarter, played, others }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
 
   return (
     <form action={formAction} className="flex flex-col gap-1.5">
@@ -65,13 +65,11 @@ export default function AddGoalForm({ action, matchId, quarter, played, others }
           <option value="">도움 없음</option>
           <People played={played} others={others} />
         </select>
-        <button
-          type="submit"
-          disabled={pending}
+        <SubmitButton
           className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-50"
         >
           골 추가
-        </button>
+        </SubmitButton>
       </div>
       {state.error && (
         <p role="alert" className="text-xs text-danger">

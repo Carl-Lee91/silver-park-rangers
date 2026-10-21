@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
-import type { ActionState } from "@/shared/ui";
+import { SubmitButton, type ActionState } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -21,7 +21,7 @@ const select = "h-9 w-full rounded-lg border border-border bg-bg-base px-2 text-
  * 저장하면 그 쿼터부터는 벤치에서 빠진다. 그다음 "N쿼터부터 다시 배치"를 누른다.
  */
 export default function TimeWindowEditor({ action, matchId, memberId, name, schedule, arriveAt, leaveAt }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
   const [arrive, setArrive] = useState(arriveAt ?? "");
   const [leave, setLeave] = useState(leaveAt ?? "");
   const options = timeWindowOptions(schedule);
@@ -57,13 +57,12 @@ export default function TimeWindowEditor({ action, matchId, memberId, name, sche
             ))}
           </select>
         </div>
-        <button
-          type="submit"
-          disabled={!changed || pending}
+        <SubmitButton
+          disabled={!changed}
           className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-40"
         >
           시간 저장
-        </button>
+        </SubmitButton>
       </div>
       {state.error && (
         <p role="alert" className="text-xs text-danger">
