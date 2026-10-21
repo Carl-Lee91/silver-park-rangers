@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, type FormEvent } from "react";
+import SubmitButton from "./SubmitButton";
 
 export type ActionState = { error?: string };
 
@@ -30,7 +31,7 @@ export default function ActionButton({
   confirmMessage,
   disabled = false,
 }: Props) {
-  const [state, formAction, pending] = useActionState(action, {});
+  const [state, formAction] = useActionState(action, {});
 
   const confirmFirst = (event: FormEvent<HTMLFormElement>) => {
     if (confirmMessage !== undefined && !window.confirm(confirmMessage)) event.preventDefault();
@@ -41,13 +42,12 @@ export default function ActionButton({
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <button
-        type="submit"
-        disabled={pending || disabled}
+      <SubmitButton
+        disabled={disabled}
         className={`h-10 w-full rounded-lg px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
       >
         {label}
-      </button>
+      </SubmitButton>
       {state.error && (
         <p role="alert" className="mt-1 text-xs text-danger">
           {state.error}

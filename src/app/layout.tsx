@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
+import { NavigationProgress, TopProgressBar } from "@/shared/ui";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,7 +16,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {/* 앱 전체에 하나: 화면 이동·서버 요청 중이면 맨 위에 로딩 바가 뜬다 */}
+        <TopProgressBar />
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }
