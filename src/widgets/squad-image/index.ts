@@ -1,2 +1,2 @@
-export { adminSquadImagePath, squadImagePath } from "./lib/imagePath";
+export { adminSquadImagePath, squadImagePath, squadImageVersion } from "./lib/imagePath";
 export type { SquadImageKind } from "./server";

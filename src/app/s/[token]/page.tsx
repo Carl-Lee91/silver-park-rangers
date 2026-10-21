@@ -5,8 +5,7 @@ import { formatMatchDate, matchTitle } from "@/entities/match";
 import { countPlayers } from "@/entities/squad";
 import { fetchSharedSquad } from "@/entities/squad/server";
 import { getServerEnv } from "@/shared/config";
-import { shortHash } from "@/shared/lib";
-import { squadImagePath } from "@/widgets/squad-image";
+import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
 import { SharedSquadView } from "@/views/shared-squad";
 
 // 메타데이터와 본문이 같은 요청에서 한 번만 읽게 한다.
@@ -16,7 +15,7 @@ const load = cache(async (token: string) => {
   return {
     squad,
     title: `${formatMatchDate(squad.match.date)} ${matchTitle(squad.match)} 스쿼드`,
-    version: shortHash(JSON.stringify(squad.quarters)),
+    version: squadImageVersion(squad),
     shareUrl: `${getServerEnv().SITE_URL}/s/${token}`,
   };
 });
