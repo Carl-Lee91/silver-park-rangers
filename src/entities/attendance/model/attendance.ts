@@ -83,3 +83,18 @@ export const unrespondedMembers = <T extends { id: string; realName: string }>(
   const responded = new Set(attendance.filter((row) => row.response !== null).map((row) => row.memberId));
   return members.filter((member) => !responded.has(member.id)).sort(byName);
 };
+
+/**
+ * 매치마다 참석으로 투표한 사람 수(관리 › 스쿼드에서 몇 명으로 짜는지 본다). DB 행을 그대로 받는다.
+ * 고른 매치는 아무도 없어도 0 으로 나온다.
+ */
+export const countYesByMatch = (
+  matchIds: readonly string[],
+  rows: readonly { match_id: string; response: AttendanceResponse | null }[],
+): Record<string, number> => {
+  const counts = Object.fromEntries(matchIds.map((id) => [id, 0]));
+  for (const row of rows) {
+    if (row.response === "yes" && row.match_id in counts) counts[row.match_id] += 1;
+  }
+  return counts;
+};

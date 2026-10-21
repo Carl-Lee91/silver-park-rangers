@@ -6,6 +6,7 @@ export { rotationTable, type RotationMark, type RotationRow } from "./model/rota
 export { toSavedQuarters, type SavedQuarter, type SavedSlot } from "./model/savedSquad";
 export { seatByPreference } from "./model/seating";
 export { countPlayers, squadForImage, toSharedSquad, type SharedSquad } from "./model/sharedSquad";
+export { SQUAD_STATUS_LABELS, squadStatus, type SquadStatus } from "./model/squadStatus";
 export type {
   QuarterLineup,
   SquadInput,

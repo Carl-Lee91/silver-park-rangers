@@ -24,3 +24,12 @@ export const fetchSharedSquad = async (token: string): Promise<SharedSquad | nul
   if (error) throw new Error(`공유 스쿼드를 읽지 못했습니다 — ${error.message}`);
   return toSharedSquad(data);
 };
+
+/** 스쿼드를 저장한 매치(관리 › 스쿼드). 공개 전 스쿼드는 RLS 가 관리자에게만 보여 준다. */
+export const fetchSquadMatchIds = async (matchIds: readonly string[]): Promise<Set<string>> => {
+  if (matchIds.length === 0) return new Set();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("quarters").select("match_id").in("match_id", matchIds);
+  if (error) throw new Error(`스쿼드 목록을 읽지 못했습니다 — ${error.message}`);
+  return new Set(data.map((row: { match_id: string }) => row.match_id));
+};
