@@ -86,15 +86,23 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
 
       <div>
         <label htmlFor="venue" className="text-sm font-semibold">
-          장소
+          장소 <span className="font-normal text-text-tertiary">(선택)</span>
         </label>
-        <input id="venue" name="venue" value={values.venue} onChange={set("venue")} maxLength={40} className={input} />
+        <input
+          id="venue"
+          name="venue"
+          value={values.venue}
+          onChange={set("venue")}
+          maxLength={40}
+          placeholder="예: 실버파크 구장"
+          className={input}
+        />
         {error("venue")}
       </div>
 
       <div>
         <label htmlFor="opponent" className="text-sm font-semibold">
-          상대 팀
+          상대 팀 <span className="font-normal text-text-tertiary">(선택)</span>
         </label>
         <input
           id="opponent"
@@ -102,6 +110,7 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
           value={values.opponent}
           onChange={set("opponent")}
           maxLength={30}
+          placeholder="예: FC 서울"
           className={input}
         />
         {error("opponent")}

@@ -46,6 +46,7 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
           autoComplete="name"
+          placeholder="예: 홍길동"
           className={fieldClass("lg", "mt-2")}
         />
         <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>

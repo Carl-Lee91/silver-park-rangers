@@ -64,6 +64,7 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
           value={realName}
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
+          placeholder="예: 홍길동"
           className={fieldClass("md", "mt-2")}
         />
         <FieldError message={state.errors?.realName} />

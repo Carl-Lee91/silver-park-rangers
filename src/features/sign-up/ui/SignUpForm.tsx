@@ -55,6 +55,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="username"
+            placeholder="name@example.com"
             className={input}
           />
           <p className="mt-2 text-xs text-text-tertiary">로그인할 때 써요. 메일은 보내지 않아요.</p>
@@ -104,6 +105,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
           autoComplete="name"
+          placeholder="예: 홍길동"
           className={input}
         />
         <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>

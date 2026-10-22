@@ -19,7 +19,7 @@ export default function PasswordLoginForm({ action }: Props) {
         <label htmlFor="email" className="text-sm font-semibold">
           이메일
         </label>
-        <input id="email" name="email" type="email" autoComplete="username" className={input} />
+        <input id="email" name="email" type="email" autoComplete="username" placeholder="가입할 때 쓴 이메일" className={input} />
       </div>
       <div>
         <label htmlFor="password" className="text-sm font-semibold">
