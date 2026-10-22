@@ -9,8 +9,10 @@
   의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강, 자리 적합도)만 따로 색을 쓴다.
 */
 @theme {
+  /* Pretendard 를 우리 서버에서 내보낸다(layout.tsx 가 pretendard 패키지의 글자 범위별 조각 CSS 를 불러온다).
+     쓰인 글자 범위의 조각만 받으니 처음 화면이 가볍다. 받기 전에는 기기 글꼴로 보인다(font-display: swap) */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 
   /* ── 우리 팀 유니폼: 맨시티 하늘색(#6cabdd)보다 조금 밝은 하늘색. 경기장 위 필드 선수 유니폼, 강조색 ── */
   --color-kit: #80c4ee;
