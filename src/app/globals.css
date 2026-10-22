@@ -111,6 +111,37 @@ html {
   :is(button, a, summary, [role="button"]):not(:disabled):active {
     opacity: 0.7;
   }
+  /* 펼치기: 브라우저 기본 ▶ 대신 오른쪽 꺾쇠(⌄). 펼치면 위로 뒤집힌다. 줄 전체를 누를 수 있게 44px */
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: --spacing(2);
+    min-height: --spacing(11);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: "";
+    flex-shrink: 0;
+    width: --spacing(2);
+    height: --spacing(2);
+    margin-right: --spacing(1);
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    opacity: 0.7;
+    transform: translateY(-25%) rotate(45deg);
+    transition: transform 150ms;
+  }
+
+  details[open] > summary::after {
+    transform: translateY(25%) rotate(-135deg);
+  }
 }
 
 body {
