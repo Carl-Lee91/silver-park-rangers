@@ -7,3 +7,4 @@ export { default as SubmitButton } from "./SubmitButton";
 export { fieldClass, textareaClass } from "./field";
 export { default as Select } from "./Select";
 export { default as MissingHint } from "./MissingHint";
+export { default as BackLink } from "./BackLink";
