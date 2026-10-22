@@ -4,7 +4,7 @@
  */
 export default function MissingHint({ items }: { items: readonly string[] }) {
   return (
-    <p role="status" aria-live="polite" className="-mt-4 text-center text-xs text-text-tertiary">
+    <p role="status" aria-live="polite" className="-mt-2 text-center text-xs text-text-tertiary">
       {items.length > 0 && `남은 것: ${items.join(" · ")}`}
     </p>
   );
