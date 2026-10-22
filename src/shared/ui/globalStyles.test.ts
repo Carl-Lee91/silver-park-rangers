@@ -47,5 +47,9 @@ describe("전역 스타일 (globals.css)", () => {
   it("표·점수 칸의 숫자는 폭이 같다 — 줄마다 숫자 폭이 달라 흔들리지 않게", () => {
     expect(block("table,\n  output")).toMatch(/font-variant-numeric:\s*tabular-nums/);
   });
+
+  it("글꼴은 우리가 직접 내보내는 Pretendard 를 먼저 쓴다 — 안 불러오면 안드로이드에서 다른 글꼴이 섞인다", () => {
+    expect(css.match(/--font-sans:\s*([^;]+);/)?.[1].trim()).toMatch(/^"Pretendard Variable",/);
+  });
 });
 
