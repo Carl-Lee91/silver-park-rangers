@@ -100,10 +100,11 @@ describe("스쿼드 빌더", () => {
     expect(within(pitch()).getByRole("button", { name: /CB 이수비/ })).toBeInTheDocument();
   });
 
-  it("비어 있는 키퍼 자리와 필드를 경고한다", () => {
+  it("비어 있는 키퍼 자리와 필드를 경고한다 — 여러 쿼터면 묶어서 보여 준다", () => {
     renderBuilder();
-    expect(screen.getByText("1쿼터 키퍼가 비었어요.")).toBeInTheDocument();
-    expect(screen.getByText("1쿼터 필드가 2자리 비었어요.")).toBeInTheDocument();
+    expect(screen.getByText("키퍼가 빈 쿼터: 1 · 2쿼터")).toBeInTheDocument();
+    expect(screen.getByText("필드가 모자란 쿼터 2개")).toBeInTheDocument();
+    expect(screen.getByText("1쿼터 2자리")).toBeInTheDocument();
   });
 
   it("저장하면 전 쿼터를 save_squad 모양으로 보낸다", async () => {
