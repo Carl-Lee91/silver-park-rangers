@@ -6,3 +6,4 @@ export { default as Spinner } from "./Spinner";
 export { default as SubmitButton } from "./SubmitButton";
 export { fieldClass, textareaClass } from "./field";
 export { default as Select } from "./Select";
+export { default as MissingHint } from "./MissingHint";

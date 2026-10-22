@@ -33,6 +33,7 @@ export {
   jerseyNumberField,
   MAX_PREFERRED_POSITIONS,
   memberProfileSchema,
+  missingProfileItems,
   profileFieldsSchema,
   realNameField,
   toggleFoot,

@@ -28,6 +28,31 @@ export const togglePosition = (current: readonly Position[], position: Position)
   return isPositionLocked(current, position) ? [...current] : [...current, position];
 };
 
+/** 몇 개 더 골라야 하는지. 1순위 골키퍼 하나면 0 */
+const positionsLeft = (positions: readonly Position[]) =>
+  positions[0] === "GK" ? 0 : Math.max(0, MAX_PREFERRED_POSITIONS - positions.length);
+
+/**
+ * 아직 남은 프로필 항목(화면 순서). 막힌 단추 아래에 "남은 것: …"으로 보여 준다 — 무엇이 빠져서
+ * 안 눌리는지 모르면 사람들이 멈춘다. 실명이 없는 폼(내 정보)은 `realName` 을 넘기지 않는다.
+ */
+export const missingProfileItems = ({
+  realName,
+  feet,
+  positions,
+}: {
+  realName?: string;
+  feet: readonly Foot[];
+  positions: readonly Position[];
+}): string[] => {
+  const left = positionsLeft(positions);
+  return [
+    realName !== undefined && realName.trim() === "" ? "실명" : null,
+    feet.length === 0 ? "주발" : null,
+    left === 0 ? null : positions.length === 0 ? `선호 포지션 ${left}개` : `선호 포지션 ${left}개 더`,
+  ].filter((item): item is string => item !== null);
+};
+
 /** 다 골랐는지: 3개, 또는 1순위 골키퍼 하나 */
 export const isPositionChoiceComplete = (positions: readonly Position[]) =>
   positions[0] === "GK" ? positions.length === 1 : positions.length === MAX_PREFERRED_POSITIONS;
