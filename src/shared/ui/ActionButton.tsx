@@ -44,7 +44,7 @@ export default function ActionButton({
       ))}
       <SubmitButton
         disabled={disabled}
-        className={`h-10 w-full rounded-lg px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
+        className={`h-11 w-full whitespace-nowrap rounded-xl px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
       >
         {label}
       </SubmitButton>
