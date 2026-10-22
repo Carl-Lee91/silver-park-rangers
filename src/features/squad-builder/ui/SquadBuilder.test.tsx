@@ -244,13 +244,14 @@ describe("스쿼드 빌더", () => {
 
     it("2쿼터부터 다시 배치하면 1쿼터는 그대로 둔다", async () => {
       const user = userEvent.setup();
-      vi.spyOn(window, "confirm").mockReturnValue(true);
       renderBuilder();
       await user.click(screen.getByRole("button", { name: "자동 배치" }));
       const firstQuarter = within(pitch()).getAllByRole("button").map((button) => button.textContent);
 
       await user.click(screen.getByRole("tab", { name: /2쿼터/ }));
       await user.click(screen.getByRole("button", { name: "2쿼터부터 다시 배치" }));
+      expect(screen.getByRole("alertdialog")).toHaveAccessibleDescription(/1~1쿼터는 그대로 두고 2쿼터부터/);
+      await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "다시 배치" }));
       await user.click(screen.getByRole("tab", { name: /1쿼터/ }));
 
       expect(within(pitch()).getAllByRole("button").map((button) => button.textContent)).toEqual(firstQuarter);
