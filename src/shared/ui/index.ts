@@ -9,3 +9,4 @@ export { default as Select } from "./Select";
 export { default as MissingHint } from "./MissingHint";
 export { default as BackLink } from "./BackLink";
 export { useConfirm, useConfirmBeforeSubmit, type ConfirmOptions } from "./useConfirm";
+export { TOAST_MS, useToast } from "./useToast";
