@@ -12,7 +12,7 @@ export default async function AdminMatchesView() {
         <h1 className="text-xl font-bold">매치</h1>
         <Link
           href={ROUTES.adminMatchNew}
-          className="rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-contrast"
+          className="inline-flex h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast"
         >
           매치 만들기
         </Link>

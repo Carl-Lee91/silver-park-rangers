@@ -45,7 +45,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       <div className="grid grid-cols-2 gap-2 md:max-w-narrow">
         <Link
           href={adminMatchEditPath(match.id)}
-          className="flex h-10 items-center justify-center rounded-lg border border-border text-sm font-medium"
+          className="flex h-11 items-center justify-center rounded-xl border border-border text-sm font-medium"
         >
           고치기
         </Link>

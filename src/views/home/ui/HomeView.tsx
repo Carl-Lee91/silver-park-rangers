@@ -35,7 +35,7 @@ export default async function HomeView() {
           <p className="text-sm text-text-secondary">Silver Park Rangers</p>
           <h1 className="mt-1 text-xl font-bold">{me.realName}님, 안녕하세요</h1>
         </div>
-        <Link href={ROUTES.me} className="text-sm text-text-secondary underline underline-offset-4">
+        <Link href={ROUTES.me} className="-mt-3 inline-flex h-11 items-center text-sm text-text-secondary underline underline-offset-4">
           내 정보
         </Link>
       </header>

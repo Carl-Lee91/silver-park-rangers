@@ -269,7 +269,7 @@ export default function SquadBuilder({
                 onClick={() =>
                   change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
                 }
-                className="h-10 rounded-lg border border-border px-3 text-sm"
+                className="h-11 rounded-xl border border-border px-3 text-sm"
               >
                 이전 쿼터 복사
               </button>

@@ -43,7 +43,7 @@ export default function NoteEditor({ action, matchId, memberId, name, note }: Pr
         </span>
         <SubmitButton
           disabled={!changed}
-          className="h-8 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-40"
+          className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40"
         >
           메모 저장
         </SubmitButton>

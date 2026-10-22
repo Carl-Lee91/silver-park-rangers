@@ -54,7 +54,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 빼기`}
                   disabled={counts[position] === 0}
                   onClick={() => step(position, -1)}
-                  className="size-9 rounded-lg border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
                 >
                   −
                 </button>
@@ -64,7 +64,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 더하기`}
                   disabled={field >= MAX_FIELD}
                   onClick={() => step(position, 1)}
-                  className="size-9 rounded-lg border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
                 >
                   +
                 </button>

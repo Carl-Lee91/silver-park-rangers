@@ -35,7 +35,7 @@ export default async function AdminStatsView({ period }: { period: StatsPeriod }
             key={key}
             href={`${ROUTES.adminStats}?period=${key}`}
             aria-current={key === period ? "page" : undefined}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-contrast"
+            className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-contrast"
           >
             {PERIOD_LABELS[key]}
           </Link>

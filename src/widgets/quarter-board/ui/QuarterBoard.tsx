@@ -11,7 +11,7 @@ type Props = { quarters: readonly SavedQuarter[]; schedule: readonly QuarterTime
 const ROTATION = "rotation";
 
 const tabClass =
-  "shrink-0 rounded-lg border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast";
+  "min-h-11 shrink-0 rounded-lg border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast";
 
 function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
   return (

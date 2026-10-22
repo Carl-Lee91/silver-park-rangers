@@ -29,7 +29,11 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
           </Link>
           <AdminNav className="order-last basis-full pb-2 md:order-none md:basis-auto md:pb-0" />
           <div className="ml-auto flex items-center gap-4 text-sm">
-            {viewer === "admin" && <Link href={ROUTES.home}>팀 화면</Link>}
+            {viewer === "admin" && (
+              <Link href={ROUTES.home} className="inline-flex h-11 items-center">
+                팀 화면
+              </Link>
+            )}
             <SignOutButton />
           </div>
         </div>

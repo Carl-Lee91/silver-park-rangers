@@ -33,7 +33,7 @@ export default function SelectedPlayer({ title, details, fit, hint, onRemove, ch
           <button
             type="button"
             onClick={onRemove}
-            className="h-8 shrink-0 rounded-lg border border-border px-3 text-sm font-semibold text-danger"
+            className="h-11 shrink-0 rounded-xl border border-border px-4 text-sm font-semibold text-danger"
           >
             빼기
           </button>
