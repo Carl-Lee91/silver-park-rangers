@@ -43,5 +43,9 @@ describe("전역 스타일 (globals.css)", () => {
   it("펼치면 꺾쇠가 위로 뒤집힌다", () => {
     expect(block("details[open] > summary::after")).toMatch(/rotate\(-135deg\)/);
   });
+
+  it("표·점수 칸의 숫자는 폭이 같다 — 줄마다 숫자 폭이 달라 흔들리지 않게", () => {
+    expect(block("table,\n  output")).toMatch(/font-variant-numeric:\s*tabular-nums/);
+  });
 });
 
