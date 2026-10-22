@@ -16,6 +16,7 @@ import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from
 import { ShareActions, SquadImageViewer } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
 import { adminSquadImagePath, squadImageVersion } from "@/widgets/squad-image";
+import { BackLink } from "@/shared/ui";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -58,9 +59,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <Link href={adminMatchPath(match.id)} className="text-sm text-text-secondary">
-        ← {formatMatchDate(match.date)} {matchTitle(match)}
-      </Link>
+      <BackLink href={adminMatchPath(match.id)} label={`${formatMatchDate(match.date)} ${matchTitle(match)}`} />
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">스쿼드 짜기</h1>
         <Link href={ROUTES.adminFormations} className="text-sm text-primary">
