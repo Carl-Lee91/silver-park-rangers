@@ -38,6 +38,11 @@
   --color-border: #29323e;
   --color-danger: #ff7a7a;
 
+  /* ── 입력칸: 바탕보다 살짝 밝게 채우고, 테두리는 바탕·안쪽 패널과 3:1 이상(웹 접근성 입력칸 경계).
+     카드·구분선의 border 는 옅어도 되지만 입력칸은 "칸"으로 보여야 한다(field.test.ts 가 대비를 검사한다) ── */
+  --color-field: #1c232e;
+  --color-field-border: #647082;
+
   /* ── 경기장: 어두운 바탕에 맞춘 짙은 초록 ── */
   --color-pitch: #245e3f;
   --color-pitch-line: rgb(255 255 255 / 0.55);
