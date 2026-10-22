@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { fieldClass, MissingHint, SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton, useToast } from "@/shared/ui";
 import type { PasswordChangeState } from "../model/passwordChange";
 
 type Props = {
@@ -17,9 +17,11 @@ export default function PasswordChangeForm({ action }: Props) {
   const missing = [password === "" ? "새 비밀번호" : null, passwordConfirm === "" ? "새 비밀번호 확인" : null].filter(
     (item): item is string => item !== null,
   );
+  const { show, toast } = useToast();
   const [state, formAction] = useActionState<PasswordChangeState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved) {
+      show("비밀번호를 바꿨어요.");
       setPassword("");
       setPasswordConfirm("");
     }
@@ -63,7 +65,6 @@ export default function PasswordChangeForm({ action }: Props) {
           {state.message}
         </p>
       )}
-      {state.saved && password === "" && <p className="text-sm text-text-secondary">비밀번호를 바꿨어요.</p>}
       <SubmitButton
         disabled={missing.length > 0}
         className="h-12 w-full rounded-xl border border-border text-base font-semibold disabled:opacity-40"
@@ -71,6 +72,7 @@ export default function PasswordChangeForm({ action }: Props) {
         비밀번호 바꾸기
       </SubmitButton>
       <MissingHint items={password === "" && passwordConfirm === "" ? [] : missing} />
+      {toast}
     </form>
   );
 }

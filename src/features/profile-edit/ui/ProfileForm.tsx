@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { MissingHint, SubmitButton } from "@/shared/ui";
+import { MissingHint, SubmitButton, useToast } from "@/shared/ui";
 import type { ProfileState } from "../model/profileSchema";
 
 type Props = {
@@ -26,9 +26,11 @@ export default function ProfileForm({
   const initialNumber = initialJersey === null ? "" : String(initialJersey);
   // 비교 기준은 "마지막으로 저장한 값"이다. 처음 값과 비교하면 저장한 뒤에도 바뀐 것으로 보인다.
   const [saved, setSaved] = useState({ feet: initialFeet.join(), positions: initialPositions.join(), number: initialNumber });
+  const { show, toast } = useToast();
   const [state, formAction] = useActionState<ProfileState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved) {
+      show("저장했어요.");
       setSaved({
         feet: formData.getAll("feet").join(),
         positions: formData.getAll("preferredPositions").join(),
@@ -78,7 +80,6 @@ export default function ProfileForm({
           {state.message}
         </p>
       )}
-      {state.saved && !changed && <p className="text-sm text-text-secondary">저장했어요.</p>}
 
       <SubmitButton
         disabled={!changed || !ready}
@@ -87,6 +88,7 @@ export default function ProfileForm({
         저장
       </SubmitButton>
       <MissingHint items={changed ? missing : []} />
+      {toast}
     </form>
   );
 }
