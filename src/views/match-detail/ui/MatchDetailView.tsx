@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AttendanceList } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
@@ -22,6 +21,7 @@ import { getAuthUserId } from "@/shared/api";
 import { getServerEnv, ROUTES } from "@/shared/config";
 import { QuarterBoard } from "@/widgets/quarter-board";
 import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
+import { BackLink } from "@/shared/ui";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -42,9 +42,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
 
   return (
     <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
-      <Link href={ROUTES.home} className="text-sm text-text-secondary">
-        ← 홈
-      </Link>
+      <BackLink href={ROUTES.home} label="홈" />
       <MatchSummary match={match} />
 
       {/* 데스크톱: 왼쪽은 결과·투표·참석자, 오른쪽은 스쿼드 */}

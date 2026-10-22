@@ -95,4 +95,25 @@ describe("가입 신청 폼 (PLAN.md §4·§5)", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("시도가 너무 많아요.");
   });
+
+  it("막힌 동안 무엇이 남았는지 단추 아래에 알려 준다", async () => {
+    const user = userEvent.setup();
+    render(<SignUpForm action={noop} takenNumbers={[]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 이메일 · 비밀번호 · 비밀번호 확인 · 실명 · 주발 · 선호 포지션 3개");
+
+    await fillAccount(user);
+    await user.click(position(/^센터백/));
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 선호 포지션 2개 더");
+
+    await user.click(position(/^미드필더/));
+    await user.click(position(/^윙백/));
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+  });
+
+  it("이메일·실명 칸에 예시를 보여 준다", () => {
+    render(<SignUpForm action={noop} takenNumbers={[]} />);
+    expect(screen.getByLabelText("이메일")).toHaveAttribute("placeholder", "name@example.com");
+    expect(screen.getByLabelText("실명")).toHaveAttribute("placeholder", "예: 홍길동");
+  });
 });
+

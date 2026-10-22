@@ -73,4 +73,10 @@ describe("참석 투표 폼", () => {
     await user.click(screen.getByRole("button", { name: "투표하기" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("투표가 마감됐어요.");
   });
+
+  it("아직 고르지 않았으면 무엇을 골라야 하는지 단추 아래에 알려 준다", () => {
+    renderForm();
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 참석 여부");
+  });
 });
+

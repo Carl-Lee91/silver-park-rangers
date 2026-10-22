@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { RESPONSE_LABELS, type AttendanceResponse } from "@/entities/attendance";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
-import { SubmitButton } from "@/shared/ui";
+import { MissingHint, Select, SubmitButton } from "@/shared/ui";
 import { playableQuarters, type Vote, type VoteState } from "../model/attendanceVote";
 
 type Props = {
@@ -16,7 +16,6 @@ type Props = {
 };
 
 const RESPONSES: AttendanceResponse[] = ["yes", "maybe", "no"];
-const select = "mt-2 h-12 w-full rounded-xl border border-border bg-bg-base px-3 text-base";
 
 const playableSummary = (schedule: readonly QuarterTime[], quarters: number[]) => {
   if (quarters.length === 0) return "뛸 수 있는 쿼터가 없어요. 시간을 다시 골라 주세요.";
@@ -36,7 +35,9 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
   const coming = response === "yes" || response === "maybe";
   const options = timeWindowOptions(schedule);
   const playable = playableQuarters(schedule, arriveAt, leaveAt);
-  const ready = response !== "" && (!coming || playable.length > 0);
+  const missing =
+    response === "" ? ["참석 여부"] : coming && playable.length === 0 ? ["뛸 수 있는 시간(도착·떠나는 시간)"] : [];
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -65,39 +66,39 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
               <label htmlFor="arriveAt" className="text-sm font-semibold">
                 도착
               </label>
-              <select
+              <Select
                 id="arriveAt"
                 name="arriveAt"
                 value={arriveAt}
                 disabled={!open}
                 onChange={(event) => setArriveAt(event.target.value)}
-                className={select}
+                className="mt-2"
               >
                 {options.arrive.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label htmlFor="leaveAt" className="text-sm font-semibold">
                 떠나는 시간
               </label>
-              <select
+              <Select
                 id="leaveAt"
                 name="leaveAt"
                 value={leaveAt}
                 disabled={!open}
                 onChange={(event) => setLeaveAt(event.target.value)}
-                className={select}
+                className="mt-2"
               >
                 {options.leave.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
           <p className="text-sm text-text-secondary">{playableSummary(schedule, playable)}</p>
@@ -111,12 +112,15 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
       )}
 
       {open ? (
-        <SubmitButton
-          disabled={!ready}
-          className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
-        >
-          {current ? "투표 바꾸기" : "투표하기"}
-        </SubmitButton>
+        <>
+          <SubmitButton
+            disabled={!ready}
+            className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
+          >
+            {current ? "투표 바꾸기" : "투표하기"}
+          </SubmitButton>
+          <MissingHint items={missing} />
+        </>
       ) : (
         <p className="text-sm text-text-secondary">투표가 마감됐어요.</p>
       )}

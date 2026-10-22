@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { fieldClass } from "@/shared/ui";
 import SquadImageViewer from "./SquadImageViewer";
 
 type Props = {
@@ -56,7 +57,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
             readOnly
             value={shareUrl}
             onFocus={(event) => event.target.select()}
-            className="mt-1 h-10 w-full rounded-lg border border-border px-3 text-sm"
+            className={fieldClass("md", "mt-1")}
           />
         </div>
       )}

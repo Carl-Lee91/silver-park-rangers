@@ -100,10 +100,11 @@ describe("스쿼드 빌더", () => {
     expect(within(pitch()).getByRole("button", { name: /CB 이수비/ })).toBeInTheDocument();
   });
 
-  it("비어 있는 키퍼 자리와 필드를 경고한다", () => {
+  it("비어 있는 키퍼 자리와 필드를 경고한다 — 여러 쿼터면 묶어서 보여 준다", () => {
     renderBuilder();
-    expect(screen.getByText("1쿼터 키퍼가 비었어요.")).toBeInTheDocument();
-    expect(screen.getByText("1쿼터 필드가 2자리 비었어요.")).toBeInTheDocument();
+    expect(screen.getByText("키퍼가 빈 쿼터: 1 · 2쿼터")).toBeInTheDocument();
+    expect(screen.getByText("필드가 모자란 쿼터 2개")).toBeInTheDocument();
+    expect(screen.getByText("1쿼터 2자리")).toBeInTheDocument();
   });
 
   it("저장하면 전 쿼터를 save_squad 모양으로 보낸다", async () => {
@@ -244,13 +245,14 @@ describe("스쿼드 빌더", () => {
 
     it("2쿼터부터 다시 배치하면 1쿼터는 그대로 둔다", async () => {
       const user = userEvent.setup();
-      vi.spyOn(window, "confirm").mockReturnValue(true);
       renderBuilder();
       await user.click(screen.getByRole("button", { name: "자동 배치" }));
       const firstQuarter = within(pitch()).getAllByRole("button").map((button) => button.textContent);
 
       await user.click(screen.getByRole("tab", { name: /2쿼터/ }));
       await user.click(screen.getByRole("button", { name: "2쿼터부터 다시 배치" }));
+      expect(screen.getByRole("alertdialog")).toHaveAccessibleDescription(/1~1쿼터는 그대로 두고 2쿼터부터/);
+      await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "다시 배치" }));
       await user.click(screen.getByRole("tab", { name: /1쿼터/ }));
 
       expect(within(pitch()).getAllByRole("button").map((button) => button.textContent)).toEqual(firstQuarter);

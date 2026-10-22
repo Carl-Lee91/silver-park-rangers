@@ -9,8 +9,10 @@
   의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강, 자리 적합도)만 따로 색을 쓴다.
 */
 @theme {
+  /* Pretendard 를 우리 서버에서 내보낸다(layout.tsx 가 pretendard 패키지의 글자 범위별 조각 CSS 를 불러온다).
+     쓰인 글자 범위의 조각만 받으니 처음 화면이 가볍다. 받기 전에는 기기 글꼴로 보인다(font-display: swap) */
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 
   /* ── 우리 팀 유니폼: 맨시티 하늘색(#6cabdd)보다 조금 밝은 하늘색. 경기장 위 필드 선수 유니폼, 강조색 ── */
   --color-kit: #80c4ee;
@@ -37,6 +39,11 @@
   /* ── Line · State ── */
   --color-border: #29323e;
   --color-danger: #ff7a7a;
+
+  /* ── 입력칸: 바탕보다 살짝 밝게 채우고, 테두리는 바탕·안쪽 패널과 3:1 이상(웹 접근성 입력칸 경계).
+     카드·구분선의 border 는 옅어도 되지만 입력칸은 "칸"으로 보여야 한다(field.test.ts 가 대비를 검사한다) ── */
+  --color-field: #1c232e;
+  --color-field-border: #647082;
 
   /* ── 경기장: 어두운 바탕에 맞춘 짙은 초록 ── */
   --color-pitch: #245e3f;
@@ -95,7 +102,60 @@
   color-scheme: dark;
 }
 
+html {
+  /* 모바일 브라우저(카톡 인앱 포함)가 누를 때 그리는 회색 번쩍임을 끈다. 대신 아래 눌림 효과를 쓴다 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 누르는 동안 살짝 흐리게: 모바일에서 눌렀는지 바로 알 수 있게(막힌 단추는 빼고).
+   base 층에 두어 화면마다 준 opacity 유틸리티가 이긴다 */
+@layer base {
+  :is(button, a, summary, [role="button"]):not(:disabled):active {
+    opacity: 0.7;
+  }
+  /* 펼치기: 브라우저 기본 ▶ 대신 오른쪽 꺾쇠(⌄). 펼치면 위로 뒤집힌다. 줄 전체를 누를 수 있게 44px */
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: --spacing(2);
+    min-height: --spacing(11);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::after {
+    content: "";
+    flex-shrink: 0;
+    width: --spacing(2);
+    height: --spacing(2);
+    margin-right: --spacing(1);
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    opacity: 0.7;
+    transform: translateY(-25%) rotate(45deg);
+    transition: transform 150ms;
+  }
+
+  details[open] > summary::after {
+    transform: translateY(25%) rotate(-135deg);
+  }
+  /* 표(출전표·통계)와 점수 칸의 숫자는 폭을 같게: 줄마다 1 과 0 의 폭이 달라 숫자가 흔들리지 않게 */
+  table,
+  output {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
 body {
   background: var(--color-bg-base);
   color: var(--color-text-primary);
+  /* 한글은 어절 단위로 줄바꿈한다. 기본값은 "골 / 라요"처럼 낱말 중간에서 끊는다(한국 사이트 대부분이 이렇게 둔다).
+     어절이 칸보다 길면(긴 이메일·주소) 그때만 끊는다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }

@@ -68,4 +68,21 @@ describe("내 정보 수정 폼", () => {
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
     expect(action.mock.calls[0][1].get("jerseyNumber")).toBe("10");
   });
+
+  it("포지션을 빼서 저장이 막히면 무엇이 남았는지 알려 준다", async () => {
+    const user = userEvent.setup();
+    render(<ProfileForm action={async () => ({})} feet={["left"]} preferredPositions={["CB", "FW", "WG"]} jerseyNumber={null} takenNumbers={[]} />);
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+    await user.click(screen.getByRole("button", { name: /^공격수/ }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 선호 포지션 1개 더");
+  });
+
+  it("등번호 안내는 지금 화면(유니폼 모양)과 맞게 말한다", () => {
+    render(<ProfileForm action={async () => ({})} feet={["left"]} preferredPositions={["CB", "FW", "WG"]} jerseyNumber={null} takenNumbers={[]} />);
+    expect(screen.getByText(/유니폼에 들어가요/)).toBeInTheDocument();
+    expect(screen.queryByText(/동그라미/)).toBeNull();
+  });
 });
+

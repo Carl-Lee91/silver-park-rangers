@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton, useToast } from "@/shared/ui";
 import type { GuestState } from "../model/guestSchema";
 
 export type GuestValues = {
@@ -36,8 +36,10 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
   const [feet, setFeet] = useState<Foot[]>(guest?.feet ?? []);
   const [positions, setPositions] = useState<Position[]>(guest?.preferredPositions ?? []);
   const [number, setNumber] = useState(guest?.jerseyNumber == null ? "" : String(guest.jerseyNumber));
+  const { show, toast } = useToast();
   const [state, formAction] = useActionState<GuestState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
+    if (result.saved) show(guest === undefined ? `${String(formData.get("realName")).trim()}님을 넣었어요.` : "고쳤어요.");
     if (result.saved && guest === undefined) {
       setRealName("");
       setFeet([]);
@@ -47,7 +49,8 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
     return result;
   }, {});
 
-  const ready = realName.trim() !== "" && feet.length > 0 && isPositionChoiceComplete(positions);
+  const missing = missingProfileItems({ realName, feet, positions });
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -63,7 +66,8 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
           value={realName}
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
-          className="mt-2 h-11 w-full rounded-xl border border-border px-4 text-base"
+          placeholder="예: 홍길동"
+          className={fieldClass("md", "mt-2")}
         />
         <FieldError message={state.errors?.realName} />
       </div>
@@ -96,6 +100,8 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
       >
         {submitLabel}
       </SubmitButton>
+      <MissingHint items={missing} />
+      {toast}
     </form>
   );
 }

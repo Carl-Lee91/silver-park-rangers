@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton } from "@/shared/ui";
 import type { OnboardingState } from "../model/onboardingSchema";
 
 type Props = {
@@ -30,7 +30,8 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [number, setNumber] = useState("");
 
-  const ready = realName.trim().length > 0 && feet.length > 0 && isPositionChoiceComplete(positions);
+  const missing = missingProfileItems({ realName, feet, positions });
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -45,7 +46,8 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
           autoComplete="name"
-          className="mt-2 h-12 w-full rounded-xl border border-border px-4 text-base"
+          placeholder="예: 홍길동"
+          className={fieldClass("lg", "mt-2")}
         />
         <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>
         <FieldError message={state.errors?.realName} />
@@ -87,6 +89,7 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
       >
         가입 신청
       </SubmitButton>
+      <MissingHint items={missing} />
     </form>
   );
 }

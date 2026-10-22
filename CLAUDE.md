@@ -310,6 +310,14 @@ pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
 - `@/*` path alias 를 쓴다. 슬라이스 외부 import 는 항상 슬라이스 root 까지만.
 - 🔴 폼 제출 단추는 `shared/ui` 의 **`SubmitButton`** 을 쓴다. `<button type="submit">` 을 직접 쓰지 않는다.
   보내는 동안 막히고 스피너가 돌며 맨 위 로딩 바(`TopProgressBar`)를 켠다 — 이걸 빼먹으면 그 폼만 멈춘 것처럼 보인다.
+- 🔴 화면 공통 부품을 쓴다(`shared/ui`). 화면마다 따로 만들면 모양과 동작이 다시 갈라진다.
+  - 드롭다운은 **`Select`**(꺾쇠를 안쪽에 그린다), 입력칸은 **`fieldClass()`**·**`textareaClass()`** 모양을 쓴다.
+    글자는 16px 이상이다 — 작으면 아이폰(카톡 포함)이 누를 때 화면을 확대한다. `formControls.test.ts` 가 검사한다.
+  - 확인은 **`useConfirm`**·**`useConfirmBeforeSubmit`** 확인 창으로 묻는다. `window.confirm` 을 쓰지 않는다.
+  - 저장 결과는 **`useToast`** 로 화면 아래에 띄운다. 뒤로 가기는 **`BackLink`**, 막힌 제출 단추 아래에는
+    **`MissingHint`**(남은 항목)를 둔다.
+  - 누르는 것(단추·링크·탭)은 44px(`h-11`) 이상으로 둔다. 눌림 효과·펼치기 꺾쇠·한글 어절 줄바꿈·표 숫자 폭은
+    `globals.css` 가 전역으로 건다(`globalStyles.test.ts`).
 - 화면 이동 로딩은 `app/loading.tsx`(전체)와 `app/admin/loading.tsx`(관리 메뉴 유지)가 맡는다. 새 레이아웃을 만들면
   그 아래에도 `loading.tsx` 를 둔다.
 

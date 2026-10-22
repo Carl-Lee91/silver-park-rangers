@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { fetchMyMember, fetchTakenJerseyNumbers } from "@/entities/member/server";
 import { changePassword, PasswordChangeForm } from "@/features/password-change";
 import { ProfileForm, updateProfile } from "@/features/profile-edit";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
+import { BackLink } from "@/shared/ui";
 
 export default async function MeView() {
   const me = await fetchMyMember();
@@ -13,9 +13,7 @@ export default async function MeView() {
 
   return (
     <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col gap-8 px-4 py-8">
-      <Link href={ROUTES.home} className="text-sm text-text-secondary">
-        ← 홈
-      </Link>
+      <BackLink href={ROUTES.home} label="홈" />
       <header>
         <h1 className="text-xl font-bold">내 정보</h1>
         <p className="mt-2 text-sm text-text-secondary">{me.realName}</p>

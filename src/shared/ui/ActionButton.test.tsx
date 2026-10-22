@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import ActionButton, { type ActionState } from "./ActionButton";
@@ -31,27 +31,29 @@ describe("한 번 누르면 서버 동작을 부르는 단추", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("권한이 없어요.");
   });
 
-  it("확인을 묻는 단추는 취소하면 보내지 않는다", async () => {
+  it("확인을 묻는 단추는 확인 창을 띄우고, 취소하면 보내지 않는다", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(false);
     const action = vi.fn<Action>(async () => ({}));
-    render(<ActionButton action={action} fields={{}} label="거절" confirmMessage="거절할까요?" />);
+    render(<ActionButton action={action} fields={{}} label="거절" tone="danger" confirmMessage="거절할까요?" />);
 
     await user.click(screen.getByRole("button", { name: "거절" }));
+    expect(screen.getByRole("alertdialog")).toHaveAccessibleDescription("거절할까요?");
+    await user.click(screen.getByRole("button", { name: "취소" }));
 
-    expect(window.confirm).toHaveBeenCalledWith("거절할까요?");
+    expect(screen.queryByRole("alertdialog")).toBeNull();
     expect(action).not.toHaveBeenCalled();
   });
 
-  it("확인하면 보낸다", async () => {
+  it("확인하면 보낸다 — 확인 단추 이름은 그 단추와 같다", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
     const action = vi.fn<Action>(async () => ({}));
-    render(<ActionButton action={action} fields={{}} label="거절" confirmMessage="거절할까요?" />);
+    render(<ActionButton action={action} fields={{ memberId: "m1" }} label="거절" tone="danger" confirmMessage="거절할까요?" />);
 
     await user.click(screen.getByRole("button", { name: "거절" }));
+    await user.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "거절" }));
 
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    expect(action.mock.calls[0][1].get("memberId")).toBe("m1");
   });
 
   it("막아 두면 누를 수 없다", () => {

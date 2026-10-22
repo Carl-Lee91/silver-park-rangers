@@ -7,7 +7,7 @@ import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/fo
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, type ActionState, SubmitButton } from "@/shared/ui";
+import { ActionButton, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -24,8 +24,9 @@ import {
 } from "../model/builder";
 import { fitOf } from "../model/fit";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
-import { warningMessage } from "../model/warnings";
+import { groupWarnings } from "../model/warnings";
 import { SlotButton } from "./dnd";
+import FitLegend from "./FitLegend";
 import NoteEditor from "./NoteEditor";
 import PitchTile from "./PitchTile";
 import SelectedPlayer from "./SelectedPlayer";
@@ -75,6 +76,7 @@ export default function SquadBuilder({
   windowAction,
 }: Props) {
   const [builder, setBuilder] = useState(initial);
+  const { confirm, dialog } = useConfirm();
   const [quarter, setQuarter] = useState(0);
   const [selection, setSelection] = useState<Selection>(null);
   const [savedPayload, setSavedPayload] = useState(() => JSON.stringify(toSavePayload(initial)));
@@ -97,7 +99,7 @@ export default function SquadBuilder({
   const input = { players: squadPlayersFor(pool, builder), quarters: toSquadQuarters(builder) };
   const inSquad = new Set(input.players.map((player) => player.id));
   const report = evaluateSquad(input, toLineup(builder));
-  const messages = [...report.warnings.map((warning) => warningMessage(warning, nameOf)), ...placementIssues(pool, builder)];
+  const warningGroups = groupWarnings(report.warnings, nameOf, placementIssues(pool, builder));
   const troubled = new Set(
     report.warnings.flatMap((warning) => (warning.kind === "below-guarantee" ? [] : [warning.quarter])),
   );
@@ -134,8 +136,12 @@ export default function SquadBuilder({
   };
 
   /** 끝난 쿼터(지금 쿼터 앞)는 그대로 두고 지금 쿼터부터 다시 짠다(PLAN.md §10 당일 변동). */
-  const reassignFromHere = () => {
-    if (!window.confirm(`1~${quarter}쿼터는 그대로 두고 ${quarter + 1}쿼터부터 필드를 다시 짤까요?`)) return;
+  const reassignFromHere = async () => {
+    const ok = await confirm({
+      message: `1~${quarter}쿼터는 그대로 두고 ${quarter + 1}쿼터부터 필드를 다시 짤까요?`,
+      confirmLabel: "다시 배치",
+    });
+    if (!ok) return;
     const lineup = toLineup(builder);
     change(
       applyLineup(
@@ -145,10 +151,12 @@ export default function SquadBuilder({
     );
   };
 
-  const runAutoAssign = () => {
+  const runAutoAssign = async () => {
     const lineup = toLineup(builder);
     const hasField = lineup.some((row) => row.fieldIds.some((id) => id !== null));
-    if (hasField && !window.confirm("필드 배치를 새로 짤까요? 키퍼 자리는 그대로 둬요.")) return;
+    if (hasField && !(await confirm({ message: "필드 배치를 새로 짤까요? 키퍼 자리는 그대로 둬요.", confirmLabel: "새로 짜기" }))) {
+      return;
+    }
     change(applyLineup(builder, autoAssign(input, { keepers: lineup.map((row) => row.keeperId) })));
   };
 
@@ -249,18 +257,19 @@ export default function SquadBuilder({
               <label htmlFor="formation" className="text-xs font-semibold text-text-secondary">
                 포메이션
               </label>
-              <select
+              <Select
                 id="formation"
                 value={current.formationName}
                 onChange={(event) => changeFormation(event.target.value)}
-                className="mt-1 h-10 w-full rounded-lg border border-border bg-bg-subtle px-3 text-sm font-semibold"
+                fieldSize="md"
+                className="mt-1"
               >
                 {formations.map((formation) => (
                   <option key={formation.id} value={formation.name}>
                     {formation.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             {quarter > 0 && (
               <button
@@ -268,14 +277,14 @@ export default function SquadBuilder({
                 onClick={() =>
                   change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
                 }
-                className="h-10 rounded-lg border border-border px-3 text-sm"
+                className="h-11 rounded-xl border border-border px-3 text-sm"
               >
                 이전 쿼터 복사
               </button>
             )}
           </div>
 
-          <div className="order-1 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
+          <div className="order-1 flex flex-col gap-2 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
             <Pitch label="경기장">
               {current.slots.map((slot, index) => {
                 const occupant = slot.memberId === null ? undefined : byId.get(slot.memberId);
@@ -305,6 +314,7 @@ export default function SquadBuilder({
                 );
               })}
             </Pitch>
+            <FitLegend />
           </div>
 
           <div className="order-2 flex flex-col gap-4 md:order-none md:col-start-2 md:row-start-2 lg:col-span-3 lg:col-start-3">
@@ -352,12 +362,25 @@ export default function SquadBuilder({
               seasonAverages={seasonAverages}
             />
 
-            {messages.length > 0 && (
+            {warningGroups.length > 0 && (
               <section className="rounded-xl border border-danger/40 p-3">
                 <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
                 <ul className="mt-1 flex flex-col gap-0.5 text-sm">
-                  {messages.map((message) => (
-                    <li key={message}>{message}</li>
+                  {warningGroups.map((group) => (
+                    <li key={group.title}>
+                      {group.details.length === 0 ? (
+                        group.title
+                      ) : (
+                        <details>
+                          <summary>{group.title}</summary>
+                          <ul className="mb-1 flex flex-wrap gap-x-3 gap-y-0.5 text-text-secondary">
+                            {group.details.map((detail) => (
+                              <li key={detail}>{detail}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </li>
                   ))}
                 </ul>
               </section>
@@ -437,6 +460,7 @@ export default function SquadBuilder({
           )}
         </DragOverlay>
       </DndContext>
+      {dialog}
     </div>
   );
 }

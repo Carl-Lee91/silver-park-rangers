@@ -13,7 +13,7 @@ import { deleteMatch } from "@/features/match-form";
 import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
 import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
-import { ActionButton } from "@/shared/ui";
+import { ActionButton, BackLink } from "@/shared/ui";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -34,9 +34,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
 
   return (
     <div className="flex flex-col gap-8">
-      <Link href={ROUTES.adminMatches} className="text-sm text-text-secondary">
-        ← 매치 목록
-      </Link>
+      <BackLink href={ROUTES.adminMatches} label="매치 목록" />
       <MatchSummary match={match} />
       <p className="-mt-6 text-xs text-text-tertiary">
         투표 {open ? `${formatDeadline(votingClosesAt(match).toISOString())} 마감` : "마감됨"}
@@ -45,7 +43,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       <div className="grid grid-cols-2 gap-2 md:max-w-narrow">
         <Link
           href={adminMatchEditPath(match.id)}
-          className="flex h-10 items-center justify-center rounded-lg border border-border text-sm font-medium"
+          className="flex h-11 items-center justify-center rounded-xl border border-border text-sm font-medium"
         >
           고치기
         </Link>

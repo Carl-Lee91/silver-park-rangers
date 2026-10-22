@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Jersey, layoutFormation, Pitch, PitchSpot } from "@/entities/formation";
 import { positionLabel, type Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import { DEFAULT_COUNTS, fieldCount, MAX_FIELD, type FormationDraftState } from "../model/formationDraft";
 
 type Props = {
@@ -35,7 +35,7 @@ export default function FormationEditor({ action }: Props) {
           onChange={(event) => setName(event.target.value)}
           maxLength={30}
           placeholder="예: 3-5-2"
-          className="mt-2 h-12 w-full rounded-xl border border-border px-4 text-base"
+          className={fieldClass("lg", "mt-2")}
         />
         {state.errors?.name && <p className="mt-2 text-sm text-danger">{state.errors.name}</p>}
       </div>
@@ -54,7 +54,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 빼기`}
                   disabled={counts[position] === 0}
                   onClick={() => step(position, -1)}
-                  className="size-9 rounded-lg border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
                 >
                   −
                 </button>
@@ -64,7 +64,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 더하기`}
                   disabled={field >= MAX_FIELD}
                   onClick={() => step(position, 1)}
-                  className="size-9 rounded-lg border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
                 >
                   +
                 </button>

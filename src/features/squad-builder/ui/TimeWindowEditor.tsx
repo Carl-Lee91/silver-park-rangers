@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
-import { SubmitButton, type ActionState } from "@/shared/ui";
+import { Select, SubmitButton, type ActionState } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -14,7 +14,6 @@ type Props = {
   leaveAt: string | null;
 };
 
-const select = "h-9 w-full rounded-lg border border-border bg-bg-base px-2 text-sm";
 
 /**
  * 당일 변동을 남긴다: 늦게 온 사람의 도착, 일찍 가거나 다친 사람의 떠나는 시간.
@@ -32,34 +31,34 @@ export default function TimeWindowEditor({ action, matchId, memberId, name, sche
       <input type="hidden" name="matchId" value={matchId} />
       <input type="hidden" name="memberId" value={memberId} />
       <p className="text-xs font-semibold">당일 시간 바꾸기</p>
-      <div className="grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+      <div className="grid grid-cols-2 items-end gap-2 md:grid-cols-[1fr_1fr_auto]">
         <div>
           <label htmlFor={`arrive-${memberId}`} className="sr-only">
             {name} 도착
           </label>
-          <select id={`arrive-${memberId}`} name="arriveAt" value={arrive} onChange={(event) => setArrive(event.target.value)} className={select}>
+          <Select id={`arrive-${memberId}`} name="arriveAt" value={arrive} onChange={(event) => setArrive(event.target.value)} fieldSize="md">
             {options.arrive.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label htmlFor={`leave-${memberId}`} className="sr-only">
             {name} 떠나는 시간
           </label>
-          <select id={`leave-${memberId}`} name="leaveAt" value={leave} onChange={(event) => setLeave(event.target.value)} className={select}>
+          <Select id={`leave-${memberId}`} name="leaveAt" value={leave} onChange={(event) => setLeave(event.target.value)} fieldSize="md">
             {options.leave.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <SubmitButton
           disabled={!changed}
-          className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-40"
+          className="col-span-2 h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40 md:col-span-1"
         >
           시간 저장
         </SubmitButton>

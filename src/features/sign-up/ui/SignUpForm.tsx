@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton } from "@/shared/ui";
 import type { SignUpState } from "../model/signUpSchema";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   takenNumbers: readonly number[];
 };
 
-const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
+const input = fieldClass("lg", "mt-2");
 
 function FieldError({ message }: { message?: string }) {
   return message ? <p className="mt-2 text-sm text-danger">{message}</p> : null;
@@ -32,13 +32,14 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [number, setNumber] = useState("");
 
-  const ready =
-    email.trim() !== "" &&
-    password !== "" &&
-    passwordConfirm !== "" &&
-    realName.trim() !== "" &&
-    feet.length > 0 &&
-    isPositionChoiceComplete(positions);
+  const missing = [
+    email.trim() === "" ? "이메일" : null,
+    password === "" ? "비밀번호" : null,
+    passwordConfirm === "" ? "비밀번호 확인" : null,
+  ]
+    .filter((item): item is string => item !== null)
+    .concat(missingProfileItems({ realName, feet, positions }));
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -54,6 +55,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="username"
+            placeholder="name@example.com"
             className={input}
           />
           <p className="mt-2 text-xs text-text-tertiary">로그인할 때 써요. 메일은 보내지 않아요.</p>
@@ -103,6 +105,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
           autoComplete="name"
+          placeholder="예: 홍길동"
           className={input}
         />
         <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>
@@ -145,6 +148,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
       >
         가입 신청
       </SubmitButton>
+      <MissingHint items={missing} />
     </form>
   );
 }

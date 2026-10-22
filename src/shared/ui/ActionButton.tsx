@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, type FormEvent } from "react";
+import { useActionState } from "react";
 import SubmitButton from "./SubmitButton";
+import { useConfirmBeforeSubmit } from "./useConfirm";
 
 export type ActionState = { error?: string };
 
@@ -11,7 +12,7 @@ type Props = {
   fields: Record<string, string>;
   label: string;
   tone?: "primary" | "neutral" | "danger";
-  /** 있으면 보내기 전에 묻는다. 되돌리기 번거로운 일(거절·휴면·관리자 해제)에 쓴다. */
+  /** 있으면 보내기 전에 확인 창으로 묻는다. 되돌리기 번거로운 일(거절·휴면·관리자 해제)에 쓴다. 확인 단추 이름은 label 이다 */
   confirmMessage?: string;
   disabled?: boolean;
 };
@@ -33,18 +34,20 @@ export default function ActionButton({
 }: Props) {
   const [state, formAction] = useActionState(action, {});
 
-  const confirmFirst = (event: FormEvent<HTMLFormElement>) => {
-    if (confirmMessage !== undefined && !window.confirm(confirmMessage)) event.preventDefault();
-  };
+  const { formRef, onSubmit, dialog } = useConfirmBeforeSubmit(
+    confirmMessage === undefined
+      ? undefined
+      : { message: confirmMessage, confirmLabel: label, tone: tone === "danger" ? "danger" : "primary" },
+  );
 
   return (
-    <form action={formAction} onSubmit={confirmFirst}>
+    <form ref={formRef} action={formAction} onSubmit={onSubmit}>
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
       <SubmitButton
         disabled={disabled}
-        className={`h-10 w-full rounded-lg px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
+        className={`h-11 w-full whitespace-nowrap rounded-xl px-3 text-sm font-medium disabled:opacity-50 ${TONES[tone]}`}
       >
         {label}
       </SubmitButton>
@@ -53,6 +56,7 @@ export default function ActionButton({
           {state.error}
         </p>
       )}
+      {dialog}
     </form>
   );
 }

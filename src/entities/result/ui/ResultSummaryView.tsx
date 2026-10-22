@@ -13,7 +13,7 @@ export default function ResultSummaryView({ summary }: { summary: ResultSummary 
   const { win, draw, loss } = summary.record;
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-2xl font-bold">
+      <p className="text-2xl font-bold tabular-nums">
         {summary.total.ours} : {summary.total.theirs}
         <span className="ml-2 text-sm font-normal text-text-secondary">
           {win}승 {draw}무 {loss}패

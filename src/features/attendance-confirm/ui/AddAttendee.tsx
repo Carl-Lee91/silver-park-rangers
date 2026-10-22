@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { SubmitButton, type ActionState } from "@/shared/ui";
+import { Select, SubmitButton, type ActionState } from "@/shared/ui";
 import { setAttended } from "../api/actions";
 
 /** 투표 없이 온 사람을 출석으로 더한다. */
@@ -17,15 +17,15 @@ export default function AddAttendee({ matchId, members }: { matchId: string; mem
         투표 없이 온 사람
       </label>
       <div className="flex gap-2">
-        <select id="addAttendee" name="memberId" className="h-10 flex-1 rounded-lg border border-border bg-bg-base px-3 text-sm">
+        <Select id="addAttendee" name="memberId" fieldSize="md" className="flex-1">
           {members.map((member) => (
             <option key={member.id} value={member.id}>
               {member.realName}
             </option>
           ))}
-        </select>
+        </Select>
         <SubmitButton
-          className="h-10 rounded-lg border border-border px-3 text-sm font-medium disabled:opacity-50"
+          className="h-11 shrink-0 rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
         >
           출석으로 추가
         </SubmitButton>

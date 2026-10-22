@@ -29,7 +29,7 @@ describe("매치 폼", () => {
     render(<MatchForm action={action} submitLabel="만들기" />);
 
     fireEvent.change(screen.getByLabelText("날짜"), { target: { value: "2026-10-25" } });
-    await user.type(screen.getByLabelText("상대 팀"), "FC 서울");
+    await user.type(screen.getByLabelText(/^상대 팀/), "FC 서울");
     await user.click(screen.getByRole("button", { name: "만들기" }));
 
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
@@ -56,7 +56,7 @@ describe("매치 폼", () => {
       />,
     );
     expect(screen.getByLabelText("날짜")).toHaveValue("2026-10-25");
-    expect(screen.getByLabelText("장소")).toHaveValue("실버파크");
+    expect(screen.getByLabelText(/^장소/)).toHaveValue("실버파크");
     expect(screen.getByText("09:00 · 09:45 · 10:30 · 11:15")).toBeInTheDocument();
   });
 
@@ -67,4 +67,13 @@ describe("매치 폼", () => {
     await user.click(screen.getByRole("button", { name: "만들기" }));
     expect(await screen.findByText("날짜를 골라 주세요.")).toBeInTheDocument();
   });
+
+  it("장소·상대 팀은 고르지 않아도 되는 칸이라 '(선택)'을 달고 예시를 보여 준다", () => {
+    render(<MatchForm action={noop} submitLabel="만들기" />);
+    expect(screen.getByLabelText(/^장소/)).toHaveAttribute("placeholder", "예: 실버파크 구장");
+    expect(document.querySelector('label[for="venue"]')).toHaveTextContent("장소 (선택)");
+    expect(document.querySelector('label[for="opponent"]')).toHaveTextContent("상대 팀 (선택)");
+    expect(screen.getByLabelText(/^상대 팀/)).toHaveAttribute("placeholder", "예: FC 서울");
+  });
 });
+

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { positionLabel, type Position } from "@/entities/position";
 import type { MemberStats } from "@/entities/stats";
+import { Select } from "@/shared/ui";
 
 type SortKey = "attendance" | "response" | "noShows" | "quarters" | "goals";
 
@@ -33,18 +34,19 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
         <label htmlFor="memberSort" className="text-xs text-text-secondary">
           정렬
         </label>
-        <select
+        <Select
           id="memberSort"
           value={sortKey}
           onChange={(event) => setSortKey(event.target.value as SortKey)}
-          className="h-9 rounded-lg border border-border bg-bg-base px-2 text-sm"
+          fieldSize="md"
+          className="w-44"
         >
           {SORTS.map((option) => (
             <option key={option.key} value={option.key}>
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {sorted.map((row) => (
@@ -53,7 +55,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
               <h3 className="font-semibold">{row.realName}</h3>
               <span className="text-sm">
                 <span className="text-text-secondary">참석률 </span>
-                <span className="font-semibold">{percent(row.attendanceRate)}</span>
+                <span className="font-semibold tabular-nums">{percent(row.attendanceRate)}</span>
                 {row.attendanceRate !== null && (
                   <span className="ml-1 text-xs text-text-tertiary">
                     {row.attended}/{row.confirmed}

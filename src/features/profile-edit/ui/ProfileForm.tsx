@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { MissingHint, SubmitButton, useToast } from "@/shared/ui";
 import type { ProfileState } from "../model/profileSchema";
 
 type Props = {
@@ -26,9 +26,11 @@ export default function ProfileForm({
   const initialNumber = initialJersey === null ? "" : String(initialJersey);
   // 비교 기준은 "마지막으로 저장한 값"이다. 처음 값과 비교하면 저장한 뒤에도 바뀐 것으로 보인다.
   const [saved, setSaved] = useState({ feet: initialFeet.join(), positions: initialPositions.join(), number: initialNumber });
+  const { show, toast } = useToast();
   const [state, formAction] = useActionState<ProfileState, FormData>(async (previous, formData) => {
     const result = await action(previous, formData);
     if (result.saved) {
+      show("저장했어요.");
       setSaved({
         feet: formData.getAll("feet").join(),
         positions: formData.getAll("preferredPositions").join(),
@@ -41,7 +43,8 @@ export default function ProfileForm({
   const [positions, setPositions] = useState(initialPositions);
   const [number, setNumber] = useState(initialNumber);
   const changed = feet.join() !== saved.feet || positions.join() !== saved.positions || number !== saved.number;
-  const ready = feet.length > 0 && isPositionChoiceComplete(positions);
+  const missing = missingProfileItems({ feet, positions });
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -67,7 +70,7 @@ export default function ProfileForm({
         <label htmlFor="jerseyNumber" className="text-sm font-semibold">
           등번호
         </label>
-        <p className="mt-1 text-xs text-text-tertiary">쿼터 보드와 공유 이미지의 동그라미에 들어가요. 같은 번호는 한 사람만 써요.</p>
+        <p className="mt-1 text-xs text-text-tertiary">쿼터 보드와 공유 이미지의 유니폼에 들어가요. 같은 번호는 한 사람만 써요.</p>
         <JerseyNumberSelect value={number} onChange={setNumber} takenNumbers={takenNumbers} />
         {state.errors?.jerseyNumber && <p className="mt-2 text-sm text-danger">{state.errors.jerseyNumber}</p>}
       </div>
@@ -77,7 +80,6 @@ export default function ProfileForm({
           {state.message}
         </p>
       )}
-      {state.saved && !changed && <p className="text-sm text-text-secondary">저장했어요.</p>}
 
       <SubmitButton
         disabled={!changed || !ready}
@@ -85,6 +87,8 @@ export default function ProfileForm({
       >
         저장
       </SubmitButton>
+      <MissingHint items={changed ? missing : []} />
+      {toast}
     </form>
   );
 }

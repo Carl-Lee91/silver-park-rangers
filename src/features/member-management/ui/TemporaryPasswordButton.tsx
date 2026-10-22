@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, type FormEvent } from "react";
-import { SubmitButton } from "@/shared/ui";
+import { useActionState } from "react";
+import { SubmitButton, useConfirmBeforeSubmit } from "@/shared/ui";
 import type { TemporaryPasswordState } from "../api/actions";
 
 type Props = {
@@ -17,16 +17,17 @@ type Props = {
 export default function TemporaryPasswordButton({ action, memberId, memberName }: Props) {
   const [state, formAction] = useActionState(action, {});
 
-  const confirmFirst = (event: FormEvent<HTMLFormElement>) => {
-    const ok = window.confirm(`${memberName}님의 비밀번호를 임시 비밀번호로 바꿀까요? 지금 비밀번호는 더 못 써요.`);
-    if (!ok) event.preventDefault();
-  };
+  const { formRef, onSubmit, dialog } = useConfirmBeforeSubmit({
+    message: `${memberName}님의 비밀번호를 임시 비밀번호로 바꿀까요? 지금 비밀번호는 더 못 써요.`,
+    confirmLabel: "임시 비밀번호 만들기",
+    tone: "danger",
+  });
 
   return (
-    <form action={formAction} onSubmit={confirmFirst} className="col-span-2 flex flex-col gap-2">
+    <form ref={formRef} action={formAction} onSubmit={onSubmit} className="col-span-2 flex flex-col gap-2">
       <input type="hidden" name="memberId" value={memberId} />
       <SubmitButton
-        className="h-10 rounded-lg border border-border text-sm font-medium disabled:opacity-50"
+        className="h-11 rounded-xl border border-border text-sm font-medium disabled:opacity-50"
       >
         임시 비밀번호 만들기
       </SubmitButton>
@@ -43,6 +44,7 @@ export default function TemporaryPasswordButton({ action, memberId, memberName }
           {state.error}
         </p>
       )}
+      {dialog}
     </form>
   );
 }
