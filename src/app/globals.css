@@ -100,6 +100,19 @@
   color-scheme: dark;
 }
 
+html {
+  /* 모바일 브라우저(카톡 인앱 포함)가 누를 때 그리는 회색 번쩍임을 끈다. 대신 아래 눌림 효과를 쓴다 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 누르는 동안 살짝 흐리게: 모바일에서 눌렀는지 바로 알 수 있게(막힌 단추는 빼고).
+   base 층에 두어 화면마다 준 opacity 유틸리티가 이긴다 */
+@layer base {
+  :is(button, a, summary, [role="button"]):not(:disabled):active {
+    opacity: 0.7;
+  }
+}
+
 body {
   background: var(--color-bg-base);
   color: var(--color-text-primary);
