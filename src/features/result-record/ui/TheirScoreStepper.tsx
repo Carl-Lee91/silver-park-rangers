@@ -17,7 +17,7 @@ const step = "flex size-11 items-center justify-center rounded-xl border border-
 
 /**
  * 상대 점수: 흔히 쓰는 `− 숫자 +`. 누를 때마다 바로 남긴다(서버 RPC).
- * 결과가 하나도 없는 쿼터는 숫자 자리에 – 를 두고, 0:0 으로 끝났으면 "무실점"으로 남긴다 —
+ * 결과가 하나도 없는 쿼터는 숫자 자리에 흐린 0 을 두고, 0:0 으로 끝났으면 "무실점"으로 남긴다 —
  * 점수도 골도 없는 쿼터는 전적에 넣지 않으므로(PLAN.md §10 경기 결과) 0 을 따로 남겨야 한다.
  */
 export default function TheirScoreStepper({ action, matchId, quarter, theirs, hasGoals }: Props) {
@@ -38,8 +38,12 @@ export default function TheirScoreStepper({ action, matchId, quarter, theirs, ha
         <SubmitButton name="theirScore" value={String(Math.max(0, value - 1))} disabled={value === 0} aria-label="상대 점수 1 줄이기" className={step}>
           −
         </SubmitButton>
-        <output aria-label={`${quarter}쿼터 상대 점수`} aria-live="polite" className="w-8 text-center text-lg font-semibold tabular-nums">
-          {recorded ? value : "–"}
+        <output
+          aria-label={`${quarter}쿼터 상대 점수`}
+          aria-live="polite"
+          className={`w-8 text-center text-lg font-semibold tabular-nums ${recorded ? "" : "text-text-tertiary"}`}
+        >
+          {value}
         </output>
         <SubmitButton name="theirScore" value={String(value + 1)} aria-label="상대 점수 1 늘리기" className={step}>
           +

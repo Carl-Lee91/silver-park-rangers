@@ -36,7 +36,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
   const options = timeWindowOptions(schedule);
   const playable = playableQuarters(schedule, arriveAt, leaveAt);
   const missing =
-    response === "" ? ["참석 · 미정 · 불참"] : coming && playable.length === 0 ? ["뛸 수 있는 시간(도착·떠나는 시간)"] : [];
+    response === "" ? ["참석 여부"] : coming && playable.length === 0 ? ["뛸 수 있는 시간(도착·떠나는 시간)"] : [];
   const ready = missing.length === 0;
 
   return (

@@ -41,7 +41,7 @@ function People({ played, others }: { played: Person[]; others: Person[] }) {
   );
 }
 
-/** 골 하나 남기기. 득점자를 모르거나 상대 자책골이면 "모름"으로 둔다. */
+/** 골 하나 남기기. 득점자를 모르거나 상대 자책골이면 "모름"으로 둔다(휴대폰 폭에서 잘리지 않게 짧게 쓴다). */
 export default function AddGoalForm({ action, matchId, quarter, played, others }: Props) {
   const [state, formAction] = useActionState(action, {});
 
@@ -54,7 +54,7 @@ export default function AddGoalForm({ action, matchId, quarter, played, others }
           {quarter}쿼터 득점
         </label>
         <Select id={`scorer-${quarter}`} name="scorerId" defaultValue="" fieldSize="md">
-          <option value="">득점자 모름 · 상대 자책골</option>
+          <option value="">득점자 모름</option>
           <People played={played} others={others} />
         </Select>
         <label className="sr-only" htmlFor={`assist-${quarter}`}>
