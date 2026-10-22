@@ -24,7 +24,7 @@ import {
 } from "../model/builder";
 import { fitOf } from "../model/fit";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
-import { warningMessage } from "../model/warnings";
+import { groupWarnings } from "../model/warnings";
 import { SlotButton } from "./dnd";
 import FitLegend from "./FitLegend";
 import NoteEditor from "./NoteEditor";
@@ -99,7 +99,7 @@ export default function SquadBuilder({
   const input = { players: squadPlayersFor(pool, builder), quarters: toSquadQuarters(builder) };
   const inSquad = new Set(input.players.map((player) => player.id));
   const report = evaluateSquad(input, toLineup(builder));
-  const messages = [...report.warnings.map((warning) => warningMessage(warning, nameOf)), ...placementIssues(pool, builder)];
+  const warningGroups = groupWarnings(report.warnings, nameOf, placementIssues(pool, builder));
   const troubled = new Set(
     report.warnings.flatMap((warning) => (warning.kind === "below-guarantee" ? [] : [warning.quarter])),
   );
@@ -362,12 +362,25 @@ export default function SquadBuilder({
               seasonAverages={seasonAverages}
             />
 
-            {messages.length > 0 && (
+            {warningGroups.length > 0 && (
               <section className="rounded-xl border border-danger/40 p-3">
                 <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
                 <ul className="mt-1 flex flex-col gap-0.5 text-sm">
-                  {messages.map((message) => (
-                    <li key={message}>{message}</li>
+                  {warningGroups.map((group) => (
+                    <li key={group.title}>
+                      {group.details.length === 0 ? (
+                        group.title
+                      ) : (
+                        <details>
+                          <summary>{group.title}</summary>
+                          <ul className="mb-1 flex flex-wrap gap-x-3 gap-y-0.5 text-text-secondary">
+                            {group.details.map((detail) => (
+                              <li key={detail}>{detail}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                    </li>
                   ))}
                 </ul>
               </section>
