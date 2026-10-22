@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
-import { type ActionState, Select, SubmitButton } from "@/shared/ui";
+import { Select, SubmitButton, type ActionState } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;

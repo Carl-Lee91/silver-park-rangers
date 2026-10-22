@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { fieldClass, SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton } from "@/shared/ui";
 import type { GuestState } from "../model/guestSchema";
 
 export type GuestValues = {
@@ -47,7 +47,8 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
     return result;
   }, {});
 
-  const ready = realName.trim() !== "" && feet.length > 0 && isPositionChoiceComplete(positions);
+  const missing = missingProfileItems({ realName, feet, positions });
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -96,6 +97,7 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
       >
         {submitLabel}
       </SubmitButton>
+      <MissingHint items={missing} />
     </form>
   );
 }

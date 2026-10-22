@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { RESPONSE_LABELS, type AttendanceResponse } from "@/entities/attendance";
 import { timeWindowOptions, type QuarterTime } from "@/entities/match";
-import { Select, SubmitButton } from "@/shared/ui";
+import { MissingHint, Select, SubmitButton } from "@/shared/ui";
 import { playableQuarters, type Vote, type VoteState } from "../model/attendanceVote";
 
 type Props = {
@@ -35,7 +35,9 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
   const coming = response === "yes" || response === "maybe";
   const options = timeWindowOptions(schedule);
   const playable = playableQuarters(schedule, arriveAt, leaveAt);
-  const ready = response !== "" && (!coming || playable.length > 0);
+  const missing =
+    response === "" ? ["참석 · 미정 · 불참"] : coming && playable.length === 0 ? ["뛸 수 있는 시간(도착·떠나는 시간)"] : [];
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -110,12 +112,15 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
       )}
 
       {open ? (
-        <SubmitButton
-          disabled={!ready}
-          className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
-        >
-          {current ? "투표 바꾸기" : "투표하기"}
-        </SubmitButton>
+        <>
+          <SubmitButton
+            disabled={!ready}
+            className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
+          >
+            {current ? "투표 바꾸기" : "투표하기"}
+          </SubmitButton>
+          <MissingHint items={missing} />
+        </>
       ) : (
         <p className="text-sm text-text-secondary">투표가 마감됐어요.</p>
       )}

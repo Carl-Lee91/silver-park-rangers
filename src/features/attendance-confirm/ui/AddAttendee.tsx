@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { type ActionState, Select, SubmitButton } from "@/shared/ui";
+import { Select, SubmitButton, type ActionState } from "@/shared/ui";
 import { setAttended } from "../api/actions";
 
 /** 투표 없이 온 사람을 출석으로 더한다. */

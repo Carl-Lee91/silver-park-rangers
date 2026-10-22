@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { type ActionState, Select, SubmitButton } from "@/shared/ui";
+import { Select, SubmitButton, type ActionState } from "@/shared/ui";
 
 type Person = { id: string; realName: string };
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { fieldClass, SubmitButton } from "@/shared/ui";
+import { fieldClass, MissingHint, SubmitButton } from "@/shared/ui";
 import type { SignUpState } from "../model/signUpSchema";
 
 type Props = {
@@ -32,13 +32,14 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [number, setNumber] = useState("");
 
-  const ready =
-    email.trim() !== "" &&
-    password !== "" &&
-    passwordConfirm !== "" &&
-    realName.trim() !== "" &&
-    feet.length > 0 &&
-    isPositionChoiceComplete(positions);
+  const missing = [
+    email.trim() === "" ? "이메일" : null,
+    password === "" ? "비밀번호" : null,
+    passwordConfirm === "" ? "비밀번호 확인" : null,
+  ]
+    .filter((item): item is string => item !== null)
+    .concat(missingProfileItems({ realName, feet, positions }));
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -145,6 +146,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
       >
         가입 신청
       </SubmitButton>
+      <MissingHint items={missing} />
     </form>
   );
 }

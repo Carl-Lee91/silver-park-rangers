@@ -7,7 +7,7 @@ import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/fo
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, type ActionState, Select, SubmitButton } from "@/shared/ui";
+import { ActionButton, Select, SubmitButton, type ActionState } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,

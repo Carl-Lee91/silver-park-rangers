@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
+import { FootPicker, JerseyNumberSelect, missingProfileItems, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { MissingHint, SubmitButton } from "@/shared/ui";
 import type { ProfileState } from "../model/profileSchema";
 
 type Props = {
@@ -41,7 +41,8 @@ export default function ProfileForm({
   const [positions, setPositions] = useState(initialPositions);
   const [number, setNumber] = useState(initialNumber);
   const changed = feet.join() !== saved.feet || positions.join() !== saved.positions || number !== saved.number;
-  const ready = feet.length > 0 && isPositionChoiceComplete(positions);
+  const missing = missingProfileItems({ feet, positions });
+  const ready = missing.length === 0;
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -85,6 +86,7 @@ export default function ProfileForm({
       >
         저장
       </SubmitButton>
+      <MissingHint items={changed ? missing : []} />
     </form>
   );
 }

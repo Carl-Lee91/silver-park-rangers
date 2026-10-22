@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { type ActionState, SubmitButton, textareaClass } from "@/shared/ui";
+import { SubmitButton, textareaClass, type ActionState } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
