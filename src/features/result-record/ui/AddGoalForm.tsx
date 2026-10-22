@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { SubmitButton, type ActionState } from "@/shared/ui";
+import { type ActionState, Select, SubmitButton } from "@/shared/ui";
 
 type Person = { id: string; realName: string };
 
@@ -15,7 +15,6 @@ type Props = {
   others: Person[];
 };
 
-const select = "h-9 w-full rounded-lg border border-border bg-bg-base px-2 text-sm";
 
 function People({ played, others }: { played: Person[]; others: Person[] }) {
   return (
@@ -50,23 +49,23 @@ export default function AddGoalForm({ action, matchId, quarter, played, others }
     <form action={formAction} className="flex flex-col gap-1.5">
       <input type="hidden" name="matchId" value={matchId} />
       <input type="hidden" name="quarter" value={quarter} />
-      <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-[1fr_1fr_auto]">
         <label className="sr-only" htmlFor={`scorer-${quarter}`}>
           {quarter}쿼터 득점
         </label>
-        <select id={`scorer-${quarter}`} name="scorerId" defaultValue="" className={select}>
+        <Select id={`scorer-${quarter}`} name="scorerId" defaultValue="" fieldSize="md">
           <option value="">득점자 모름 · 상대 자책골</option>
           <People played={played} others={others} />
-        </select>
+        </Select>
         <label className="sr-only" htmlFor={`assist-${quarter}`}>
           {quarter}쿼터 도움
         </label>
-        <select id={`assist-${quarter}`} name="assistId" defaultValue="" className={select}>
+        <Select id={`assist-${quarter}`} name="assistId" defaultValue="" fieldSize="md">
           <option value="">도움 없음</option>
           <People played={played} others={others} />
-        </select>
+        </Select>
         <SubmitButton
-          className="h-9 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-contrast disabled:opacity-50"
+          className="col-span-2 h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-50 md:col-span-1"
         >
           골 추가
         </SubmitButton>

@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import type { SignUpState } from "../model/signUpSchema";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
   takenNumbers: readonly number[];
 };
 
-const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
+const input = fieldClass("lg", "mt-2");
 
 function FieldError({ message }: { message?: string }) {
   return message ? <p className="mt-2 text-sm text-danger">{message}</p> : null;

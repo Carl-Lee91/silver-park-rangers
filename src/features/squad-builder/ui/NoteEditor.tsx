@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { SubmitButton, type ActionState } from "@/shared/ui";
+import { type ActionState, SubmitButton, textareaClass } from "@/shared/ui";
 
 type Props = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -35,7 +35,7 @@ export default function NoteEditor({ action, matchId, memberId, name, note }: Pr
         maxLength={MAX}
         rows={2}
         placeholder="예: 무릎 안 좋음 — 수비만"
-        className="rounded-lg border border-border bg-bg-base px-3 py-2 text-sm"
+        className={textareaClass()}
       />
       <div className="flex items-center justify-between">
         <span className="text-xs text-text-tertiary">

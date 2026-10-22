@@ -7,7 +7,7 @@ import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/fo
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, type ActionState, SubmitButton } from "@/shared/ui";
+import { ActionButton, type ActionState, Select, SubmitButton } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -249,18 +249,19 @@ export default function SquadBuilder({
               <label htmlFor="formation" className="text-xs font-semibold text-text-secondary">
                 포메이션
               </label>
-              <select
+              <Select
                 id="formation"
                 value={current.formationName}
                 onChange={(event) => changeFormation(event.target.value)}
-                className="mt-1 h-10 w-full rounded-lg border border-border bg-bg-subtle px-3 text-sm font-semibold"
+                fieldSize="md"
+                className="mt-1"
               >
                 {formations.map((formation) => (
                   <option key={formation.id} value={formation.name}>
                     {formation.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
             {quarter > 0 && (
               <button

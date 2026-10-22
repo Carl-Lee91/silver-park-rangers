@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import type { PasswordLoginState } from "../lib/passwordLogin";
 
 type Props = {
   action: (state: PasswordLoginState, formData: FormData) => Promise<PasswordLoginState>;
 };
 
-const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
+const input = fieldClass("lg", "mt-2");
 
 export default function PasswordLoginForm({ action }: Props) {
   const [state, formAction] = useActionState(action, {});

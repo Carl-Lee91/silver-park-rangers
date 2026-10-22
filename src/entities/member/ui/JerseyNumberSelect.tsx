@@ -1,5 +1,7 @@
 "use client";
 
+import { Select } from "@/shared/ui";
+
 const NUMBERS = Array.from({ length: 100 }, (_, number) => number);
 
 type Props = {
@@ -15,12 +17,12 @@ type Props = {
 /** 등번호 0~99 고르기(선택). 값은 입력칸 `jerseyNumber` 로 폼에 실린다(PLAN.md §5). */
 export default function JerseyNumberSelect({ value, onChange, takenNumbers = [], id = "jerseyNumber", className }: Props) {
   return (
-    <select
+    <Select
       id={id}
       name="jerseyNumber"
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className={className ?? "mt-2 h-12 w-full rounded-xl border border-border bg-bg-base px-3 text-base"}
+      className={className ?? "mt-2"}
     >
       <option value="">없음</option>
       {NUMBERS.map((number) => {
@@ -31,6 +33,6 @@ export default function JerseyNumberSelect({ value, onChange, takenNumbers = [],
           </option>
         );
       })}
-    </select>
+    </Select>
   );
 }

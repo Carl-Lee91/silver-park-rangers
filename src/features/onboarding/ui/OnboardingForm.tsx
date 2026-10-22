@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import type { OnboardingState } from "../model/onboardingSchema";
 
 type Props = {
@@ -45,7 +45,7 @@ export default function OnboardingForm({ action, takenNumbers }: Props) {
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
           autoComplete="name"
-          className="mt-2 h-12 w-full rounded-xl border border-border px-4 text-base"
+          className={fieldClass("lg", "mt-2")}
         />
         <p className="mt-2 text-xs text-text-tertiary">관리자가 본인인지 확인할 때 봐요.</p>
         <FieldError message={state.errors?.realName} />

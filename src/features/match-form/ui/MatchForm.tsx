@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { quarterSchedule } from "@/entities/match";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, Select, SubmitButton } from "@/shared/ui";
 import { DEFAULT_MATCH_FORM, type MatchField, type MatchFormState, type MatchFormValues } from "../model/matchSchema";
 
 type Props = {
@@ -13,7 +13,7 @@ type Props = {
   matchId?: string;
 };
 
-const input = "mt-2 h-12 w-full rounded-xl border border-border bg-bg-base px-4 text-base";
+const input = fieldClass("lg", "mt-2");
 const QUARTER_COUNTS = Array.from({ length: 12 }, (_, index) => String(index + 1));
 
 /** 쿼터 시작 시각 미리보기. 시간이 맞지 않으면 null */
@@ -66,19 +66,19 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
         <label htmlFor="quarterCount" className="text-sm font-semibold">
           쿼터 수
         </label>
-        <select
+        <Select
           id="quarterCount"
           name="quarterCount"
           value={values.quarterCount}
           onChange={set("quarterCount")}
-          className={input}
+          className="mt-2"
         >
           {QUARTER_COUNTS.map((count) => (
             <option key={count} value={count}>
               {count}쿼터
             </option>
           ))}
-        </select>
+        </Select>
         <p className="mt-2 text-xs text-text-tertiary">쿼터 시작</p>
         <p className="text-sm text-text-secondary">{preview ?? "시간을 확인해 주세요."}</p>
         {error("quarterCount")}

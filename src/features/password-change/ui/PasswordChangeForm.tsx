@@ -1,14 +1,14 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import type { PasswordChangeState } from "../model/passwordChange";
 
 type Props = {
   action: (state: PasswordChangeState, formData: FormData) => Promise<PasswordChangeState>;
 };
 
-const input = "mt-2 h-12 w-full rounded-xl border border-border px-4 text-base";
+const input = fieldClass("lg", "mt-2");
 
 /** 비밀번호 바꾸기. 바꾸고 나면 칸을 비운다 — 화면에 비밀번호를 남겨 두지 않는다. */
 export default function PasswordChangeForm({ action }: Props) {

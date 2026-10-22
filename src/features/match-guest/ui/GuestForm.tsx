@@ -3,7 +3,7 @@
 import { useActionState, useId, useState } from "react";
 import { FootPicker, isPositionChoiceComplete, JerseyNumberSelect, PositionPicker, type Foot } from "@/entities/member";
 import type { Position } from "@/entities/position";
-import { SubmitButton } from "@/shared/ui";
+import { fieldClass, SubmitButton } from "@/shared/ui";
 import type { GuestState } from "../model/guestSchema";
 
 export type GuestValues = {
@@ -63,7 +63,7 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
           value={realName}
           onChange={(event) => setRealName(event.target.value)}
           maxLength={20}
-          className="mt-2 h-11 w-full rounded-xl border border-border px-4 text-base"
+          className={fieldClass("md", "mt-2")}
         />
         <FieldError message={state.errors?.realName} />
       </div>
