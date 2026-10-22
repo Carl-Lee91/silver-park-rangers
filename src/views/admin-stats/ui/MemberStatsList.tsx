@@ -55,7 +55,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
               <h3 className="font-semibold">{row.realName}</h3>
               <span className="text-sm">
                 <span className="text-text-secondary">참석률 </span>
-                <span className="font-semibold">{percent(row.attendanceRate)}</span>
+                <span className="font-semibold tabular-nums">{percent(row.attendanceRate)}</span>
                 {row.attendanceRate !== null && (
                   <span className="ml-1 text-xs text-text-tertiary">
                     {row.attended}/{row.confirmed}

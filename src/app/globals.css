@@ -142,6 +142,11 @@ html {
   details[open] > summary::after {
     transform: translateY(25%) rotate(-135deg);
   }
+  /* 표(출전표·통계)와 점수 칸의 숫자는 폭을 같게: 줄마다 1 과 0 의 폭이 달라 숫자가 흔들리지 않게 */
+  table,
+  output {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 body {
