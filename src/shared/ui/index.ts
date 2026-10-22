@@ -4,3 +4,5 @@ export { default as NavigationProgress } from "./progress/NavigationProgress";
 export { default as TopProgressBar } from "./progress/TopProgressBar";
 export { default as Spinner } from "./Spinner";
 export { default as SubmitButton } from "./SubmitButton";
+export { fieldClass, textareaClass } from "./field";
+export { default as Select } from "./Select";
