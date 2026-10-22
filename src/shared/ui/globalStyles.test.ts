@@ -18,4 +18,18 @@ describe("전역 스타일 (globals.css)", () => {
   it("긴 이메일·주소는 칸을 넘지 않게 끊는다", () => {
     expect(block("body")).toMatch(/overflow-wrap:\s*break-word/);
   });
+
+  it("모바일 기본 회색 번쩍임을 끈다 — 대신 눌림 효과를 준다", () => {
+    expect(block("html")).toMatch(/-webkit-tap-highlight-color:\s*transparent/);
+  });
+
+  it("누르는 동안 단추·링크·펼치기를 살짝 흐리게 한다(막힌 단추는 빼고)", () => {
+    const rule = css.match(/([^{}]*:active[^{}]*)\{([^}]*)\}/);
+    expect(rule?.[1]).toMatch(/button/);
+    expect(rule?.[1]).toMatch(/\ba\b/);
+    expect(rule?.[1]).toMatch(/summary/);
+    expect(rule?.[1]).toMatch(/:not\(:disabled\)/);
+    expect(rule?.[2]).toMatch(/opacity/);
+  });
 });
+
