@@ -31,5 +31,17 @@ describe("전역 스타일 (globals.css)", () => {
     expect(rule?.[1]).toMatch(/:not\(:disabled\)/);
     expect(rule?.[2]).toMatch(/opacity/);
   });
+
+  it("펼치기(summary)는 기본 ▶ 를 숨기고 오른쪽 꺾쇠를 그리며, 줄 전체를 44px 로 누른다", () => {
+    expect(block("summary")).toMatch(/list-style:\s*none/);
+    expect(block("summary")).toMatch(/justify-content:\s*space-between/);
+    expect(block("summary")).toMatch(/min-height:\s*--spacing\(11\)/);
+    expect(css).toMatch(/summary::-webkit-details-marker\s*\{\s*display:\s*none/);
+    expect(block("summary::after")).toMatch(/content:/);
+  });
+
+  it("펼치면 꺾쇠가 위로 뒤집힌다", () => {
+    expect(block("details[open] > summary::after")).toMatch(/rotate\(-135deg\)/);
+  });
 });
 
