@@ -8,9 +8,10 @@ type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 const sent = (action: ReturnType<typeof vi.fn<Action>>) => action.mock.calls[0][1];
 
 describe("상대 점수 (− 숫자 +)", () => {
-  it("아직 안 남겼으면 숫자 자리에 – 를 두고, 줄이기는 막는다", () => {
+  it("아직 안 남겼으면 숫자 자리에 흐린 0 을 두고, 줄이기는 막는다 — '–' 는 빼기 기호처럼 보여 '− − +'로 읽힌다", () => {
     render(<TheirScoreStepper action={vi.fn<Action>()} matchId="m1" quarter={2} theirs={undefined} hasGoals={false} />);
-    expect(screen.getByRole("status", { name: "2쿼터 상대 점수" })).toHaveTextContent("–");
+    expect(screen.getByRole("status", { name: "2쿼터 상대 점수" })).toHaveTextContent("0");
+    expect(screen.getByRole("status", { name: "2쿼터 상대 점수" })).toHaveClass("text-text-tertiary");
     expect(screen.getByRole("button", { name: "상대 점수 1 줄이기" })).toBeDisabled();
   });
 

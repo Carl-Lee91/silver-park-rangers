@@ -76,7 +76,7 @@ describe("참석 투표 폼", () => {
 
   it("아직 고르지 않았으면 무엇을 골라야 하는지 단추 아래에 알려 준다", () => {
     renderForm();
-    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 참석 · 미정 · 불참");
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 참석 여부");
   });
 });
 

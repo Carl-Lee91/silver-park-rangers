@@ -17,7 +17,7 @@ describe("골 추가", () => {
   it("그 쿼터에 뛴 사람을 먼저 보여 준다", () => {
     render(<AddGoalForm action={async () => ({})} {...props} />);
     const options = screen.getAllByRole("option", { name: /가공격|나교체|모름/ }).map((option) => option.textContent);
-    expect(options.slice(0, 3)).toEqual(["득점자 모름 · 상대 자책골", "가공격", "나교체"]);
+    expect(options.slice(0, 3)).toEqual(["득점자 모름", "가공격", "나교체"]);
   });
 
   it("득점자·도움·쿼터를 보낸다", async () => {
