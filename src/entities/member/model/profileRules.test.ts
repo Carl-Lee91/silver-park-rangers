@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isPositionChoiceComplete,
+  missingProfileItems,
   isPositionLocked,
   jerseyNumberField,
   profileFieldsSchema,
@@ -117,3 +118,22 @@ describe("등번호 검증 — 폼 값(문자열)을 읽는다", () => {
     expect(jerseyNumberField.safeParse("칠").success).toBe(false);
   });
 });
+
+describe("아직 남은 항목 — 막힌 단추 아래에 알려 준다", () => {
+  it("빈 칸을 화면 순서대로 알려 준다", () => {
+    expect(missingProfileItems({ realName: " ", feet: [], positions: [] })).toEqual(["실명", "주발", "선호 포지션 3개"]);
+  });
+
+  it("포지션은 몇 개 더 고르면 되는지 알려 준다", () => {
+    expect(missingProfileItems({ realName: "김", feet: ["left"], positions: ["CB"] })).toEqual(["선호 포지션 2개 더"]);
+  });
+
+  it("1순위 골키퍼 하나면 포지션은 다 고른 것이다", () => {
+    expect(missingProfileItems({ realName: "김", feet: ["left"], positions: ["GK"] })).toEqual([]);
+  });
+
+  it("실명이 없는 폼(내 정보)은 실명을 보지 않는다", () => {
+    expect(missingProfileItems({ feet: ["left"], positions: ["CB", "MF", "WB"] })).toEqual([]);
+  });
+});
+

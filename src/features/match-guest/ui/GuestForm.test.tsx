@@ -87,4 +87,10 @@ describe("그날 용병 넣기 폼", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("권한이 없어요.");
   });
+
+  it("막힌 동안 무엇이 남았는지 알려 준다", () => {
+    render(<GuestForm action={noop} matchId="m1" submitLabel="용병 넣기" />);
+    expect(screen.getByText("남은 것: 실명 · 주발 · 선호 포지션 3개")).toBeInTheDocument();
+  });
 });
+

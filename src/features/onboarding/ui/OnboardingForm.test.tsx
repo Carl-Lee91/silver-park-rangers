@@ -95,4 +95,10 @@ describe("온보딩 폼", () => {
 
     expect(await screen.findByText("실명은 20자까지 입력할 수 있어요.")).toBeInTheDocument();
   });
+
+  it("막힌 동안 무엇이 남았는지 알려 준다", () => {
+    render(<OnboardingForm action={noop} takenNumbers={[]} />);
+    expect(screen.getByRole("status")).toHaveTextContent("남은 것: 실명 · 주발 · 선호 포지션 3개");
+  });
 });
+
