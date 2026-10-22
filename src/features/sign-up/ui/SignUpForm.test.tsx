@@ -109,5 +109,11 @@ describe("가입 신청 폼 (PLAN.md §4·§5)", () => {
     await user.click(position(/^윙백/));
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
   });
+
+  it("이메일·실명 칸에 예시를 보여 준다", () => {
+    render(<SignUpForm action={noop} takenNumbers={[]} />);
+    expect(screen.getByLabelText("이메일")).toHaveAttribute("placeholder", "name@example.com");
+    expect(screen.getByLabelText("실명")).toHaveAttribute("placeholder", "예: 홍길동");
+  });
 });
 
