@@ -68,7 +68,7 @@ export default function ProfileForm({
         <label htmlFor="jerseyNumber" className="text-sm font-semibold">
           등번호
         </label>
-        <p className="mt-1 text-xs text-text-tertiary">쿼터 보드와 공유 이미지의 동그라미에 들어가요. 같은 번호는 한 사람만 써요.</p>
+        <p className="mt-1 text-xs text-text-tertiary">쿼터 보드와 공유 이미지의 유니폼에 들어가요. 같은 번호는 한 사람만 써요.</p>
         <JerseyNumberSelect value={number} onChange={setNumber} takenNumbers={takenNumbers} />
         {state.errors?.jerseyNumber && <p className="mt-2 text-sm text-danger">{state.errors.jerseyNumber}</p>}
       </div>
