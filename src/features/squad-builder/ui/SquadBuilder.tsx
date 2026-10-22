@@ -26,6 +26,7 @@ import { fitOf } from "../model/fit";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
 import { warningMessage } from "../model/warnings";
 import { SlotButton } from "./dnd";
+import FitLegend from "./FitLegend";
 import NoteEditor from "./NoteEditor";
 import PitchTile from "./PitchTile";
 import SelectedPlayer from "./SelectedPlayer";
@@ -283,7 +284,7 @@ export default function SquadBuilder({
             )}
           </div>
 
-          <div className="order-1 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
+          <div className="order-1 flex flex-col gap-2 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
             <Pitch label="경기장">
               {current.slots.map((slot, index) => {
                 const occupant = slot.memberId === null ? undefined : byId.get(slot.memberId);
@@ -313,6 +314,7 @@ export default function SquadBuilder({
                 );
               })}
             </Pitch>
+            <FitLegend />
           </div>
 
           <div className="order-2 flex flex-col gap-4 md:order-none md:col-start-2 md:row-start-2 lg:col-span-3 lg:col-start-3">
