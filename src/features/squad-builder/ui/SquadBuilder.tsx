@@ -7,7 +7,7 @@ import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/fo
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, Select, SubmitButton, type ActionState } from "@/shared/ui";
+import { ActionButton, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -75,6 +75,7 @@ export default function SquadBuilder({
   windowAction,
 }: Props) {
   const [builder, setBuilder] = useState(initial);
+  const { confirm, dialog } = useConfirm();
   const [quarter, setQuarter] = useState(0);
   const [selection, setSelection] = useState<Selection>(null);
   const [savedPayload, setSavedPayload] = useState(() => JSON.stringify(toSavePayload(initial)));
@@ -134,8 +135,12 @@ export default function SquadBuilder({
   };
 
   /** 끝난 쿼터(지금 쿼터 앞)는 그대로 두고 지금 쿼터부터 다시 짠다(PLAN.md §10 당일 변동). */
-  const reassignFromHere = () => {
-    if (!window.confirm(`1~${quarter}쿼터는 그대로 두고 ${quarter + 1}쿼터부터 필드를 다시 짤까요?`)) return;
+  const reassignFromHere = async () => {
+    const ok = await confirm({
+      message: `1~${quarter}쿼터는 그대로 두고 ${quarter + 1}쿼터부터 필드를 다시 짤까요?`,
+      confirmLabel: "다시 배치",
+    });
+    if (!ok) return;
     const lineup = toLineup(builder);
     change(
       applyLineup(
@@ -145,10 +150,12 @@ export default function SquadBuilder({
     );
   };
 
-  const runAutoAssign = () => {
+  const runAutoAssign = async () => {
     const lineup = toLineup(builder);
     const hasField = lineup.some((row) => row.fieldIds.some((id) => id !== null));
-    if (hasField && !window.confirm("필드 배치를 새로 짤까요? 키퍼 자리는 그대로 둬요.")) return;
+    if (hasField && !(await confirm({ message: "필드 배치를 새로 짤까요? 키퍼 자리는 그대로 둬요.", confirmLabel: "새로 짜기" }))) {
+      return;
+    }
     change(applyLineup(builder, autoAssign(input, { keepers: lineup.map((row) => row.keeperId) })));
   };
 
@@ -438,6 +445,7 @@ export default function SquadBuilder({
           )}
         </DragOverlay>
       </DndContext>
+      {dialog}
     </div>
   );
 }
