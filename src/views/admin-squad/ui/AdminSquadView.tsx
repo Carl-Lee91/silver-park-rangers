@@ -16,7 +16,7 @@ import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from
 import { ShareActions, SquadImageViewer } from "@/features/squad-share";
 import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
 import { adminSquadImagePath, squadImageVersion } from "@/widgets/squad-image";
-import { BackLink } from "@/shared/ui";
+import { chipClass, Panel, Screen } from "@/shared/ui";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -40,9 +40,11 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const fallback = formations.find((formation) => formation.name === DEFAULT_FORMATION) ?? formations[0];
   if (fallback === undefined) {
     return (
-      <p className="rounded-box border border-danger p-4 text-sm">
-        포메이션이 하나도 없어요. 초기 마이그레이션(기본 포메이션 4-3-3 · 4-4-2)이 적용됐는지 확인해 주세요.
-      </p>
+      <Screen title="스쿼드 편성" back={{ href: adminMatchPath(match.id), label: "매치" }} width="wide">
+        <p className="rounded-box border border-danger p-4 text-sm">
+          포메이션이 하나도 없어요. 초기 마이그레이션(기본 포메이션 4-3-3 · 4-4-2)이 적용됐는지 확인해 주세요.
+        </p>
+      </Screen>
     );
   }
 
@@ -58,14 +60,17 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <BackLink href={adminMatchPath(match.id)} label={`${formatMatchDate(match.date)} ${matchTitle(match)}`} />
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">스쿼드 짜기</h1>
-        <Link href={ROUTES.adminFormations} className="text-sm text-primary">
-          포메이션 관리
-        </Link>
-      </div>
+    <Screen
+      title="스쿼드 편성"
+      overline={`${formatMatchDate(match.date)} ${match.startsAt} · ${matchTitle(match)}`}
+      back={{ href: adminMatchPath(match.id), label: "매치" }}
+      width="wide"
+      actions={
+        <span className={chipClass(match.squadPublishedAt !== null ? "good" : "muted", "bg-kit-label")}>
+          {match.squadPublishedAt !== null ? "공개됨" : "공개 전"}
+        </span>
+      }
+    >
       <SquadBuilder
         matchId={match.id}
         schedule={schedule}
@@ -82,23 +87,24 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
       />
       {current.length > 0 &&
         (match.squadPublishedAt !== null ? (
-          <section>
-            <h2 className="mb-2 text-sm font-semibold">단톡방에 공유</h2>
+          <Panel title="단톡방에 공유">
             <ShareActions
               shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
               title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
               imageUrls={imageUrls}
             />
-          </section>
+          </Panel>
         ) : (
-          <section>
-            <h2 className="text-sm font-semibold">이미지</h2>
-            <p className="mt-1 mb-2 text-xs text-text-tertiary">
+          <Panel title="이미지" aside="관리자만">
+            <p className="mb-3 text-xs text-text-tertiary">
               공개 전이라 관리자만 볼 수 있어요. 마지막으로 저장한 배치로 그려요.
             </p>
             <SquadImageViewer urls={imageUrls} fileName={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`} />
-          </section>
+          </Panel>
         ))}
-    </div>
+      <Link href={ROUTES.adminFormations} className="self-start text-sm font-semibold text-primary">
+        포메이션 관리
+      </Link>
+    </Screen>
   );
 }

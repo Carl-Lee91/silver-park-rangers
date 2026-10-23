@@ -17,10 +17,11 @@ type Props = {
   disabled?: boolean;
 };
 
+/** 주 단추는 하늘색, 보조는 밝은 칸에 진한 테두리, 위험은 빨간 테두리(PLAN.md §7 "테마") */
 const TONES = {
-  primary: "bg-primary text-primary-contrast",
-  neutral: "border border-border text-text-primary",
-  danger: "border border-border text-danger",
+  primary: "bg-primary font-bold text-primary-contrast",
+  neutral: "border border-border-strong bg-bg-subtle text-text-primary",
+  danger: "border border-danger/60 text-danger",
 };
 
 /** 한 번 누르면 서버 동작 하나를 부르는 단추. 실패하면 단추 아래에 이유를 보인다. */

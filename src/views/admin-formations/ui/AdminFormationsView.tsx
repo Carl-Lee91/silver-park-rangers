@@ -1,25 +1,23 @@
 import { compositionLabel } from "@/entities/formation";
 import { fetchFormations } from "@/entities/formation/server";
 import { createFormation, deleteFormation, FormationEditor } from "@/features/formation-editor";
-import { ActionButton } from "@/shared/ui";
+import { ROUTES } from "@/shared/config";
+import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
 
 export default async function AdminFormationsView() {
   const formations = await fetchFormations();
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="text-xl font-bold">포메이션</h1>
-
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <section>
-          <h2 className="mb-3 text-sm font-semibold text-text-secondary">저장된 포메이션</h2>
-          <ul className="flex flex-col gap-2">
+    <Screen title="포메이션" overline="전술" back={{ href: ROUTES.admin, label: "관리" }} width="wide">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+        <Panel title="저장된 포메이션" aside={`${formations.length}`} flush>
+          <ul className="divide-y divide-border">
             {formations.map((formation) => (
-              <li key={formation.id} className="flex items-center justify-between gap-3 rounded-box border border-border p-3">
+              <li key={formation.id} className="flex min-h-14 items-center justify-between gap-3 px-3 py-2 even:bg-bg-row md:px-4">
                 <span className="min-w-0">
                   <span className="font-semibold">{formation.name}</span>
                   {formation.isPreset && (
-                    <span className="ml-1.5 rounded-chip bg-bg-subtle px-1.5 py-0.5 text-xs text-text-secondary">기본</span>
+                    <span className={chipClass("muted", "ml-1.5")}>기본</span>
                   )}
                   <span className="mt-0.5 block truncate text-xs text-text-tertiary">{compositionLabel(formation.slots)}</span>
                 </span>
@@ -37,13 +35,12 @@ export default async function AdminFormationsView() {
               </li>
             ))}
           </ul>
-        </section>
+        </Panel>
 
-        <section>
-          <h2 className="mb-3 text-sm font-semibold text-text-secondary">새 포메이션</h2>
+        <Panel title="새 포메이션">
           <FormationEditor action={createFormation} />
-        </section>
+        </Panel>
       </div>
-    </div>
+    </Screen>
   );
 }

@@ -16,29 +16,27 @@ import {
   setMemberType,
   TemporaryPasswordButton,
 } from "@/features/member-management";
-import { ActionButton } from "@/shared/ui";
+import { ActionButton, Panel, Screen } from "@/shared/ui";
 import MemberSummary from "./MemberSummary";
 
+/** 패널 안에 칸을 이어 붙인다(칸 사이 1px 선). 넓은 화면은 두세 칸씩 */
 function Section({ title, count, children }: { title: string; count: number; children: ReactNode }) {
   return (
-    <section>
-      <h2 className="mb-3 text-sm font-semibold text-text-secondary">
-        {title} <span className="text-text-primary">{count}</span>
-      </h2>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{children}</div>
-    </section>
+    <Panel title={title} aside={`${count}명`} flush>
+      <div className="grid gap-px bg-border md:grid-cols-2 xl:grid-cols-3">{children}</div>
+    </Panel>
   );
 }
 
 function Empty({ children }: { children: string }) {
-  return <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">{children}</p>;
+  return <p className="col-span-full bg-bg-panel p-3 text-sm text-text-tertiary md:p-4">{children}</p>;
 }
 
 /** 가입 신청(또는 거절했던 사람). 승인할 때 멤버/용병을 고른다. */
 function ApplicantCard({ member }: { member: AdminMember }) {
   const fields = { memberId: member.id };
   return (
-    <article className="rounded-box border border-border p-4">
+    <article className="bg-bg-panel p-3 md:p-4">
       <MemberSummary member={member} showApplied />
       <div className="mt-4 grid grid-cols-3 gap-2">
         <ActionButton action={approveMember} fields={{ ...fields, kind: "member" }} label="멤버로 승인" tone="primary" />
@@ -63,7 +61,7 @@ function MemberCard({ member, viewer }: { member: AdminMember; viewer: Gate }) {
   const inactive = member.status === "inactive";
 
   return (
-    <article className="rounded-box border border-border p-4">
+    <article className="bg-bg-panel p-3 md:p-4">
       <MemberSummary member={member} />
       <details className="mt-3">
         <summary className="cursor-pointer text-sm text-text-secondary">관리</summary>
@@ -117,8 +115,7 @@ export default async function AdminMembersView() {
   const groups = groupForAdmin(members);
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="text-xl font-bold">멤버 관리</h1>
+    <Screen title="멤버 관리" overline="스쿼드 명단" width="wide">
 
       <Section title="가입 신청" count={groups.pending.length}>
         {groups.pending.length === 0 ? (
@@ -151,6 +148,6 @@ export default async function AdminMembersView() {
           ))}
         </Section>
       )}
-    </div>
+    </Screen>
   );
 }
