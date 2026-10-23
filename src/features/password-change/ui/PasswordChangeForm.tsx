@@ -67,7 +67,7 @@ export default function PasswordChangeForm({ action }: Props) {
       )}
       <SubmitButton
         disabled={missing.length > 0}
-        className="h-12 w-full rounded-box border border-border text-base font-semibold disabled:opacity-40"
+        className="h-12 w-full rounded-box border border-border-strong bg-bg-subtle text-base font-semibold disabled:opacity-40"
       >
         비밀번호 바꾸기
       </SubmitButton>

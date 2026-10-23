@@ -48,7 +48,7 @@ function ConfirmDialog({ options, onAnswer }: { options: ConfirmOptions; onAnswe
           {options.message}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => onAnswer(false)} className="h-12 rounded-box border border-border text-base font-medium">
+          <button type="button" onClick={() => onAnswer(false)} className="h-12 rounded-box border border-border-strong bg-bg-subtle text-base font-medium">
             취소
           </button>
           <button

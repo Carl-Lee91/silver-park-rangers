@@ -31,7 +31,7 @@ export default function TheirScoreStepper({ action, matchId, quarter, theirs, ha
       <input type="hidden" name="quarter" value={quarter} />
       <div className="flex items-center gap-2">
         {!recorded && (
-          <SubmitButton name="theirScore" value="0" className="h-11 rounded-box border border-border px-3 text-sm font-medium">
+          <SubmitButton name="theirScore" value="0" className="h-11 rounded-box border border-border-strong bg-bg-subtle px-3 text-sm font-medium">
             무실점
           </SubmitButton>
         )}

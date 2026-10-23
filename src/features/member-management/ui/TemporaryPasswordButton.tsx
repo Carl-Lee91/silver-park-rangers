@@ -27,7 +27,7 @@ export default function TemporaryPasswordButton({ action, memberId, memberName }
     <form ref={formRef} action={formAction} onSubmit={onSubmit} className="col-span-2 flex flex-col gap-2">
       <input type="hidden" name="memberId" value={memberId} />
       <SubmitButton
-        className="h-11 rounded-box border border-border text-sm font-medium disabled:opacity-50"
+        className="h-11 rounded-box border border-border-strong bg-bg-subtle text-sm font-medium disabled:opacity-50"
       >
         임시 비밀번호 만들기
       </SubmitButton>

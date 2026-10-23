@@ -52,7 +52,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
             disabled={!open}
             aria-pressed={response === option}
             onClick={() => setResponse(option)}
-            className="h-12 rounded-box border border-border text-base font-semibold aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast disabled:opacity-60"
+            className="h-12 rounded-box border border-border-strong bg-bg-subtle text-base font-semibold aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:font-bold aria-pressed:text-primary-contrast disabled:opacity-60"
           >
             {RESPONSE_LABELS[option]}
           </button>
