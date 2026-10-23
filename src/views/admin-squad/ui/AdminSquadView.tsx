@@ -66,7 +66,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
       back={{ href: adminMatchPath(match.id), label: "매치" }}
       width="wide"
       actions={
-        <span className={chipClass(match.squadPublishedAt !== null ? "good" : "muted", "bg-kit-label")}>
+        <span className={chipClass("band")}>
           {match.squadPublishedAt !== null ? "공개됨" : "공개 전"}
         </span>
       }

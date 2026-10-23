@@ -19,7 +19,7 @@ function Tile({ label, value, note }: { label: string; value: string; note?: str
   return (
     <div className="rounded-box border border-border bg-bg-panel px-3 py-3 md:px-4">
       <p className="text-xs font-semibold text-text-secondary">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold tracking-tight tabular-nums md:text-3xl">{value}</p>
+      <p className="mt-1 text-2xl font-extrabold tracking-tight whitespace-nowrap tabular-nums">{value}</p>
       {note && <p className="text-xs text-text-tertiary">{note}</p>}
     </div>
   );
