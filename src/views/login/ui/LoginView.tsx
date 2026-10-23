@@ -7,7 +7,7 @@ export default function LoginView() {
   return (
     <Screen title="로그인" overline="Silver Park Rangers" width="narrow" className="md:pt-10">
       <div className="flex flex-col items-center gap-2 py-4 text-center">
-        <Emblem label="Silver Park Rangers" className="h-20 w-18" />
+        <Emblem label="Silver Park Rangers" className="size-24" />
         <p className="mt-2 text-xs font-bold tracking-wider text-primary">우리 팀 전용</p>
         <p className="text-xl font-extrabold">Silver Park Rangers</p>
         <p className="text-sm text-text-secondary">참석 투표부터 쿼터별 스쿼드까지 한곳에서.</p>

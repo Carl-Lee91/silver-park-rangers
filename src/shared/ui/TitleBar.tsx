@@ -32,7 +32,7 @@ export default function TitleBar({ title, overline, back, actions, width = "page
             <BackLink href={back.href} label={back.label} tone="band" />
           </div>
         ) : (
-          <Emblem className="h-8 w-7 md:h-9 md:w-8" />
+          <Emblem className="size-9 md:size-10" />
         )}
         <div className="min-w-0 flex-1 py-2">
           {overline && <p className="truncate text-xs font-semibold text-kit-label/85">{overline}</p>}

@@ -15,7 +15,7 @@ export default function MatchSummary({ match, framed = true }: { match: MatchInf
     <div className={framed ? "overflow-hidden rounded-box border border-border bg-bg-panel" : ""}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 pt-5 pb-4">
         <span className="flex flex-col items-center gap-1.5">
-          <Emblem className="h-12 w-11" />
+          <Emblem className="size-12" />
           <span className="text-sm font-bold">우리 팀</span>
         </span>
         <span className="flex flex-col items-center">

@@ -25,7 +25,7 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
             href={ROUTES.admin}
             className="flex h-12 items-center gap-2.5 lg:h-auto lg:border-b lg:border-border lg:px-2 lg:pb-4"
           >
-            <Emblem className="h-7 w-6 lg:h-9 lg:w-8" />
+            <Emblem className="size-8 lg:size-10" />
             <span className="flex flex-col leading-tight">
               <span className="hidden text-sm font-extrabold lg:block">Silver Park Rangers</span>
               <span className="flex items-center gap-1.5 text-sm font-bold lg:text-xs lg:font-medium lg:text-text-tertiary">
