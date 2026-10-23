@@ -13,4 +13,10 @@ describe("뒤로 가기", () => {
     expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByRole("link")).toHaveClass("h-11");
   });
+
+  it("머리띠 위에서는 띠 글자색(남색)으로 그린다", () => {
+    render(<BackLink href="/" label="홈" tone="band" />);
+    expect(screen.getByRole("link")).toHaveClass("text-kit-label");
+    expect(screen.getByRole("link")).not.toHaveClass("text-text-secondary");
+  });
 });
