@@ -19,4 +19,10 @@ describe("뒤로 가기", () => {
     expect(screen.getByRole("link")).toHaveClass("text-kit-label");
     expect(screen.getByRole("link")).not.toHaveClass("text-text-secondary");
   });
+
+  it("머리띠 위에서는 이름을 말줄임하지 않는다 — 내용 폭으로 정해지는 칸에서 비율 폭이 0 이 되어 '‹ …'만 남았다", () => {
+    render(<BackLink href="/" label="홈" tone="band" />);
+    expect(screen.getByRole("link")).not.toHaveClass("max-w-full");
+    expect(screen.getByText("홈")).not.toHaveClass("truncate");
+  });
 });
