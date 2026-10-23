@@ -25,11 +25,17 @@ export default function PitchImage({ quarter, width }: { quarter: SavedQuarter; 
         width,
         height,
         background: PALETTE.pitch,
-        borderRadius: 16,
+        borderRadius: 6,
         overflow: "hidden",
       }}
     >
       <svg width={width} height={height} viewBox="0 0 68 105" style={{ position: "absolute", left: 0, top: 0 }}>
+        {/* 잔디 줄무늬: 앱 경기장(Pitch)과 같다 */}
+        <g fill={PALETTE.pitchStripe}>
+          {[10.5, 31.5, 52.5, 73.5, 94.5].map((y) => (
+            <rect key={y} x="0" y={y} width="68" height="10.5" />
+          ))}
+        </g>
         <g fill="none" stroke={PALETTE.pitchLine} strokeWidth="0.4">
           <rect x="1.5" y="1.5" width="65" height="102" />
           <line x1="1.5" y1="52.5" x2="66.5" y2="52.5" />

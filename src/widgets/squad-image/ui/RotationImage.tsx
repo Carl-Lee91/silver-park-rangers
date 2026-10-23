@@ -38,16 +38,17 @@ export default function RotationImage({ squad, emblem }: { squad: SharedSquad; e
       <div style={{ display: "flex", height: HEADING }}>
         <MatchHeading squad={squad} emblem={emblem} />
       </div>
-      <div style={{ ...line, fontSize: 22, color: PALETTE.textSecondary }}>
-        <div style={{ display: "flex", width: NAME }}>이름</div>
+      <div style={{ ...line, fontSize: 22, color: PALETTE.textSecondary, borderBottom: `2px solid ${PALETTE.borderStrong}` }}>
+        <div style={{ display: "flex", width: NAME, paddingLeft: 12 }}>이름</div>
         {squad.quarters.map((quarter) => (
           <div key={quarter.number} style={{ ...center, width: cell }}>{`${quarter.number}Q`}</div>
         ))}
         <div style={{ ...center, width: TOTAL }}>출전</div>
       </div>
-      {rows.map((row) => (
-        <div key={row.memberId} style={{ ...line, fontSize: 26 }}>
-          <div style={{ display: "flex", width: NAME, fontWeight: 700 }}>
+      {/* 풋볼매니저 표처럼 짝수 줄에 줄무늬. 이름 칸은 줄무늬 안쪽으로 조금 띄운다 */}
+      {rows.map((row, index) => (
+        <div key={row.memberId} style={{ ...line, fontSize: 26, background: index % 2 === 1 ? PALETTE.bgRow : "transparent" }}>
+          <div style={{ display: "flex", width: NAME, paddingLeft: 12, fontWeight: 700 }}>
             {row.jerseyNumber === null ? row.name : `${row.jerseyNumber} ${row.name}`}
           </div>
           {row.marks.map((mark, index) => (
