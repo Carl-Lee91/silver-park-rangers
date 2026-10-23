@@ -43,7 +43,7 @@ describe("표기", () => {
   });
 
   it("일정 칸(풋볼매니저 일정표)에 쓸 월 · 일 · 요일을 나눠 준다", () => {
-    expect(matchDateParts("2026-11-02")).toEqual({ month: "11월", day: "2", weekday: "일" });
+    expect(matchDateParts("2026-11-01")).toEqual({ month: "11월", day: "1", weekday: "일" });
     expect(matchDateParts("2026-10-24")).toEqual({ month: "10월", day: "24", weekday: "토" });
   });
 
