@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import { InstallListener } from "@/features/app-install";
 import { NavigationProgress, TopProgressBar } from "@/shared/ui";
 // 글꼴: Pretendard(무료 OFL)를 글자 범위별 조각으로 우리 서버에서 내보낸다 — 외부 CDN 을 쓰지 않는다.
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
@@ -25,6 +26,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <NavigationProgress />
         </Suspense>
+        {/* 앱 전체에 하나: 앱 설치 창을 맡아 두고 최소 서비스 워커를 등록한다(PLAN.md §7 "앱으로 설치") */}
+        <InstallListener />
         {children}
       </body>
     </html>

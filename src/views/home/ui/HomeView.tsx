@@ -18,6 +18,7 @@ import { isAdmin } from "@/entities/member";
 import { fetchMyMember } from "@/entities/member/server";
 import { FormStrip, recentResults, ResultRow, withQuarterResults } from "@/entities/result";
 import { fetchMatchResults } from "@/entities/result/server";
+import { InstallAppCard } from "@/features/app-install";
 import { SignOutButton } from "@/features/sign-out";
 import { matchPath, ROUTES } from "@/shared/config";
 import { chipClass, Panel, Screen } from "@/shared/ui";
@@ -101,6 +102,7 @@ export default async function HomeView() {
         </Panel>
 
         <div className="flex flex-col gap-4 lg:gap-6">
+          <InstallAppCard dismissible />
           <Panel title="최근 폼" aside={form.length > 0 && "오른쪽이 최신"} flush>
             <div className="p-3 md:p-4">
               <FormStrip results={form} />

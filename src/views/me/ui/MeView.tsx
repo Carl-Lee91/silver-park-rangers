@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { fetchMyMember, fetchTakenJerseyNumbers } from "@/entities/member/server";
+import { InstallAppCard } from "@/features/app-install";
 import { changePassword, PasswordChangeForm } from "@/features/password-change";
 import { ProfileForm, updateProfile } from "@/features/profile-edit";
 import { SignOutButton } from "@/features/sign-out";
@@ -26,6 +27,7 @@ export default async function MeView() {
         <p className="mb-4 text-xs text-text-tertiary">관리자에게 받은 임시 비밀번호로 들어왔다면 여기서 바꿔 주세요.</p>
         <PasswordChangeForm action={changePassword} />
       </Panel>
+      <InstallAppCard />
       <div className="flex justify-center">
         <SignOutButton />
       </div>
