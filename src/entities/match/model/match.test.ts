@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { matchTitle, toMatch } from "./match";
+import { matchTitle, opponentInitial, toMatch } from "./match";
 
 const row = {
   id: "10000000-0000-0000-0000-000000000001",
@@ -42,5 +42,18 @@ describe("매치 이름", () => {
 
   it("상대가 없으면 상대 미정", () => {
     expect(matchTitle(toMatch({ ...row, opponent: null }))).toBe("상대 미정");
+  });
+});
+
+describe("상대 표시 글자 (엠블럼이 없는 상대의 동그라미)", () => {
+  it("FC · SC 같은 영문 머리말을 건너뛰고 이름의 첫 글자를 쓴다", () => {
+    expect(opponentInitial("FC 한강")).toBe("한");
+    expect(opponentInitial("은평 유나이티드")).toBe("은");
+    expect(opponentInitial("Mapo FC")).toBe("M");
+  });
+
+  it("상대를 안 정했으면 ? 다", () => {
+    expect(opponentInitial(null)).toBe("?");
+    expect(opponentInitial("  ")).toBe("?");
   });
 });
