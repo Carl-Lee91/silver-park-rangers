@@ -25,4 +25,11 @@ describe("매치 미리보기 (풋볼매니저 경기 전 화면)", () => {
     expect(screen.getByText("상대 미정")).toBeInTheDocument();
     expect(screen.getAllByRole("definition")[0]).toHaveTextContent("–");
   });
+
+  it("패널 안에 넣을 때(framed=false)는 바깥 상자 없이 그린다", () => {
+    const { container, rerender } = render(<MatchSummary match={match} />);
+    expect(container.firstElementChild).toHaveClass("border");
+    rerender(<MatchSummary match={match} framed={false} />);
+    expect(container.firstElementChild).not.toHaveClass("border");
+  });
 });
