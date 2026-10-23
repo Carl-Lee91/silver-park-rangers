@@ -30,4 +30,10 @@ describe("칩 모양", () => {
     expect(chipClass("danger")).toContain("border-danger");
     expect(chipClass("good")).toContain("text-result-win");
   });
+
+  it("머리띠(하늘색) 위 칩은 띠 글자색 테두리다 — 바탕 칩을 겹쳐 칠하지 않는다", () => {
+    expect(chipClass("band")).toContain("border-kit-label");
+    expect(chipClass("band")).toContain("text-kit-label");
+    expect(chipClass("band")).not.toMatch(/\bbg-/);
+  });
 });
