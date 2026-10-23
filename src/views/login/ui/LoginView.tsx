@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstallAppCard } from "@/features/app-install";
 import { passwordLogin, PasswordLoginForm } from "@/features/password-login";
 import { ROUTES } from "@/shared/config";
 import { Emblem, Panel, Screen } from "@/shared/ui";
@@ -28,6 +29,8 @@ export default function LoginView() {
           관리자가 승인한 사람만 쓸 수 있어요. 비밀번호를 잊었으면 관리자에게 임시 비밀번호를 받아 주세요.
         </p>
       </div>
+
+      <InstallAppCard dismissible />
     </Screen>
   );
 }
