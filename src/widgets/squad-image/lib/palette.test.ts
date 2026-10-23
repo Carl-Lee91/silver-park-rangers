@@ -23,25 +23,31 @@ const luminance = (hex: string) => {
 
 describe("서버 이미지 색", () => {
   it("globals.css 토큰과 같은 값을 쓴다 — 토큰을 바꾸고 여기를 빠뜨리면 이미지만 다른 색이 된다", () => {
-    expect({
-      primary: PALETTE.primary,
-      bgBase: PALETTE.bgBase,
-      textPrimary: PALETTE.textPrimary,
-      pitch: PALETTE.pitch,
-      keeper: PALETTE.keeper,
-      keeperLabel: PALETTE.keeperLabel,
-      kit: PALETTE.kit,
-      kitLabel: PALETTE.kitLabel,
-    }).toEqual({
-      primary: token("color-primary"),
-      bgBase: token("color-bg-base"),
-      textPrimary: token("color-text-primary"),
-      pitch: token("color-pitch"),
-      keeper: token("color-kakao"),
-      keeperLabel: token("color-kakao-label"),
-      kit: token("color-kit"),
-      kitLabel: token("color-kit-label"),
-    });
+    // 이미지 색 이름 → 토큰 이름. pitchLine 은 rgb() 라 이름이 아니라 값으로 비교한다
+    const TOKEN_OF: Record<Exclude<keyof typeof PALETTE, "pitchLine">, string> = {
+      primary: "color-primary",
+      primarySoft: "color-primary-soft",
+      bgBase: "color-bg-base",
+      bgPanel: "color-bg-panel",
+      bgRow: "color-bg-row",
+      bgSubtle: "color-bg-subtle",
+      textPrimary: "color-text-primary",
+      textSecondary: "color-text-secondary",
+      textTertiary: "color-text-tertiary",
+      border: "color-border",
+      borderStrong: "color-border-strong",
+      pitch: "color-pitch",
+      pitchStripe: "color-pitch-stripe",
+      keeper: "color-kakao",
+      keeperLabel: "color-kakao-label",
+      kit: "color-kit",
+      kitLabel: "color-kit-label",
+    };
+    for (const [key, name] of Object.entries(TOKEN_OF)) {
+      expect(PALETTE[key as keyof typeof TOKEN_OF], key).toBe(token(name));
+    }
+    expect(PALETTE.pitchLine.replace(/\s/g, "")).toBe("rgba(255,255,255,0.55)");
+    expect(token("color-pitch-line")).toBe("rgb(255 255 255 / 0.55)");
   });
 
   it("앱과 이미지는 다크 모드다 — 바탕이 글자보다 어둡고, 글자는 바탕 위에서 충분히 읽힌다", () => {
