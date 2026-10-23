@@ -10,3 +10,7 @@ export { default as MissingHint } from "./MissingHint";
 export { default as BackLink } from "./BackLink";
 export { useConfirm, useConfirmBeforeSubmit, type ConfirmOptions } from "./useConfirm";
 export { TOAST_MS, useToast } from "./useToast";
+export { default as Panel } from "./Panel";
+export { default as TitleBar } from "./TitleBar";
+export { default as Emblem, EMBLEM_SRC } from "./Emblem";
+export { chipClass, tabClass, type ChipTone } from "./tabs";
