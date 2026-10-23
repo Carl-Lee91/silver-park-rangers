@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
   */
   htmlLimitedBots: /.*/,
   /*
+    서비스 워커(public/sw.js)는 기기에 캐시하지 않는다. 고쳐도 예전 워커가 남지 않게(Next.js PWA 안내서).
+  */
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
+    ];
+  },
+  /*
     서버 이미지(/s/…/og · /s/…/image · 관리자 스쿼드 이미지)가 실행 중에 읽는 한글 폰트와 엠블럼을 배포 묶음에 넣는다
     (src/shared/lib/server.ts 의 loadImageFonts · loadImageEmblem).
   */
