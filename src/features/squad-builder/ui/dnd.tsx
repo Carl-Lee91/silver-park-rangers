@@ -47,5 +47,5 @@ export function BenchChip({ memberId, className = "", ...button }: ButtonProps &
 /** 벤치 자리: 경기장의 사람을 여기 놓으면 뺀다 */
 export function BenchDropZone({ className = "", ...div }: HTMLAttributes<HTMLDivElement> & { children: ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: "bench" });
-  return <div ref={setNodeRef} {...div} className={`${className} ${isOver ? "rounded-lg bg-bg-subtle" : ""}`} />;
+  return <div ref={setNodeRef} {...div} className={`${className} ${isOver ? "rounded-box bg-bg-subtle" : ""}`} />;
 }

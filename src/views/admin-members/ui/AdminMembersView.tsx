@@ -31,14 +31,14 @@ function Section({ title, count, children }: { title: string; count: number; chi
 }
 
 function Empty({ children }: { children: string }) {
-  return <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">{children}</p>;
+  return <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">{children}</p>;
 }
 
 /** 가입 신청(또는 거절했던 사람). 승인할 때 멤버/용병을 고른다. */
 function ApplicantCard({ member }: { member: AdminMember }) {
   const fields = { memberId: member.id };
   return (
-    <article className="rounded-xl border border-border p-4">
+    <article className="rounded-box border border-border p-4">
       <MemberSummary member={member} showApplied />
       <div className="mt-4 grid grid-cols-3 gap-2">
         <ActionButton action={approveMember} fields={{ ...fields, kind: "member" }} label="멤버로 승인" tone="primary" />
@@ -63,7 +63,7 @@ function MemberCard({ member, viewer }: { member: AdminMember; viewer: Gate }) {
   const inactive = member.status === "inactive";
 
   return (
-    <article className="rounded-xl border border-border p-4">
+    <article className="rounded-box border border-border p-4">
       <MemberSummary member={member} />
       <details className="mt-3">
         <summary className="cursor-pointer text-sm text-text-secondary">관리</summary>

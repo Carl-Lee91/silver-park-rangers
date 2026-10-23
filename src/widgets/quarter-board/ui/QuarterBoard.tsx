@@ -11,7 +11,7 @@ type Props = { quarters: readonly SavedQuarter[]; schedule: readonly QuarterTime
 const ROTATION = "rotation";
 
 const tabClass =
-  "min-h-11 shrink-0 rounded-lg border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast";
+  "min-h-11 shrink-0 rounded-box border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast";
 
 function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
   return (
@@ -24,7 +24,7 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
               tone={slot.memberName === null ? "empty" : slot.position === "GK" ? "keeper" : "kit"}
             />
             {slot.memberName && (
-              <span className="max-w-16 truncate rounded bg-bg-base/80 px-1 text-[11px] text-text-primary">{slot.memberName}</span>
+              <span className="max-w-16 truncate rounded-chip bg-bg-base/80 px-1 text-[11px] text-text-primary">{slot.memberName}</span>
             )}
           </div>
         </PitchSpot>

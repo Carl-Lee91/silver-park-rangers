@@ -25,7 +25,7 @@ export default function AddAttendee({ matchId, members }: { matchId: string; mem
           ))}
         </Select>
         <SubmitButton
-          className="h-11 shrink-0 rounded-xl border border-border px-4 text-sm font-medium disabled:opacity-50"
+          className="h-11 shrink-0 rounded-box border border-border px-4 text-sm font-medium disabled:opacity-50"
         >
           출석으로 추가
         </SubmitButton>

@@ -18,7 +18,7 @@ export default function AdminNav({ className = "" }: { className?: string }) {
           key={item.href}
           href={item.href}
           aria-current={item === active ? "page" : undefined}
-          className="inline-flex h-11 shrink-0 items-center rounded-lg px-3 text-text-secondary aria-[current=page]:bg-bg-subtle aria-[current=page]:font-semibold aria-[current=page]:text-text-primary"
+          className="inline-flex h-11 shrink-0 items-center rounded-box px-3 text-text-secondary aria-[current=page]:bg-bg-subtle aria-[current=page]:font-semibold aria-[current=page]:text-text-primary"
         >
           {item.label}
         </Link>

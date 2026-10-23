@@ -50,7 +50,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
       </div>
       <ul className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
         {sorted.map((row) => (
-          <li key={row.memberId} className="rounded-xl border border-border p-3">
+          <li key={row.memberId} className="rounded-box border border-border p-3">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="font-semibold">{row.realName}</h3>
               <span className="text-sm">
@@ -82,7 +82,7 @@ export default function MemberStatsList({ stats }: { stats: readonly MemberStats
                   {(Object.entries(row.positionCounts) as [Position, number][])
                     .sort((a, b) => b[1] - a[1])
                     .map(([position, count]) => (
-                      <li key={position} className="rounded-md bg-bg-subtle px-1.5 py-0.5">
+                      <li key={position} className="rounded-chip bg-bg-subtle px-1.5 py-0.5">
                         {positionLabel(position)} {count}
                       </li>
                     ))}

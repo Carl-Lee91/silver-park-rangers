@@ -8,7 +8,7 @@ export default function BackLink({ href, label }: { href: string; label: string 
   return (
     <Link
       href={href}
-      className="-ml-2 inline-flex h-11 max-w-full items-center gap-0.5 self-start rounded-lg pr-3 pl-1 text-sm text-text-secondary"
+      className="-ml-2 inline-flex h-11 max-w-full items-center gap-0.5 self-start rounded-box pr-3 pl-1 text-sm text-text-secondary"
     >
       <svg aria-hidden="true" viewBox="0 0 16 16" className="size-5 shrink-0">
         <path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />

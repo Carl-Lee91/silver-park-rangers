@@ -8,7 +8,7 @@ const goalLine = (goal: Goal) => {
 /** 팀원이 보는 결과: 합계 · 쿼터 전적 · 쿼터별 점수와 득점자 */
 export default function ResultSummaryView({ summary }: { summary: ResultSummary }) {
   if (summary.quarters.length === 0) {
-    return <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">아직 결과를 남기지 않았어요.</p>;
+    return <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-secondary">아직 결과를 남기지 않았어요.</p>;
   }
   const { win, draw, loss } = summary.record;
   return (
@@ -21,7 +21,7 @@ export default function ResultSummaryView({ summary }: { summary: ResultSummary 
       </p>
       <ul className="flex flex-col gap-2">
         {summary.quarters.map((quarter) => (
-          <li key={quarter.number} className="rounded-lg border border-border px-3 py-2 text-sm">
+          <li key={quarter.number} className="rounded-box border border-border px-3 py-2 text-sm">
             <span className="font-semibold">{quarter.number}쿼터</span>{" "}
             <span>
               {quarter.ours} : {quarter.theirs}

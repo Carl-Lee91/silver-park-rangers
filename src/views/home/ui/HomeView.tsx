@@ -12,10 +12,10 @@ import { matchPath, ROUTES } from "@/shared/config";
 function ResponseBadge({ response, open }: { response: AttendanceResponse | undefined; open: boolean }) {
   if (response !== undefined) {
     const tone = response === "yes" ? "bg-primary text-primary-contrast" : "bg-bg-subtle text-text-secondary";
-    return <span className={`shrink-0 rounded-lg px-2 py-1 text-xs font-semibold ${tone}`}>{RESPONSE_LABELS[response]}</span>;
+    return <span className={`shrink-0 rounded-box px-2 py-1 text-xs font-semibold ${tone}`}>{RESPONSE_LABELS[response]}</span>;
   }
   return open ? (
-    <span className="shrink-0 rounded-lg border border-danger px-2 py-1 text-xs font-semibold text-danger">투표 전</span>
+    <span className="shrink-0 rounded-box border border-danger px-2 py-1 text-xs font-semibold text-danger">투표 전</span>
   ) : (
     <span className="shrink-0 text-xs text-text-tertiary">마감</span>
   );
@@ -43,7 +43,7 @@ export default async function HomeView() {
       <section>
         <h2 className="mb-3 text-sm font-semibold text-text-secondary">다가오는 매치</h2>
         {matches.length === 0 ? (
-          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">다가오는 매치가 없어요.</p>
+          <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-secondary">다가오는 매치가 없어요.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {matches.map((match) => (
@@ -59,7 +59,7 @@ export default async function HomeView() {
       </section>
 
       {isAdmin(me) && (
-        <Link href={ROUTES.admin} className="rounded-xl border border-border p-4 text-sm font-semibold md:self-start md:px-6">
+        <Link href={ROUTES.admin} className="rounded-box border border-border p-4 text-sm font-semibold md:self-start md:px-6">
           관리 화면으로
         </Link>
       )}

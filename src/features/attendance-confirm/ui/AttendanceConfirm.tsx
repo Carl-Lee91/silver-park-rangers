@@ -33,7 +33,7 @@ export default function AttendanceConfirm({ matchId, rows, members, hasSquad }: 
       )}
       <ul className="flex flex-col gap-2">
         {rows.map((row) => (
-          <li key={row.memberId} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2">
+          <li key={row.memberId} className="flex items-center justify-between gap-2 rounded-box border border-border px-3 py-2">
             <span className="min-w-0 text-sm">
               <span className="font-semibold">{row.realName}</span>
               <span className="ml-1.5 text-xs text-text-tertiary">

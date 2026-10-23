@@ -33,7 +33,7 @@ export default async function PendingView() {
         <h1 className="text-xl font-bold">{copy.title}</h1>
         <p className="mt-2 text-sm text-text-secondary">{copy.body}</p>
       </header>
-      <dl className="rounded-xl bg-bg-subtle p-4 text-sm leading-7">
+      <dl className="rounded-box bg-bg-subtle p-4 text-sm leading-7">
         <div className="flex justify-between">
           <dt className="text-text-secondary">실명</dt>
           <dd>{me.realName}</dd>

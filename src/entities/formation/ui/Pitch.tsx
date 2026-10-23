@@ -11,7 +11,7 @@ export default function Pitch({ children, label }: { children: ReactNode; label?
     <div
       role="group"
       aria-label={label}
-      className="relative mx-auto aspect-[68/105] w-full max-w-pitch overflow-hidden rounded-xl bg-pitch"
+      className="relative mx-auto aspect-[68/105] w-full max-w-pitch overflow-hidden rounded-box bg-pitch"
     >
       <svg viewBox="0 0 68 105" aria-hidden="true" className="absolute inset-0 size-full">
         <g fill="none" stroke="var(--color-pitch-line)" strokeWidth="0.4">

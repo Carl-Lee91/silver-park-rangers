@@ -11,11 +11,11 @@ export default function MatchGuests({ matchId, guests }: { matchId: string; gues
   return (
     <div className="flex flex-col gap-4">
       {guests.length === 0 ? (
-        <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">아직 그날 용병이 없어요.</p>
+        <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">아직 그날 용병이 없어요.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {guests.map((guest) => (
-            <li key={guest.id} className="rounded-xl border border-border p-3">
+            <li key={guest.id} className="rounded-box border border-border p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-semibold">
@@ -44,7 +44,7 @@ export default function MatchGuests({ matchId, guests }: { matchId: string; gues
           ))}
         </ul>
       )}
-      <details className="rounded-xl border border-border p-4" open={guests.length === 0}>
+      <details className="rounded-box border border-border p-4" open={guests.length === 0}>
         <summary className="cursor-pointer text-sm font-semibold">용병 넣기</summary>
         <div className="mt-4">
           <GuestForm action={addMatchGuest} matchId={matchId} submitLabel="용병 넣기" />

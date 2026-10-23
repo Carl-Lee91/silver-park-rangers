@@ -22,7 +22,7 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
           <Link href={ROUTES.admin} className="flex h-14 items-center gap-2 font-bold md:h-auto">
             관리
             {viewer === "owner" && (
-              <span className="rounded-md bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-contrast">
+              <span className="rounded-chip bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-contrast">
                 어드민
               </span>
             )}

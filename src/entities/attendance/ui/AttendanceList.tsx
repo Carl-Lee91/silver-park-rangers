@@ -26,7 +26,7 @@ export default function AttendanceList({ attendance }: { attendance: readonly At
               {groups[response].map((row) => {
                 const note = attendanceTimeNote(row);
                 return (
-                  <li key={row.memberId} className="rounded-lg bg-bg-subtle px-2 py-1 text-sm">
+                  <li key={row.memberId} className="rounded-box bg-bg-subtle px-2 py-1 text-sm">
                     {row.realName}
                     {note && <span className="ml-1 text-xs text-text-secondary">{note}</span>}
                   </li>

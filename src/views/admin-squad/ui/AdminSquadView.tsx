@@ -40,7 +40,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const fallback = formations.find((formation) => formation.name === DEFAULT_FORMATION) ?? formations[0];
   if (fallback === undefined) {
     return (
-      <p className="rounded-xl border border-danger p-4 text-sm">
+      <p className="rounded-box border border-danger p-4 text-sm">
         포메이션이 하나도 없어요. 초기 마이그레이션(기본 포메이션 4-3-3 · 4-4-2)이 적용됐는지 확인해 주세요.
       </p>
     );

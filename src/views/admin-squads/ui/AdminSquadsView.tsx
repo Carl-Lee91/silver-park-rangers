@@ -18,7 +18,7 @@ const BADGE: Record<SquadStatus, string> = {
 function SquadAside({ status, yes }: { status: SquadStatus; yes: number }) {
   return (
     <span className="flex shrink-0 flex-col items-end gap-1 text-right">
-      <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${BADGE[status]}`}>{SQUAD_STATUS_LABELS[status]}</span>
+      <span className={`rounded-chip px-2 py-0.5 text-xs font-semibold ${BADGE[status]}`}>{SQUAD_STATUS_LABELS[status]}</span>
       <span className="text-xs text-text-tertiary">참석 {yes}명</span>
     </span>
   );
@@ -57,7 +57,7 @@ export default async function AdminSquadsView() {
       <section>
         <h2 className="mb-3 text-sm font-semibold text-text-secondary">다가오는 매치</h2>
         {upcoming.length === 0 ? (
-          <div className="flex flex-col items-start gap-3 rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">
+          <div className="flex flex-col items-start gap-3 rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">
             <p>다가오는 매치가 없어요. 매치를 만들면 여기서 바로 스쿼드를 짤 수 있어요.</p>
             <Link href={ROUTES.adminMatchNew} className="font-semibold text-primary">
               매치 만들기

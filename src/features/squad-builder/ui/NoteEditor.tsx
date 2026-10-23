@@ -21,7 +21,7 @@ export default function NoteEditor({ action, matchId, memberId, name, note }: Pr
   const id = `note-${memberId}`;
 
   return (
-    <form action={formAction} className="flex flex-col gap-1.5 rounded-lg bg-bg-subtle p-3">
+    <form action={formAction} className="flex flex-col gap-1.5 rounded-box bg-bg-subtle p-3">
       <input type="hidden" name="matchId" value={matchId} />
       <input type="hidden" name="memberId" value={memberId} />
       <label htmlFor={id} className="text-xs font-semibold">
@@ -43,7 +43,7 @@ export default function NoteEditor({ action, matchId, memberId, name, note }: Pr
         </span>
         <SubmitButton
           disabled={!changed}
-          className="h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40"
+          className="h-11 rounded-box bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40"
         >
           메모 저장
         </SubmitButton>

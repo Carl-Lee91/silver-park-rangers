@@ -34,7 +34,7 @@ export default function ResultEditor({ matchId, quarterCount, scores, goals, squ
         const recorded = theirs !== undefined || scored.length > 0;
 
         return (
-          <li key={quarter} className="flex flex-col gap-2 rounded-xl border border-border p-3">
+          <li key={quarter} className="flex flex-col gap-2 rounded-box border border-border p-3">
             <p className="text-sm font-semibold">
               {quarter}쿼터{" "}
               <span className={recorded ? "tabular-nums" : "text-text-tertiary"}>

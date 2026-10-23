@@ -55,7 +55,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
             </section>
           )}
 
-          <section className="rounded-xl border border-border p-4">
+          <section className="rounded-box border border-border p-4">
             <h2 className="font-semibold">참석 투표</h2>
             <p className="mt-1 mb-4 text-xs text-text-tertiary">
               {open ? `${formatDeadline(votingClosesAt(match).toISOString())}까지` : "마감됨"}
@@ -90,7 +90,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
               />
             </div>
           ) : (
-            <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
+            <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
           )}
         </section>
       </div>

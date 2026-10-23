@@ -8,7 +8,7 @@ import MemberStatsList from "./MemberStatsList";
 
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="rounded-xl border border-border p-3">
+    <div className="rounded-box border border-border p-3">
       <p className="text-xs text-text-secondary">{label}</p>
       <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
       {note && <p className="text-xs text-text-tertiary">{note}</p>}
@@ -35,7 +35,7 @@ export default async function AdminStatsView({ period }: { period: StatsPeriod }
             key={key}
             href={`${ROUTES.adminStats}?period=${key}`}
             aria-current={key === period ? "page" : undefined}
-            className="inline-flex h-11 items-center rounded-xl border border-border px-4 text-sm aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-contrast"
+            className="inline-flex h-11 items-center rounded-box border border-border px-4 text-sm aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-contrast"
           >
             {PERIOD_LABELS[key]}
           </Link>
@@ -75,7 +75,7 @@ export default async function AdminStatsView({ period }: { period: StatsPeriod }
           참석률은 실제 출석을 정한 매치만 세요. 가입하기 전 매치와 용병은 빠져요.
         </p>
         {active.length === 0 ? (
-          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">아직 멤버가 없어요.</p>
+          <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">아직 멤버가 없어요.</p>
         ) : (
           <MemberStatsList stats={active} />
         )}

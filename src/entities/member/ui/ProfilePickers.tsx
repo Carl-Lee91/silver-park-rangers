@@ -5,7 +5,7 @@ import { FEET, type Foot } from "../model/member";
 import { isPositionLocked, toggleFoot, togglePosition } from "../model/profileRules";
 
 const chip =
-  "flex h-11 items-center justify-center gap-1.5 rounded-xl border border-border px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast disabled:opacity-40";
+  "flex h-11 items-center justify-center gap-1.5 rounded-box border border-border px-3 text-sm font-medium aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast disabled:opacity-40";
 
 /** 주발 고르기(복수). 고른 값은 숨은 입력칸 `feet` 로 폼에 실린다. */
 export function FootPicker({ value, onChange }: { value: readonly Foot[]; onChange: (next: Foot[]) => void }) {

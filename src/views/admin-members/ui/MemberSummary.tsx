@@ -9,7 +9,7 @@ const appliedAt = new Intl.DateTimeFormat("ko-KR", {
 
 function Badge({ children, tone }: { children: string; tone: "primary" | "neutral" }) {
   const color = tone === "primary" ? "bg-primary text-primary-contrast" : "bg-bg-subtle text-text-secondary";
-  return <span className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${color}`}>{children}</span>;
+  return <span className={`rounded-chip px-1.5 py-0.5 text-xs font-medium ${color}`}>{children}</span>;
 }
 
 /** 누구인지 확인하는 데 필요한 것: 실명, 로그인 이메일, 선호 포지션·주발 */

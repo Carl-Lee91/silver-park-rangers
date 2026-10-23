@@ -144,7 +144,7 @@ export default function SignUpForm({ action, takenNumbers }: Props) {
 
       <SubmitButton
         disabled={!ready}
-        className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
+        className="h-13 w-full rounded-box bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
       >
         가입 신청
       </SubmitButton>

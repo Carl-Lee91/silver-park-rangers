@@ -27,13 +27,13 @@ const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
   한 줄짜리 표다(풋볼매니저 24 선수 표). 같은 칸을 자리 폭에 따라 옮길 뿐 두 번 그리지 않는다.
 */
 const ROW =
-  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-0.5 rounded-lg px-2 py-1.5 text-left text-sm @xl:grid-cols-[2.25rem_minmax(0,1fr)_5.5rem_5rem_3.5rem_4.5rem_auto] @xl:gap-y-0";
+  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-0.5 rounded-box px-2 py-1.5 text-left text-sm @xl:grid-cols-[2.25rem_minmax(0,1fr)_5.5rem_5rem_3.5rem_4.5rem_auto] @xl:gap-y-0";
 const PRESSABLE = "even:bg-bg-subtle/50 aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary";
 
 function PositionPill({ code, starter }: { code: Position | undefined; starter: boolean }) {
   return (
     <span
-      className={`row-span-2 flex h-6 items-center justify-center rounded-md text-[11px] font-bold @xl:row-span-1 ${
+      className={`row-span-2 flex h-6 items-center justify-center rounded-chip text-[11px] font-bold @xl:row-span-1 ${
         starter ? "bg-primary text-primary-contrast" : "bg-bg-subtle text-text-secondary"
       }`}
     >

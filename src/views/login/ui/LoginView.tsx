@@ -16,7 +16,7 @@ export default function LoginView() {
       <div className="flex flex-col gap-3">
         <Link
           href={ROUTES.signup}
-          className="flex h-12 items-center justify-center rounded-xl border border-border text-base font-semibold"
+          className="flex h-12 items-center justify-center rounded-box border border-border text-base font-semibold"
         >
           처음이면 가입 신청
         </Link>

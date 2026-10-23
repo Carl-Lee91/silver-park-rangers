@@ -228,7 +228,7 @@ export default function SquadBuilder({
               setQuarter(index);
               setSelection(null);
             }}
-            className="relative shrink-0 rounded-lg border border-border bg-bg-subtle px-3 py-1.5 text-left text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast"
+            className="relative shrink-0 rounded-box border border-border bg-bg-subtle px-3 py-1.5 text-left text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast"
           >
             <span className="font-semibold">{index + 1}쿼터</span> <span className="text-xs opacity-80">{time.startsAt}</span>
             <span className="block text-[11px] opacity-70">{builder[index]?.formationName}</span>
@@ -277,7 +277,7 @@ export default function SquadBuilder({
                 onClick={() =>
                   change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
                 }
-                className="h-11 rounded-xl border border-border px-3 text-sm"
+                className="h-11 rounded-box border border-border px-3 text-sm"
               >
                 이전 쿼터 복사
               </button>
@@ -363,7 +363,7 @@ export default function SquadBuilder({
             />
 
             {warningGroups.length > 0 && (
-              <section className="rounded-xl border border-danger/40 p-3">
+              <section className="rounded-box border border-danger/40 p-3">
                 <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
                 <ul className="mt-1 flex flex-col gap-0.5 text-sm">
                   {warningGroups.map((group) => (
@@ -386,7 +386,7 @@ export default function SquadBuilder({
               </section>
             )}
 
-            <section aria-label="특이사항" className="rounded-xl border border-border p-3">
+            <section aria-label="특이사항" className="rounded-box border border-border p-3">
               <h2 className="text-sm font-semibold">
                 특이사항 <span className="text-xs font-normal text-text-tertiary">관리자만</span>
               </h2>
@@ -410,7 +410,7 @@ export default function SquadBuilder({
               <button
                 type="button"
                 onClick={runAutoAssign}
-                className="h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
+                className="h-11 rounded-box border border-border text-sm font-semibold md:h-10 md:px-4"
               >
                 자동 배치
               </button>
@@ -418,7 +418,7 @@ export default function SquadBuilder({
                 <button
                   type="button"
                   onClick={reassignFromHere}
-                  className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
+                  className="col-span-2 row-start-2 h-11 rounded-box border border-border text-sm font-semibold md:h-10 md:px-4"
                 >
                   {quarter + 1}쿼터부터 다시 배치
                 </button>
@@ -428,7 +428,7 @@ export default function SquadBuilder({
                 <input type="hidden" name="quarters" value={payload} />
                 <SubmitButton
                   disabled={!dirty}
-                  className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40 md:h-10"
+                  className="h-11 w-full rounded-box bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40 md:h-10"
                 >
                   저장
                 </SubmitButton>
@@ -454,7 +454,7 @@ export default function SquadBuilder({
         </div>
         <DragOverlay>
           {draggingName && (
-            <span className="rounded-lg bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-contrast shadow-lg">
+            <span className="rounded-box bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-contrast shadow-lg">
               {draggingName}
             </span>
           )}

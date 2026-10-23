@@ -12,7 +12,7 @@ export default async function AdminMatchesView() {
         <h1 className="text-xl font-bold">매치</h1>
         <Link
           href={ROUTES.adminMatchNew}
-          className="inline-flex h-11 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast"
+          className="inline-flex h-11 items-center rounded-box bg-primary px-4 text-sm font-semibold text-primary-contrast"
         >
           매치 만들기
         </Link>
@@ -21,7 +21,7 @@ export default async function AdminMatchesView() {
       <section>
         <h2 className="mb-3 text-sm font-semibold text-text-secondary">다가오는 매치</h2>
         {upcoming.length === 0 ? (
-          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
+          <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {upcoming.map((match) => (

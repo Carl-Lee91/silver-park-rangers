@@ -30,7 +30,7 @@ export default function PitchTile({ position, number, name, keeper, fit, candida
     <>
       <span className="relative">
         {numbered && (
-          <span className="absolute -top-1.5 -left-4 z-10 rounded bg-bg-base/90 px-1 text-[9px] leading-tight font-bold text-text-secondary">
+          <span className="absolute -top-1.5 -left-4 z-10 rounded-chip bg-bg-base/90 px-1 text-[9px] leading-tight font-bold text-text-secondary">
             {position}
           </span>
         )}{" "}
@@ -40,7 +40,7 @@ export default function PitchTile({ position, number, name, keeper, fit, candida
           highlight={highlight}
         />
       </span>{" "}
-      <span className="flex max-w-18 items-center gap-1 rounded bg-bg-base/85 px-1 py-px text-[11px] text-text-primary">
+      <span className="flex max-w-18 items-center gap-1 rounded-chip bg-bg-base/85 px-1 py-px text-[11px] text-text-primary">
         <span className="truncate">
           {name ?? "빈자리"}
           {noted && " ✎"}

@@ -17,7 +17,7 @@ export default async function AdminHomeView() {
       <div className="grid gap-4 md:grid-cols-3">
         <Link
           href={ROUTES.adminMembers}
-          className="flex items-center justify-between rounded-xl border border-border p-4"
+          className="flex items-center justify-between rounded-box border border-border p-4"
         >
           <span>
             <span className="block text-sm text-text-secondary">가입 신청</span>
@@ -31,11 +31,11 @@ export default async function AdminHomeView() {
             </span>
           )}
         </Link>
-        <Link href={ROUTES.adminMembers} className="rounded-xl border border-border p-4">
+        <Link href={ROUTES.adminMembers} className="rounded-box border border-border p-4">
           <span className="block text-sm text-text-secondary">멤버</span>
           <span className="mt-1 block text-lg font-bold">{groups.approved.length}명</span>
         </Link>
-        <Link href={ROUTES.adminFormations} className="rounded-xl border border-border p-4">
+        <Link href={ROUTES.adminFormations} className="rounded-box border border-border p-4">
           <span className="block text-sm text-text-secondary">포메이션</span>
           <span className="mt-1 block font-semibold">기본 4-3-3 · 4-4-2 + 커스텀 만들기</span>
         </Link>
@@ -50,7 +50,7 @@ export default async function AdminHomeView() {
         {next ? (
           <MatchCard match={next} href={adminMatchPath(next.id)} />
         ) : (
-          <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
+          <p className="rounded-box bg-bg-subtle p-4 text-sm text-text-tertiary">다가오는 매치가 없어요.</p>
         )}
       </section>
     </div>

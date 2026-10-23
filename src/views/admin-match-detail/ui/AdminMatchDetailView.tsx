@@ -43,7 +43,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       <div className="grid grid-cols-2 gap-2 md:max-w-narrow">
         <Link
           href={adminMatchEditPath(match.id)}
-          className="flex h-11 items-center justify-center rounded-xl border border-border text-sm font-medium"
+          className="flex h-11 items-center justify-center rounded-box border border-border text-sm font-medium"
         >
           고치기
         </Link>
@@ -71,7 +71,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               ) : (
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {waiting.map((member) => (
-                    <li key={member.id} className="rounded-lg border border-border px-2 py-1 text-sm">
+                    <li key={member.id} className="rounded-box border border-border px-2 py-1 text-sm">
                       {member.realName}
                     </li>
                   ))}
@@ -103,7 +103,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         <div className="flex flex-col gap-8">
           <Link
             href={adminSquadPath(match.id)}
-            className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-contrast"
+            className="flex items-center justify-between rounded-box bg-primary p-4 text-primary-contrast"
           >
             <span className="font-semibold">스쿼드 짜기</span>
             <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>

@@ -27,12 +27,12 @@ export default function TemporaryPasswordButton({ action, memberId, memberName }
     <form ref={formRef} action={formAction} onSubmit={onSubmit} className="col-span-2 flex flex-col gap-2">
       <input type="hidden" name="memberId" value={memberId} />
       <SubmitButton
-        className="h-11 rounded-xl border border-border text-sm font-medium disabled:opacity-50"
+        className="h-11 rounded-box border border-border text-sm font-medium disabled:opacity-50"
       >
         임시 비밀번호 만들기
       </SubmitButton>
       {state.password && (
-        <div role="status" className="rounded-lg bg-bg-subtle p-3 text-sm leading-6">
+        <div role="status" className="rounded-box bg-bg-subtle p-3 text-sm leading-6">
           <p className="select-all font-mono text-base font-bold">{state.password}</p>
           <p className="text-xs text-text-secondary">
             {memberName}님에게 알려 주세요. 이 비밀번호로 로그인한 뒤 내 정보에서 바꾸면 돼요.

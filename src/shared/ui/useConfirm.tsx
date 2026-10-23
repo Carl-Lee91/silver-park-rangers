@@ -42,20 +42,20 @@ function ConfirmDialog({ options, onAnswer }: { options: ConfirmOptions; onAnswe
         aria-modal="true"
         aria-labelledby={`${id}-message`}
         aria-describedby={`${id}-message`}
-        className="w-full max-w-narrow rounded-t-2xl border border-border bg-bg-subtle p-5 md:rounded-2xl"
+        className="w-full max-w-narrow rounded-t-box border border-border bg-bg-subtle p-5 md:rounded-box"
       >
         <p id={`${id}-message`} className="text-base leading-7">
           {options.message}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => onAnswer(false)} className="h-12 rounded-xl border border-border text-base font-medium">
+          <button type="button" onClick={() => onAnswer(false)} className="h-12 rounded-box border border-border text-base font-medium">
             취소
           </button>
           <button
             ref={confirmButton}
             type="button"
             onClick={() => onAnswer(true)}
-            className={`h-12 rounded-xl text-base font-semibold ${
+            className={`h-12 rounded-box text-base font-semibold ${
               options.tone === "danger" ? "bg-danger text-bg-base" : "bg-primary text-primary-contrast"
             }`}
           >

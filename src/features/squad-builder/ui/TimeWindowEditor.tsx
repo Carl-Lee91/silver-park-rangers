@@ -27,7 +27,7 @@ export default function TimeWindowEditor({ action, matchId, memberId, name, sche
   const changed = arrive !== (arriveAt ?? "") || leave !== (leaveAt ?? "");
 
   return (
-    <form action={formAction} className="flex flex-col gap-1.5 rounded-lg bg-bg-subtle p-3">
+    <form action={formAction} className="flex flex-col gap-1.5 rounded-box bg-bg-subtle p-3">
       <input type="hidden" name="matchId" value={matchId} />
       <input type="hidden" name="memberId" value={memberId} />
       <p className="text-xs font-semibold">당일 시간 바꾸기</p>
@@ -58,7 +58,7 @@ export default function TimeWindowEditor({ action, matchId, memberId, name, sche
         </div>
         <SubmitButton
           disabled={!changed}
-          className="col-span-2 h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40 md:col-span-1"
+          className="col-span-2 h-11 rounded-box bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-40 md:col-span-1"
         >
           시간 저장
         </SubmitButton>

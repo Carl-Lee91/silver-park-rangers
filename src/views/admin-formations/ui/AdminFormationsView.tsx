@@ -15,11 +15,11 @@ export default async function AdminFormationsView() {
           <h2 className="mb-3 text-sm font-semibold text-text-secondary">저장된 포메이션</h2>
           <ul className="flex flex-col gap-2">
             {formations.map((formation) => (
-              <li key={formation.id} className="flex items-center justify-between gap-3 rounded-xl border border-border p-3">
+              <li key={formation.id} className="flex items-center justify-between gap-3 rounded-box border border-border p-3">
                 <span className="min-w-0">
                   <span className="font-semibold">{formation.name}</span>
                   {formation.isPreset && (
-                    <span className="ml-1.5 rounded-md bg-bg-subtle px-1.5 py-0.5 text-xs text-text-secondary">기본</span>
+                    <span className="ml-1.5 rounded-chip bg-bg-subtle px-1.5 py-0.5 text-xs text-text-secondary">기본</span>
                   )}
                   <span className="mt-0.5 block truncate text-xs text-text-tertiary">{compositionLabel(formation.slots)}</span>
                 </span>

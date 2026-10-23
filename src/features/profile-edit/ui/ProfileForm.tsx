@@ -83,7 +83,7 @@ export default function ProfileForm({
 
       <SubmitButton
         disabled={!changed || !ready}
-        className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
+        className="h-13 w-full rounded-box bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
       >
         저장
       </SubmitButton>
