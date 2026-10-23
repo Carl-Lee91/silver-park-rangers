@@ -59,6 +59,14 @@ describe("테마 토큰 (PLAN.md §7 테마)", () => {
     expect(color("pitch-stripe")).not.toBe(color("pitch"));
   });
 
+  it("휴대폰 상태 표시줄은 머리띠와 같은 하늘색, 홈 화면 앱 시작 화면은 앱 바탕색이다", () => {
+    const layout = readFileSync(join(root, "app/layout.tsx"), "utf8");
+    const manifest = readFileSync(join(root, "app/manifest.ts"), "utf8");
+    expect(layout.match(/themeColor:\s*"([^"]+)"/)?.[1]).toBe(color("kit"));
+    expect(manifest.match(/theme_color:\s*"([^"]+)"/)?.[1]).toBe(color("kit"));
+    expect(manifest.match(/background_color:\s*"([^"]+)"/)?.[1]).toBe(color("bg-base"));
+  });
+
   it("모서리는 두 가지다: 상자(패널·단추·입력칸) 6px, 칩 4px", () => {
     expect(token("radius-box")).toBe("0.375rem");
     expect(token("radius-chip")).toBe("0.25rem");
