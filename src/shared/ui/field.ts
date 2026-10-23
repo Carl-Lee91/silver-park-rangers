@@ -14,7 +14,7 @@ const HEIGHTS = {
  */
 export const fieldClass = (size: keyof typeof HEIGHTS = "lg", extra = "") =>
   [
-    "w-full rounded-xl border border-field-border bg-field px-4 text-base text-text-primary",
+    "w-full rounded-box border border-field-border bg-field px-4 text-base text-text-primary",
     "placeholder:text-text-tertiary focus:border-primary focus:outline-none disabled:opacity-50",
     HEIGHTS[size],
     extra,
@@ -25,7 +25,7 @@ export const fieldClass = (size: keyof typeof HEIGHTS = "lg", extra = "") =>
 /** 여러 줄 입력칸(textarea). 높이는 줄 수로 정한다 */
 export const textareaClass = (extra = "") =>
   [
-    "w-full rounded-xl border border-field-border bg-field px-4 py-3 text-base text-text-primary",
+    "w-full rounded-box border border-field-border bg-field px-4 py-3 text-base text-text-primary",
     "placeholder:text-text-tertiary focus:border-primary focus:outline-none",
     extra,
   ]

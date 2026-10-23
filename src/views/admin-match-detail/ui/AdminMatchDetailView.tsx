@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AttendanceList, unrespondedMembers } from "@/entities/attendance";
+import { AttendanceList, groupAttendance, unrespondedMembers } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
-import { formatDeadline, isVotingOpen, MatchSummary, votingClosesAt } from "@/entities/match";
+import { formatDeadline, formatMatchDate, isVotingOpen, matchTitle, MatchSummary, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { regularMembers } from "@/entities/member";
 import { fetchAdminMembers } from "@/entities/member/server";
@@ -13,7 +13,7 @@ import { deleteMatch } from "@/features/match-form";
 import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
 import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
-import { ActionButton, BackLink } from "@/shared/ui";
+import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -31,59 +31,72 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
   const waiting = unrespondedMembers(approved, attendance);
   const squadIds = new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   const open = isVotingOpen(match);
+  const groups = groupAttendance(attendance);
 
   return (
-    <div className="flex flex-col gap-8">
-      <BackLink href={ROUTES.adminMatches} label="매치 목록" />
-      <MatchSummary match={match} />
-      <p className="-mt-6 text-xs text-text-tertiary">
-        투표 {open ? `${formatDeadline(votingClosesAt(match).toISOString())} 마감` : "마감됨"}
-      </p>
-
-      <div className="grid grid-cols-2 gap-2 md:max-w-narrow">
-        <Link
-          href={adminMatchEditPath(match.id)}
-          className="flex h-11 items-center justify-center rounded-xl border border-border text-sm font-medium"
-        >
-          고치기
+    <Screen
+      title={matchTitle(match)}
+      overline={`${formatMatchDate(match.date)} · 매치 관리`}
+      back={{ href: ROUTES.adminMatches, label: "매치" }}
+      width="wide"
+      actions={
+        <Link href={adminSquadPath(match.id)} className="inline-flex h-11 items-center rounded-box bg-kit-label px-4 text-sm font-bold text-kit">
+          스쿼드 짜기
         </Link>
-        <ActionButton
-          action={deleteMatch}
-          fields={{ matchId: match.id }}
-          label="지우기"
-          tone="danger"
-          confirmMessage="이 매치를 지울까요? 참석 투표도 함께 지워져요."
-        />
+      }
+    >
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-end lg:gap-6">
+        <MatchSummary match={match} />
+        <div className="flex flex-col gap-2">
+          <p className="flex flex-wrap items-center gap-2 text-xs text-text-tertiary">
+            투표 {open ? `${formatDeadline(votingClosesAt(match).toISOString())} 마감` : "마감됨"}
+            <span className={chipClass(match.squadPublishedAt ? "good" : "muted")}>
+              스쿼드 {match.squadPublishedAt ? "공개됨" : "공개 전"}
+            </span>
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href={adminMatchEditPath(match.id)}
+              className="flex h-11 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-sm font-medium"
+            >
+              고치기
+            </Link>
+            <ActionButton
+              action={deleteMatch}
+              fields={{ matchId: match.id }}
+              label="지우기"
+              tone="danger"
+              confirmMessage="이 매치를 지울까요? 참석 투표도 함께 지워져요."
+            />
+          </div>
+        </div>
       </div>
 
-      {/* 데스크톱: 왼쪽은 참석(투표·그날 용병), 오른쪽은 스쿼드·출석·결과 */}
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10">
-        <div className="flex flex-col gap-8">
-          <section>
-            <h2 className="mb-3 font-semibold">참석 투표</h2>
+      {/* 데스크톱: 왼쪽은 참석(투표·그날 용병), 오른쪽은 출석·결과 */}
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div className="flex flex-col gap-4 lg:gap-6">
+          <Panel title="참석 투표" aside={`참석 ${groups.yes.length} · 미정 ${groups.maybe.length} · 불참 ${groups.no.length}`} flush>
             <AttendanceList attendance={attendance} />
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold">
-                아직 투표 안 함 <span className="text-text-secondary">{waiting.length}</span>
+            <div className="border-t border-border px-3 py-3 md:px-4">
+              <h3 className="flex items-baseline gap-1.5 text-xs font-bold">
+                <span className="text-danger">아직 투표 안 함</span>
+                <span className="text-text-tertiary tabular-nums">{waiting.length}</span>
               </h3>
               {waiting.length === 0 ? (
                 <p className="mt-1 text-sm text-text-tertiary">모두 투표했어요.</p>
               ) : (
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {waiting.map((member) => (
-                    <li key={member.id} className="rounded-lg border border-border px-2 py-1 text-sm">
+                    <li key={member.id} className="rounded-chip border border-border-strong px-2 py-1 text-sm">
                       {member.realName}
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-          </section>
+          </Panel>
 
-          <section>
-            <h2 className="mb-1 font-semibold">
-              그날 용병 <span className="text-text-secondary">{guests.length}</span>
-            </h2>
+          <Panel title="그날 용병" aside={`${guests.length}명`}>
             <p className="mb-3 text-xs text-text-tertiary">
               가입하지 않고 이번 매치만 뛰는 용병이에요. 넣으면 참석으로 잡혀요. 팀원에게는 이름만 보여요.
             </p>
@@ -97,20 +110,11 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
                 jerseyNumber,
               }))}
             />
-          </section>
+          </Panel>
         </div>
 
-        <div className="flex flex-col gap-8">
-          <Link
-            href={adminSquadPath(match.id)}
-            className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-contrast"
-          >
-            <span className="font-semibold">스쿼드 짜기</span>
-            <span className="text-sm opacity-80">{match.squadPublishedAt ? "팀원에게 공개됨" : "공개 전"}</span>
-          </Link>
-
-          <section>
-            <h2 className="mb-3 font-semibold">실제 출석</h2>
+        <div className="flex flex-col gap-4 lg:gap-6">
+          <Panel title="실제 출석" aside="매치가 끝나면">
             <p className="mb-3 text-xs text-text-tertiary">매치가 끝나면 정해 주세요. 참석률·노쇼 통계가 이 값을 써요.</p>
             <AttendanceConfirm
               matchId={match.id}
@@ -118,10 +122,9 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               members={approved}
               hasSquad={squadIds.size > 0}
             />
-          </section>
+          </Panel>
 
-          <section>
-            <h2 className="mb-1 font-semibold">경기 결과</h2>
+          <Panel title="경기 결과" aside="쿼터마다">
             <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
             <ResultEditor
               matchId={match.id}
@@ -131,9 +134,9 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               squad={squad}
               members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
             />
-          </section>
+          </Panel>
         </div>
       </div>
-    </div>
+    </Screen>
   );
 }

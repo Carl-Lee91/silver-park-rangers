@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Spinner } from "@/shared/ui";
+import { Spinner, tabClass } from "@/shared/ui";
 import { readImageParam, withImageParam, type ImageKind } from "../model/imageParam";
 
 type Urls = Record<ImageKind, string>;
@@ -46,7 +46,7 @@ function LoadingImage({ src, alt, active, onRetry }: { src: string; alt: string;
       {active && state === "error" && (
         <div role="alert" className="flex flex-col items-center gap-3 py-24 text-sm">
           <p>이미지를 만들지 못했어요.</p>
-          <button type="button" onClick={onRetry} className="h-11 rounded-xl border border-border px-4 font-medium">
+          <button type="button" onClick={onRetry} className="h-11 rounded-box border border-border-strong bg-bg-subtle px-4 font-medium">
             다시 시도
           </button>
         </div>
@@ -59,7 +59,7 @@ function LoadingImage({ src, alt, active, onRetry }: { src: string; alt: string;
         onLoad={() => setState("loaded")}
         onError={() => setState("error")}
         style={state === "loaded" ? undefined : { display: "none" }}
-        className="h-auto w-full rounded-lg"
+        className="h-auto w-full rounded-box"
       />
     </div>
   );
@@ -124,7 +124,7 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
             key={value}
             type="button"
             onClick={() => open(value)}
-            className="flex h-11 items-center justify-center rounded-xl border border-border text-sm font-medium"
+            className="flex h-11 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-sm font-medium"
           >
             {LABELS[value]} 이미지
           </button>
@@ -138,11 +138,11 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
           aria-label={`${LABELS[kind]} 이미지`}
           className="fixed inset-0 z-40 flex flex-col bg-bg-base"
         >
-          <header className="flex items-center gap-3 border-b border-border px-4 py-2">
-            <button type="button" onClick={close} className="h-11 shrink-0 rounded-lg pr-2 text-sm font-medium">
+          <header className="flex items-center gap-3 border-b border-border bg-bg-panel px-4">
+            <button type="button" onClick={close} className="h-11 shrink-0 rounded-box pr-2 text-sm font-medium">
               <span aria-hidden>←</span> 닫기
             </button>
-            <div role="tablist" className="ml-auto grid grid-cols-2 gap-1 rounded-lg bg-bg-subtle p-1">
+            <div role="tablist" className="ml-auto flex">
               {KINDS.map((value) => (
                 <button
                   key={value}
@@ -150,7 +150,7 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
                   role="tab"
                   aria-selected={value === kind}
                   onClick={() => setImageParam(value, "replace")}
-                  className="h-10 rounded-md px-4 text-sm font-medium text-text-secondary aria-selected:bg-bg-base aria-selected:text-text-primary"
+                  className={tabClass()}
                 >
                   {LABELS[value]}
                 </button>
@@ -174,7 +174,7 @@ export default function SquadImageViewer({ urls, fileName }: { urls: Urls; fileN
               <a
                 href={urls[kind]}
                 download={`${fileName} ${LABELS[kind]}.png`}
-                className="flex h-11 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-contrast"
+                className="flex h-11 items-center justify-center rounded-box bg-primary text-sm font-semibold text-primary-contrast"
               >
                 이미지 저장
               </a>

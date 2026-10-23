@@ -44,6 +44,7 @@ describe("입력칸 공통 모양", () => {
 
   it("테두리는 바탕·안쪽 패널과 3:1 이상 차이 난다(웹 접근성: 입력칸 경계)", () => {
     expect(contrast(token("color-field-border"), token("color-bg-base"))).toBeGreaterThanOrEqual(3);
+    expect(contrast(token("color-field-border"), token("color-bg-panel"))).toBeGreaterThanOrEqual(3);
     expect(contrast(token("color-field-border"), token("color-bg-subtle"))).toBeGreaterThanOrEqual(3);
     expect(contrast(token("color-field-border"), token("color-field"))).toBeGreaterThanOrEqual(3);
   });

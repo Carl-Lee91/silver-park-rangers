@@ -70,6 +70,12 @@
     하드코딩하지 않는다(`text-white` 대신 `text-text-primary`). 서버 이미지는 기본 글자색이 검정이라 틀에 글자색을 준다.
   - 우리 팀 유니폼 색은 `--color-kit` 하나다(경기장 유니폼 · 강조색 primary). 바꾸면 `palette.ts` 의 `kit`·`primary` 도
     같이 바꾼다. 경기장 위 선수는 `entities/formation` 의 `Jersey`(유니폼 모양 안에 등번호)로 그린다.
+  - 생김새는 **풋볼매니저 24** 다(PLAN.md §7 "테마"): 하늘색 머리띠, 바탕(`bg-base`) 위에 뜬 패널(`bg-panel`),
+    표 줄무늬(`bg-row`), 패널 머리 · 칩(`bg-subtle`), 승 · 무 · 패(`result-*`). 바탕 단계와 대비는 `theme.test.ts` 가 검사한다.
+  - 🔴 모서리는 **`rounded-box`(6px: 패널 · 단추 · 입력칸)와 `rounded-chip`(4px: 칩 · 작은 칸)** 두 가지와 `rounded-full` 만
+    쓴다. `rounded-xl` 같은 크기를 직접 고르면 `theme.test.ts` 가 막는다.
+  - 팀 엠블럼은 원본 `assets/brand/spr_logo.png` 하나에서 `scripts/brand-icons.py` 로 모든 크기(화면 · 파비콘 · 홈 화면 앱 아이콘 ·
+    미리보기 이미지 · 서버 이미지)를 만든다(docs/SETUP.md §8). 화면에서는 `shared/ui` 의 `Emblem` 으로 그린다.
   - 🔴 `next.config.ts` 의 Turbopack 파일 캐시는 꺼 둔다. 켜 두면 Vercel 이 되살린 빌드 캐시 때문에 `globals.css` 에
     새로 넣은 토큰이 운영 CSS 에서 빠진다(2026-10-21, 유니폼 색이 안 나왔다). 다시 켜지 않는다.
 
@@ -311,6 +317,11 @@ pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
 - 🔴 폼 제출 단추는 `shared/ui` 의 **`SubmitButton`** 을 쓴다. `<button type="submit">` 을 직접 쓰지 않는다.
   보내는 동안 막히고 스피너가 돌며 맨 위 로딩 바(`TopProgressBar`)를 켠다 — 이걸 빼먹으면 그 폼만 멈춘 것처럼 보인다.
 - 🔴 화면 공통 부품을 쓴다(`shared/ui`). 화면마다 따로 만들면 모양과 동작이 다시 갈라진다.
+  - 화면 하나는 **`Screen`**(맨 위 하늘색 머리띠 `TitleBar` + 본문)으로 연다. 제목 · 보조 줄 · 뒤로 가기 · 주요 단추를 띠에 둔다.
+    폭은 `narrow`(폼) · `page`(팀원) · `wide`(관리). 관리 화면은 `AdminShell`(데스크톱 왼쪽 메뉴) 안에 `Screen` 을 놓는다.
+  - 내용 묶음은 **`Panel`**(어두운 머리 줄 + 본문)에 담는다. 목록 · 표는 `flush` 로 가장자리까지 채우고 짝수 줄에 `bg-bg-row`.
+  - 하위 탭(쿼터 · 기간 · 이미지)은 **`tabClass()`**(하늘색 밑줄), 작은 표시(참석 · 공개됨 · D-3)는 **`chipClass(tone)`** 다.
+    머리띠 위 칩은 `chipClass("band")`.
   - 드롭다운은 **`Select`**(꺾쇠를 안쪽에 그린다), 입력칸은 **`fieldClass()`**·**`textareaClass()`** 모양을 쓴다.
     글자는 16px 이상이다 — 작으면 아이폰(카톡 포함)이 누를 때 화면을 확대한다. `formControls.test.ts` 가 검사한다.
   - 확인은 **`useConfirm`**·**`useConfirmBeforeSubmit`** 확인 창으로 묻는다. `window.confirm` 을 쓰지 않는다.

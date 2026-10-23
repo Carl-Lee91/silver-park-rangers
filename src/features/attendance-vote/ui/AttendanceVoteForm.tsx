@@ -52,7 +52,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
             disabled={!open}
             aria-pressed={response === option}
             onClick={() => setResponse(option)}
-            className="h-12 rounded-xl border border-border text-base font-semibold aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-contrast disabled:opacity-60"
+            className="h-12 rounded-box border border-border-strong bg-bg-subtle text-base font-semibold aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:font-bold aria-pressed:text-primary-contrast disabled:opacity-60"
           >
             {RESPONSE_LABELS[option]}
           </button>
@@ -115,7 +115,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
         <>
           <SubmitButton
             disabled={!ready}
-            className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
+            className="h-13 w-full rounded-box bg-primary text-base font-semibold text-primary-contrast disabled:opacity-40"
           >
             {current ? "투표 바꾸기" : "투표하기"}
           </SubmitButton>

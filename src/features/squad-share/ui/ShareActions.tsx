@@ -45,7 +45,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
       <button
         type="button"
         onClick={share}
-        className="h-11 rounded-lg bg-kakao text-sm font-semibold text-kakao-label"
+        className="h-12 rounded-box bg-kakao text-base font-bold text-kakao-label"
       >
         공유하기
       </button>

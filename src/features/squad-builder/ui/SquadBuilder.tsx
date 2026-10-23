@@ -1,13 +1,14 @@
 "use client";
 
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { Sparkles, TriangleAlert } from "lucide-react";
 import { useActionState, useState } from "react";
 import { attendanceTimeNote } from "@/entities/attendance";
 import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
-import { ActionButton, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
+import { ActionButton, Panel, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -217,7 +218,7 @@ export default function SquadBuilder({
   return (
     <div className="flex flex-col gap-4">
       {/* 쿼터 탭 — 풋볼매니저의 전술 슬롯처럼 쿼터마다 포메이션을 같이 보인다 */}
-      <div role="tablist" aria-label="쿼터" className="-mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+      <div role="tablist" aria-label="쿼터" className="-mx-4 flex overflow-x-auto border-b border-border px-2 md:mx-0 md:px-0">
         {schedule.map((time, index) => (
           <button
             key={time.startsAt}
@@ -228,12 +229,12 @@ export default function SquadBuilder({
               setQuarter(index);
               setSelection(null);
             }}
-            className="relative shrink-0 rounded-lg border border-border bg-bg-subtle px-3 py-1.5 text-left text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast"
+            className="relative min-h-12 shrink-0 border-b-2 border-transparent px-3 py-1.5 text-left text-sm text-text-secondary aria-selected:border-primary aria-selected:text-text-primary"
           >
-            <span className="font-semibold">{index + 1}쿼터</span> <span className="text-xs opacity-80">{time.startsAt}</span>
-            <span className="block text-[11px] opacity-70">{builder[index]?.formationName}</span>
+            <span className="font-bold">{index + 1}쿼터</span> <span className="text-xs tabular-nums opacity-80">{time.startsAt}</span>
+            <span className="block text-[11px] text-text-tertiary">{builder[index]?.formationName}</span>
             {troubled.has(index) && (
-              <span aria-hidden="true" className="absolute -top-1 -right-1 size-2.5 rounded-full bg-danger" />
+              <span aria-hidden="true" className="absolute top-1.5 right-1 size-2 rounded-full bg-danger" />
             )}
           </button>
         ))}
@@ -277,7 +278,7 @@ export default function SquadBuilder({
                 onClick={() =>
                   change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
                 }
-                className="h-11 rounded-xl border border-border px-3 text-sm"
+                className="h-11 rounded-box border border-border-strong bg-bg-subtle px-3 text-sm font-medium"
               >
                 이전 쿼터 복사
               </button>
@@ -351,21 +352,32 @@ export default function SquadBuilder({
               </SelectedPlayer>
             )}
 
-            <SquadList
-              builder={builder}
-              quarter={quarter}
-              pool={pool}
-              selection={selection}
-              onTap={tap}
-              statOf={statOf}
-              notes={notes}
-              seasonAverages={seasonAverages}
-            />
+            <Panel title="선수" aside={`${quarter + 1}쿼터`} flush>
+              <div className="p-1.5 md:p-2">
+                <SquadList
+                  builder={builder}
+                  quarter={quarter}
+                  pool={pool}
+                  selection={selection}
+                  onTap={tap}
+                  statOf={statOf}
+                  notes={notes}
+                  seasonAverages={seasonAverages}
+                />
+              </div>
+            </Panel>
 
             {warningGroups.length > 0 && (
-              <section className="rounded-xl border border-danger/40 p-3">
-                <h2 className="text-sm font-semibold text-danger">확인할 것</h2>
-                <ul className="mt-1 flex flex-col gap-0.5 text-sm">
+              <Panel
+                title={
+                  <span className="flex items-center gap-1.5">
+                    <TriangleAlert aria-hidden="true" className="size-4 text-fit-fair" />
+                    확인할 것
+                  </span>
+                }
+                aside={<span className="font-bold text-fit-fair">{warningGroups.length}</span>}
+              >
+                <ul className="flex flex-col gap-0.5 text-sm">
                   {warningGroups.map((group) => (
                     <li key={group.title}>
                       {group.details.length === 0 ? (
@@ -383,17 +395,14 @@ export default function SquadBuilder({
                     </li>
                   ))}
                 </ul>
-              </section>
+              </Panel>
             )}
 
-            <section aria-label="특이사항" className="rounded-xl border border-border p-3">
-              <h2 className="text-sm font-semibold">
-                특이사항 <span className="text-xs font-normal text-text-tertiary">관리자만</span>
-              </h2>
+            <Panel title="특이사항" aside="관리자만">
               {noted.length === 0 ? (
-                <p className="mt-1 text-xs text-text-tertiary">아직 없어요. 선수를 누르면 메모를 쓸 수 있어요.</p>
+                <p className="text-xs text-text-tertiary">아직 없어요. 선수를 누르면 메모를 쓸 수 있어요.</p>
               ) : (
-                <ul className="mt-1 flex flex-col gap-1 text-sm">
+                <ul className="flex flex-col gap-1 text-sm">
                   {noted.map(([memberId, note]) => (
                     <li key={memberId}>
                       <span className="font-semibold">{nameOf(memberId)}</span> <span className="text-text-secondary">{note}</span>
@@ -401,24 +410,25 @@ export default function SquadBuilder({
                   ))}
                 </ul>
               )}
-            </section>
+            </Panel>
           </div>
 
           {/* 저장 줄. 모바일에서는 화면 아래에 붙어 경기장을 보면서도 누를 수 있고, 태블릿 이상에서는 포메이션 옆에 온다. */}
-          <div className="sticky bottom-0 order-last -mx-4 flex flex-col gap-2 border-t border-border bg-bg-base px-4 py-3 md:static md:order-none md:col-start-2 md:row-start-1 md:mx-0 md:self-end md:border-0 md:bg-transparent md:p-0 lg:col-span-3 lg:col-start-3">
+          <div className="sticky bottom-0 z-10 order-last -mx-4 flex flex-col gap-2 border-t border-border-strong bg-bg-panel px-4 py-3 md:static md:order-none md:col-start-2 md:row-start-1 md:mx-0 md:self-end md:border-0 md:bg-transparent md:p-0 lg:col-span-3 lg:col-start-3">
             <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:justify-end">
               <button
                 type="button"
                 onClick={runAutoAssign}
-                className="h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
+                className="inline-flex h-11 items-center justify-center gap-1.5 rounded-box border border-border-strong bg-bg-subtle text-sm font-semibold md:h-10 md:px-4"
               >
+                <Sparkles aria-hidden="true" className="size-4" />
                 자동 배치
               </button>
               {quarter > 0 && (
                 <button
                   type="button"
                   onClick={reassignFromHere}
-                  className="col-span-2 row-start-2 h-11 rounded-lg border border-border text-sm font-semibold md:h-10 md:px-4"
+                  className="col-span-2 row-start-2 h-11 rounded-box border border-border-strong bg-bg-subtle text-sm font-semibold md:h-10 md:px-4"
                 >
                   {quarter + 1}쿼터부터 다시 배치
                 </button>
@@ -428,7 +438,7 @@ export default function SquadBuilder({
                 <input type="hidden" name="quarters" value={payload} />
                 <SubmitButton
                   disabled={!dirty}
-                  className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40 md:h-10"
+                  className="h-11 w-full rounded-box bg-primary text-sm font-bold text-primary-contrast disabled:opacity-40 md:h-10"
                 >
                   저장
                 </SubmitButton>
@@ -454,7 +464,7 @@ export default function SquadBuilder({
         </div>
         <DragOverlay>
           {draggingName && (
-            <span className="rounded-lg bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-contrast shadow-lg">
+            <span className="rounded-box bg-primary px-2.5 py-1.5 text-sm font-semibold text-primary-contrast shadow-lg">
               {draggingName}
             </span>
           )}

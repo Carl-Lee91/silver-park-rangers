@@ -31,7 +31,8 @@ export default function AttendanceTrendChart({ trend }: { trend: readonly MatchT
 
   return (
     <figure className="flex flex-col gap-2">
-      <figcaption className="text-sm font-semibold">매치별 실제 출석</figcaption>
+      {/* 제목은 감싼 패널 머리 줄에 있다 */}
+      <figcaption className="sr-only">매치별 실제 출석</figcaption>
       <p className="min-h-5 text-xs text-text-secondary" aria-live="polite">
         {shown ? `${formatMatchDate(shown.date)}${shown.opponent ? ` vs ${shown.opponent}` : ""} — ${describe(shown)}` : "막대를 누르면 자세히 보여요."}
       </p>
@@ -66,7 +67,7 @@ export default function AttendanceTrendChart({ trend }: { trend: readonly MatchT
                     <span className="text-[10px] text-text-tertiary">–</span>
                   ) : (
                     <span
-                      className={`w-full rounded-t-[4px] bg-chart ${active === index ? "opacity-70" : ""}`}
+                      className={`w-full rounded-t-chip bg-chart ${active === index ? "opacity-70" : ""}`}
                       style={{ height, maxWidth: BAR_MAX }}
                     />
                   )}

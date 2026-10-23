@@ -65,7 +65,7 @@ export default function AddGoalForm({ action, matchId, quarter, played, others }
           <People played={played} others={others} />
         </Select>
         <SubmitButton
-          className="col-span-2 h-11 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-50 md:col-span-1"
+          className="col-span-2 h-11 rounded-box bg-primary px-4 text-sm font-semibold text-primary-contrast disabled:opacity-50 md:col-span-1"
         >
           골 추가
         </SubmitButton>

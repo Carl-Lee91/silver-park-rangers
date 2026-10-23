@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import type { SharedSquad } from "@/entities/squad";
-import { loadImageFonts } from "@/shared/lib/server";
+import { loadImageEmblem, loadImageFonts } from "@/shared/lib/server";
 import { IMAGE_CACHE_CONTROL } from "./lib/cacheControl";
 import QuarterSheetImage, { quarterSheetSize } from "./ui/QuarterSheetImage";
 import RotationImage, { rotationImageSize } from "./ui/RotationImage";
@@ -14,12 +14,12 @@ export const squadImageResponse = async (
   squad: SharedSquad,
   cache: keyof typeof IMAGE_CACHE_CONTROL = "public",
 ) => {
-  const fonts = await loadImageFonts();
+  const [fonts, emblem] = await Promise.all([loadImageFonts(), loadImageEmblem()]);
   const headers = { "Cache-Control": IMAGE_CACHE_CONTROL[cache] };
 
-  if (kind === "card") return new ImageResponse(<SquadCardImage squad={squad} />, { ...CARD_SIZE, fonts, headers });
+  if (kind === "card") return new ImageResponse(<SquadCardImage squad={squad} emblem={emblem} />, { ...CARD_SIZE, fonts, headers });
   if (kind === "quarters") {
-    return new ImageResponse(<QuarterSheetImage squad={squad} />, { ...quarterSheetSize(squad), fonts, headers });
+    return new ImageResponse(<QuarterSheetImage squad={squad} emblem={emblem} />, { ...quarterSheetSize(squad), fonts, headers });
   }
-  return new ImageResponse(<RotationImage squad={squad} />, { ...rotationImageSize(squad), fonts, headers });
+  return new ImageResponse(<RotationImage squad={squad} emblem={emblem} />, { ...rotationImageSize(squad), fonts, headers });
 };

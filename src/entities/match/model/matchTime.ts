@@ -34,14 +34,26 @@ export const isVotingOpen = (match: MatchClock, now: Date = new Date()) =>
 
 /** "10월 25일 (일)" */
 export const formatMatchDate = (date: string) => {
+  const { month, day, weekday } = matchDateParts(date);
+  return `${month} ${day}일 (${weekday})`;
+};
+
+/** 일정 칸(풋볼매니저 일정표)의 세 줄: { month: "11월", day: "2", weekday: "일" } */
+export const matchDateParts = (date: string) => {
   // 한국 날짜의 정오로 잡으면 어느 시간대에서 읽어도 날짜가 밀리지 않는다.
   const { month, day, weekday } = partsOf(new Date(`${date}T12:00:00+09:00`), {
     month: "numeric",
     day: "numeric",
     weekday: "short",
   });
-  return `${month}월 ${day}일 (${weekday})`;
+  return { month: `${month}월`, day, weekday };
 };
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** 매치까지 남은 날(D-3 의 3). 두 값 모두 한국 날짜("YYYY-MM-DD")다. 오늘이면 0, 지났으면 음수 */
+export const daysUntil = (date: string, today: string) =>
+  Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / DAY_MS);
 
 /** "10월 24일 (토) 22:00" */
 export const formatDeadline = (iso: string) => {
@@ -71,4 +83,10 @@ export const deadlineToLocalInput = (iso: string | null) => {
     hourCycle: "h23",
   });
   return `${year}-${month}-${day}T${hour}:${minute}`;
+};
+
+/** 남은 날 표시: "D-3", 당일은 "D-day" */
+export const dDayLabel = (date: string, today: string) => {
+  const days = daysUntil(date, today);
+  return days === 0 ? "D-day" : `D-${days}`;
 };

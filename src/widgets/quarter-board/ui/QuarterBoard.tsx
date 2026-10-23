@@ -5,13 +5,11 @@ import { Jersey, Pitch, PitchSpot } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { rotationTable, type SavedQuarter } from "@/entities/squad";
 import { TABLET_UP, useMediaQuery } from "@/shared/lib";
+import { tabClass } from "@/shared/ui";
 
 type Props = { quarters: readonly SavedQuarter[]; schedule: readonly QuarterTime[] };
 
 const ROTATION = "rotation";
-
-const tabClass =
-  "min-h-11 shrink-0 rounded-lg border border-border px-3 py-2 text-sm aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-contrast";
 
 function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
   return (
@@ -24,7 +22,7 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
               tone={slot.memberName === null ? "empty" : slot.position === "GK" ? "keeper" : "kit"}
             />
             {slot.memberName && (
-              <span className="max-w-16 truncate rounded bg-bg-base/80 px-1 text-[11px] text-text-primary">{slot.memberName}</span>
+              <span className="max-w-16 truncate rounded-chip bg-bg-base/80 px-1 text-[11px] font-semibold text-text-primary">{slot.memberName}</span>
             )}
           </div>
         </PitchSpot>
@@ -36,24 +34,25 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
 function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
   const rows = rotationTable(quarters);
   return (
-    <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-      <table className="w-full text-center text-sm">
+    <div className="overflow-x-auto">
+      <table className="w-full text-center text-sm whitespace-nowrap">
         <thead>
-          <tr className="border-b border-border text-xs text-text-secondary">
-            <th className="py-2 text-left font-medium">이름</th>
+          <tr className="border-b border-border-strong text-xs text-text-tertiary">
+            <th className="sticky left-0 bg-bg-panel py-2 pr-2 pl-2 text-left font-semibold">이름</th>
             {quarters.map((item) => (
-              <th key={item.number} className="py-2 font-medium">
+              <th key={item.number} className="px-1 py-2 font-semibold">
                 {item.number}Q
               </th>
             ))}
-            <th className="py-2 font-medium">출전</th>
+            <th className="px-2 py-2 font-semibold">출전</th>
           </tr>
         </thead>
         <tbody>
+          {/* 풋볼매니저 표처럼 줄무늬. 이름 칸은 옆으로 밀어도 왼쪽에 붙어 있다 */}
           {rows.map((row) => (
-            <tr key={row.memberId} className="border-b border-border">
-              <td className="py-2 text-left">
-                {row.jerseyNumber !== null && `${row.jerseyNumber} `}
+            <tr key={row.memberId} className="border-b border-border odd:bg-bg-panel even:bg-bg-row">
+              <td className="sticky left-0 bg-inherit py-2 pr-2 pl-2 text-left font-semibold">
+                {row.jerseyNumber !== null && <span className="text-xs font-normal text-text-tertiary">{row.jerseyNumber} </span>}
                 {row.name}
               </td>
               {row.marks.map((mark, index) => (
@@ -61,7 +60,7 @@ function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
                   {mark === "field" ? "●" : mark === "keeper" ? "GK" : ""}
                 </td>
               ))}
-              <td className="font-semibold">{row.fieldCount}</td>
+              <td className="px-2 font-bold tabular-nums">{row.fieldCount}</td>
             </tr>
           ))}
         </tbody>
@@ -91,9 +90,9 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
         <div className="grid gap-6 @md:grid-cols-2 @3xl:grid-cols-3">
           {quarters.map((item) => (
             <figure key={item.number} className="flex flex-col gap-2">
-              <figcaption className="text-sm">
-                <span className="font-semibold">{item.number}쿼터</span>{" "}
-                <span className="text-text-secondary">
+              <figcaption className="flex items-baseline gap-2 text-sm">
+                <span className="font-extrabold">{item.number}쿼터</span>
+                <span className="text-xs text-text-tertiary tabular-nums">
                   {schedule[item.number - 1]?.startsAt} · {item.formationName}
                 </span>
               </figcaption>
@@ -102,7 +101,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
           ))}
         </div>
         <section>
-          <h3 className="mb-2 text-sm font-semibold">출전표</h3>
+          <h3 className="mb-2 text-xs font-bold tracking-wider text-text-secondary">출전표</h3>
           <RotationTable quarters={quarters} />
         </section>
       </div>
@@ -111,7 +110,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="tablist" aria-label="쿼터 보드" className="-mx-4 flex gap-2 overflow-x-auto px-4">
+      <div role="tablist" aria-label="쿼터 보드" className="-mx-3 -mt-3 flex overflow-x-auto border-b border-border px-1">
         {quarters.map((item, index) => (
           <button
             key={item.number}
@@ -119,19 +118,19 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
             type="button"
             aria-selected={tab === index}
             onClick={() => setTab(index)}
-            className={tabClass}
+            className={tabClass()}
           >
-            {item.number}쿼터 <span className="text-xs opacity-80">{schedule[item.number - 1]?.startsAt}</span>
+            {item.number}쿼터 <span className="text-xs font-normal opacity-80">{schedule[item.number - 1]?.startsAt}</span>
           </button>
         ))}
-        <button role="tab" type="button" aria-selected={tab === ROTATION} onClick={() => setTab(ROTATION)} className={tabClass}>
+        <button role="tab" type="button" aria-selected={tab === ROTATION} onClick={() => setTab(ROTATION)} className={tabClass()}>
           출전표
         </button>
       </div>
 
       {quarter !== null ? (
         <>
-          <p className="text-sm text-text-secondary">{quarter.formationName}</p>
+          <p className="text-xs text-text-tertiary">{quarter.formationName}</p>
           <QuarterPitch quarter={quarter} />
         </>
       ) : (

@@ -26,6 +26,46 @@ describe("자동 배치 (PLAN.md §6)", () => {
       expect(warnings).toEqual([]);
     });
 
+    // 실제 매치 참석은 12명~21명까지 오간다(2026-10-23). 양 끝을 고정해 둔다.
+    it.each(SEEDS)("12명(전담 키퍼 1 + 필드 11)이면 전원 5~6쿼터, 그중 5명이 6쿼터를 뛰고 쿼터마다 1명만 쉰다 (seed %i)", (seed) => {
+      const field = fieldPlayers(11);
+      const input: SquadInput = { players: [keeper("gk"), ...field], quarters: sixQuarters() };
+      const lineup = autoAssign(input, { random: seeded(seed) });
+      const { fieldCounts, warnings } = evaluateSquad(input, lineup);
+
+      const counts = field.map((p) => fieldCounts[p.id]);
+      expect(counts.every((count) => count === 5 || count === 6)).toBe(true);
+      expect(counts.filter((count) => count === 6)).toHaveLength(5);
+      for (const quarter of lineup) expect(quarter.fieldIds.filter((id) => id !== null)).toHaveLength(10);
+      expect(warnings).toEqual([]);
+    });
+
+    it.each(SEEDS)("21명(전담 키퍼 1 + 필드 20)이면 전원 똑같이 3쿼터를 뛰고 3쿼터 연속으로 쉬는 사람이 없다 (seed %i)", (seed) => {
+      const field = fieldPlayers(20);
+      const input: SquadInput = { players: [keeper("gk"), ...field], quarters: sixQuarters() };
+      const lineup = autoAssign(input, { random: seeded(seed) });
+      const { fieldCounts, warnings } = evaluateSquad(input, lineup);
+
+      expect(field.map((p) => fieldCounts[p.id])).toEqual(Array(20).fill(3));
+      for (const { id } of field) {
+        const restPattern = lineup.map((quarter) => (quarter.fieldIds.includes(id) ? "o" : "x")).join("");
+        expect(restPattern, id).not.toContain("xxx");
+      }
+      expect(warnings).toEqual([]);
+    });
+
+    it.each(SEEDS)("21명(전담 키퍼 2 + 필드 19)이면 키퍼는 3쿼터씩, 필드는 전원 3~4쿼터에 3명이 4쿼터 (seed %i)", (seed) => {
+      const field = fieldPlayers(19);
+      const input: SquadInput = { players: [keeper("gk1"), keeper("gk2"), ...field], quarters: sixQuarters() };
+      const { fieldCounts, keeperCounts, warnings } = evaluateSquad(input, autoAssign(input, { random: seeded(seed) }));
+
+      expect([keeperCounts.gk1, keeperCounts.gk2]).toEqual([3, 3]);
+      const counts = field.map((p) => fieldCounts[p.id]);
+      expect(counts.every((count) => count === 3 || count === 4)).toBe(true);
+      expect(counts.filter((count) => count === 4)).toHaveLength(3);
+      expect(warnings).toEqual([]);
+    });
+
     it("필드 인원이 모자라면 있는 만큼 채우고 남는 슬롯은 비운다", () => {
       const input: SquadInput = { players: [keeper("gk"), ...fieldPlayers(8)], quarters: sixQuarters() };
       const lineup = autoAssign(input, { random: seeded(1) });

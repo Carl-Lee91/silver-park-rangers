@@ -33,7 +33,7 @@ export default function PasswordLoginForm({ action }: Props) {
         </p>
       )}
       <SubmitButton
-        className="h-13 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
+        className="h-13 w-full rounded-box bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
       >
         로그인
       </SubmitButton>

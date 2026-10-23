@@ -57,3 +57,13 @@ export const toMatch = (row: unknown): Match => {
 
 export const matchTitle = (match: Pick<Match, "opponent">) =>
   match.opponent ? `vs ${match.opponent}` : "상대 미정";
+
+/** 팀 이름 앞에 흔히 붙는 영문 머리말. 이것만 보면 어느 팀인지 알 수 없어서 건너뛴다 */
+const CLUB_PREFIX = /^(FC|SC|AFC|CF|FK|AC|SV)$/i;
+
+/** 엠블럼이 없는 상대를 동그라미 안에 한 글자로 보인다. "FC 한강" → "한", 상대를 안 정했으면 "?" */
+export const opponentInitial = (opponent: string | null) => {
+  const words = (opponent ?? "").trim().split(/\s+/).filter(Boolean);
+  const name = words.length > 1 && CLUB_PREFIX.test(words[0]) ? words[1] : words[0];
+  return name ? name[0].toUpperCase() : "?";
+};

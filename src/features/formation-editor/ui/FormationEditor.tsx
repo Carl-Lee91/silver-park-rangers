@@ -54,7 +54,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 빼기`}
                   disabled={counts[position] === 0}
                   onClick={() => step(position, -1)}
-                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-box border border-border text-lg disabled:opacity-30"
                 >
                   −
                 </button>
@@ -64,7 +64,7 @@ export default function FormationEditor({ action }: Props) {
                   aria-label={`${positionLabel(position)} 더하기`}
                   disabled={field >= MAX_FIELD}
                   onClick={() => step(position, 1)}
-                  className="size-11 rounded-xl border border-border text-lg disabled:opacity-30"
+                  className="size-11 rounded-box border border-border text-lg disabled:opacity-30"
                 >
                   +
                 </button>
@@ -91,7 +91,7 @@ export default function FormationEditor({ action }: Props) {
         </p>
       )}
       <SubmitButton
-        className="h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
+        className="h-12 w-full rounded-box bg-primary text-base font-semibold text-primary-contrast disabled:opacity-50"
       >
         저장
       </SubmitButton>

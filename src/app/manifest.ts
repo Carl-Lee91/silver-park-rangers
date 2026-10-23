@@ -9,9 +9,9 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "ko",
     start_url: "/",
     display: "standalone",
-    // 다크 모드: globals.css 의 --color-bg-base 와 같은 값(시작 화면 · 상태 표시줄)
-    background_color: "#10151c",
-    theme_color: "#10151c",
+    // 시작 화면은 앱 바탕(--color-bg-base), 상태 표시줄은 머리띠 하늘색(--color-kit). theme.test.ts 가 검사한다
+    background_color: "#0b1016",
+    theme_color: "#80c4ee",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },

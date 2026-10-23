@@ -22,7 +22,7 @@ const COPY: Record<Exclude<SignUpAvailability, "ready" | "unknown">, { title: st
 export default function SignUpUnavailable({ reason }: { reason: Exclude<SignUpAvailability, "ready" | "unknown"> }) {
   const copy = COPY[reason];
   return (
-    <div role="status" className="rounded-xl border border-border bg-bg-subtle p-4 text-sm leading-6">
+    <div role="status" className="rounded-box border border-border bg-bg-subtle p-4 text-sm leading-6">
       <p className="font-semibold">{copy.title}</p>
       <p className="mt-1 text-text-secondary">관리자에게 알려 주세요. {copy.fix}</p>
     </div>

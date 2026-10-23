@@ -110,3 +110,22 @@
 - 🔴 미리보기 배포도 **운영과 같은 Supabase DB** 를 쓴다(무료 프로젝트 하나). 미리보기에서 만든 매치·데이터는 실제 데이터다.
 - 🔴 **DB 마이그레이션은 자동으로 나가지 않는다.** 새 마이그레이션이 든 변경은 `main` 에 머지하기 **전에** SQL Editor 로 먼저 적용하고 §1 표에 적는다. 코드가 먼저 나가면 새 표·함수가 없어서 화면이 깨진다.
 - 선택: GitHub › Settings › Branches 에서 `main` 에 규칙을 걸고 "Require status checks to pass" 에 `check` 를 고르면, CI 가 실패한 PR 은 머지되지 않는다(공개 저장소는 무료).
+
+## 8. 엠블럼 · 아이콘
+
+팀 엠블럼 원본은 `assets/brand/spr_logo.png`(2000×2000, 바탕 투명)이다. 앱이 쓰는 크기는 모두 여기서 만든다.
+
+| 파일 | 쓰는 곳 |
+| --- | --- |
+| `public/emblem.png` | 화면 속 엠블럼(머리띠 · 관리 메뉴 · 로그인 · 매치 미리보기) |
+| `src/app/icon.png` | 브라우저 탭(파비콘) |
+| `src/app/apple-icon.png` | 아이폰 홈 화면(앱 바탕색 위) |
+| `public/icons/icon-192.png` · `icon-512.png` | 홈 화면 앱(PWA) 아이콘 |
+| `public/icons/icon-maskable-512.png` | 안드로이드가 원 · 둥근 사각형으로 깎는 아이콘(안전 영역 안) |
+| `src/app/opengraph-image.png` | 카톡 미리보기 기본 이미지. 공유 링크(`/s/…`)는 스쿼드 카드를 따로 쓴다 |
+| `src/shared/assets/brand/emblem.png` | 서버 이미지(스쿼드 카드 · 쿼터별 · 출전표) 머리글 |
+
+**엠블럼을 바꾸려면**: 원본을 같은 이름으로 바꾸고 `python3 scripts/brand-icons.py` 를 돌린 뒤(Pillow 필요: `pip install pillow`) 나온 파일을 같이 커밋한다. 서버 이미지 그림이 바뀌므로 `src/widgets/squad-image/lib/imagePath.ts` 의 `IMAGE_DESIGN` 도 올린다.
+
+- 이미 홈 화면에 추가한 폰: 안드로이드는 크롬이 며칠 안에 새 아이콘으로 바꾼다. **아이폰은 홈 화면에서 지우고 다시 추가해야** 새 아이콘이 된다.
+- 카톡은 링크 미리보기를 캐시한다. 예전에 공유한 링크는 한동안 예전 그림이 보일 수 있다.

@@ -3,6 +3,7 @@ import type { MemberStatus } from "@/entities/member";
 import { fetchMyMember } from "@/entities/member/server";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
+import { Panel, Screen } from "@/shared/ui";
 
 const COPY: Record<Exclude<MemberStatus, "approved">, { title: string; body: string }> = {
   pending: {
@@ -28,18 +29,19 @@ export default async function PendingView() {
   const copy = COPY[me.status];
 
   return (
-    <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col justify-center gap-8 px-4 py-12">
-      <header>
-        <h1 className="text-xl font-bold">{copy.title}</h1>
-        <p className="mt-2 text-sm text-text-secondary">{copy.body}</p>
-      </header>
-      <dl className="rounded-xl bg-bg-subtle p-4 text-sm leading-7">
-        <div className="flex justify-between">
-          <dt className="text-text-secondary">실명</dt>
-          <dd>{me.realName}</dd>
-        </div>
-      </dl>
-      <SignOutButton />
-    </main>
+    <Screen title={copy.title} overline="Silver Park Rangers" width="narrow" className="md:pt-10">
+      <p className="text-sm text-text-secondary">{copy.body}</p>
+      <Panel title="신청 정보" flush>
+        <dl className="text-sm">
+          <div className="flex justify-between px-3 py-3 md:px-4">
+            <dt className="text-text-secondary">실명</dt>
+            <dd className="font-semibold">{me.realName}</dd>
+          </div>
+        </dl>
+      </Panel>
+      <div className="flex justify-center">
+        <SignOutButton />
+      </div>
+    </Screen>
   );
 }

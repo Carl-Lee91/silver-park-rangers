@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { AttendanceList } from "@/entities/attendance";
+import { AttendanceList, groupAttendance } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
 import {
   formatDeadline,
@@ -21,7 +21,7 @@ import { getAuthUserId } from "@/shared/api";
 import { getServerEnv, ROUTES } from "@/shared/config";
 import { QuarterBoard } from "@/widgets/quarter-board";
 import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
-import { BackLink } from "@/shared/ui";
+import { chipClass, Panel, Screen } from "@/shared/ui";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -37,29 +37,28 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
   const summary = summarizeResult(match.quarterCount, result.scores, result.goals);
   const mine = attendance.find((row) => row.memberId === userId && row.response !== null);
   const open = isVotingOpen(match);
+  const groups = groupAttendance(attendance);
   const image = squadForImage(match, squad);
   const version = image === null ? "" : squadImageVersion(image);
 
   return (
-    <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-8 px-4 py-8 md:px-6 lg:px-8">
-      <BackLink href={ROUTES.home} label="홈" />
+    <Screen
+      title={matchTitle(match)}
+      overline={`${formatMatchDate(match.date)} · 매치`}
+      back={{ href: ROUTES.home, label: "홈" }}
+    >
       <MatchSummary match={match} />
 
       {/* 데스크톱: 왼쪽은 결과·투표·참석자, 오른쪽은 스쿼드 */}
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-5 lg:items-start lg:gap-10">
-        <div className="flex flex-col gap-8 lg:col-span-2">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-5 lg:items-start lg:gap-6">
+        <div className="flex flex-col gap-4 lg:col-span-2 lg:gap-6">
           {summary.quarters.length > 0 && (
-            <section>
-              <h2 className="mb-3 font-semibold">경기 결과</h2>
+            <Panel title="경기 결과" flush>
               <ResultSummaryView summary={summary} />
-            </section>
+            </Panel>
           )}
 
-          <section className="rounded-xl border border-border p-4">
-            <h2 className="font-semibold">참석 투표</h2>
-            <p className="mt-1 mb-4 text-xs text-text-tertiary">
-              {open ? `${formatDeadline(votingClosesAt(match).toISOString())}까지` : "마감됨"}
-            </p>
+          <Panel title="참석 투표" aside={open ? `${formatDeadline(votingClosesAt(match).toISOString())}까지` : "마감됨"}>
             <AttendanceVoteForm
               action={submitVote}
               matchId={match.id}
@@ -67,16 +66,18 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
               current={mine ? { response: mine.response!, arriveAt: mine.arriveAt, leaveAt: mine.leaveAt } : null}
               open={open}
             />
-          </section>
+          </Panel>
 
-          <section>
-            <h2 className="mb-3 font-semibold">참석자</h2>
+          <Panel title="참석자" aside={`참석 ${groups.yes.length} · 미정 ${groups.maybe.length} · 불참 ${groups.no.length}`} flush>
             <AttendanceList attendance={attendance} />
-          </section>
+          </Panel>
         </div>
 
-        <section className="lg:col-span-3">
-          <h2 className="mb-3 font-semibold">스쿼드</h2>
+        <Panel
+          title="스쿼드"
+          aside={squad.length > 0 ? <span className={chipClass("good")}>공개됨</span> : <span className={chipClass("muted")}>공개 전</span>}
+          className="lg:col-span-3"
+        >
           {squad.length > 0 ? (
             <div className="flex flex-col gap-5">
               <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
@@ -90,10 +91,10 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
               />
             </div>
           ) : (
-            <p className="rounded-xl bg-bg-subtle p-4 text-sm text-text-secondary">스쿼드는 아직 공개 전이에요.</p>
+            <p className="text-sm text-text-secondary">스쿼드는 아직 공개 전이에요. 관리자가 공개하면 여기에 쿼터별 배치가 떠요.</p>
           )}
-        </section>
+        </Panel>
       </div>
-    </main>
+    </Screen>
   );
 }

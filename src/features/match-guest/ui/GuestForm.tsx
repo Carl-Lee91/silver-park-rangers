@@ -96,7 +96,7 @@ export default function GuestForm({ action, matchId, submitLabel, guest }: Props
       )}
       <SubmitButton
         disabled={!ready}
-        className="h-11 w-full rounded-xl bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
+        className="h-11 w-full rounded-box bg-primary text-sm font-semibold text-primary-contrast disabled:opacity-40"
       >
         {submitLabel}
       </SubmitButton>

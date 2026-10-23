@@ -23,7 +23,7 @@ export default function QuarterDots({ marks, current }: { marks: readonly Quarte
       {marks.map((mark, index) => (
         <span
           key={index}
-          className={`flex size-4 items-center justify-center rounded-[3px] text-[9px] leading-none font-bold tabular-nums ${MARK_STYLE[mark]} ${
+          className={`flex size-4 items-center justify-center rounded-chip text-[9px] leading-none font-bold tabular-nums ${MARK_STYLE[mark]} ${
             index === current ? "outline outline-offset-1 outline-text-primary" : ""
           }`}
         >

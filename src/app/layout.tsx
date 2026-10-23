@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // 상태 표시줄 색. 다크 모드라 globals.css 의 --color-bg-base 와 같은 값이다(화면과 이어지게)
-  themeColor: "#10151c",
+  // 상태 표시줄 색. 화면 맨 위 머리띠와 이어지게 globals.css 의 --color-kit 과 같은 값이다(theme.test.ts)
+  themeColor: "#80c4ee",
   colorScheme: "dark",
 };
 

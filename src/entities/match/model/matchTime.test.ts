@@ -3,8 +3,11 @@ import {
   deadlineFromLocalInput,
   deadlineToLocalInput,
   formatDeadline,
+  daysUntil,
+  dDayLabel,
   formatMatchDate,
   isVotingOpen,
+  matchDateParts,
   seoulToday,
   votingClosesAt,
 } from "./matchTime";
@@ -38,6 +41,23 @@ describe("표기", () => {
   it("매치 날짜는 월·일·요일로 쓴다", () => {
     expect(formatMatchDate("2026-10-25")).toBe("10월 25일 (일)");
     expect(formatMatchDate("2026-10-24")).toBe("10월 24일 (토)");
+  });
+
+  it("일정 칸(풋볼매니저 일정표)에 쓸 월 · 일 · 요일을 나눠 준다", () => {
+    expect(matchDateParts("2026-11-01")).toEqual({ month: "11월", day: "1", weekday: "일" });
+    expect(matchDateParts("2026-10-24")).toEqual({ month: "10월", day: "24", weekday: "토" });
+  });
+
+  it("매치까지 남은 날(D-3)은 한국 날짜로 센다 — 오늘이면 0, 지났으면 음수", () => {
+    expect(daysUntil("2026-11-02", "2026-10-30")).toBe(3);
+    expect(daysUntil("2026-11-02", "2026-11-02")).toBe(0);
+    expect(daysUntil("2026-11-02", "2026-11-03")).toBe(-1);
+    expect(daysUntil("2027-01-01", "2026-12-31")).toBe(1);
+  });
+
+  it("남은 날 표시는 D-3, 당일은 D-day 다", () => {
+    expect(dDayLabel("2026-11-01", "2026-10-29")).toBe("D-3");
+    expect(dDayLabel("2026-11-01", "2026-11-01")).toBe("D-day");
   });
 
   it("투표 마감은 한국 시간으로 쓴다", () => {

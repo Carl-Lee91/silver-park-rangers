@@ -1,5 +1,6 @@
 import { footLabel, type AdminMember } from "@/entities/member";
 import { positionLabel } from "@/entities/position";
+import { chipClass } from "@/shared/ui";
 
 const appliedAt = new Intl.DateTimeFormat("ko-KR", {
   month: "long",
@@ -8,15 +9,14 @@ const appliedAt = new Intl.DateTimeFormat("ko-KR", {
 });
 
 function Badge({ children, tone }: { children: string; tone: "primary" | "neutral" }) {
-  const color = tone === "primary" ? "bg-primary text-primary-contrast" : "bg-bg-subtle text-text-secondary";
-  return <span className={`rounded-md px-1.5 py-0.5 text-xs font-medium ${color}`}>{children}</span>;
+  return <span className={chipClass(tone === "primary" ? "accent" : "muted")}>{children}</span>;
 }
 
 /** 누구인지 확인하는 데 필요한 것: 실명, 로그인 이메일, 선호 포지션·주발 */
 export default function MemberSummary({ member, showApplied = false }: { member: AdminMember; showApplied?: boolean }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-sm font-bold text-text-secondary">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border-strong bg-bg-subtle text-sm font-bold text-text-secondary">
         {member.realName.slice(0, 1)}
       </span>
       <div className="min-w-0 flex-1">
