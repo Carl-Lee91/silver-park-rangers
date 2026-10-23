@@ -3,7 +3,6 @@ import { fetchMyMember, fetchTakenJerseyNumbers } from "@/entities/member/server
 import { InstallAppCard } from "@/features/app-install";
 import { changePassword, PasswordChangeForm } from "@/features/password-change";
 import { ProfileForm, updateProfile } from "@/features/profile-edit";
-import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
 import { Panel, Screen } from "@/shared/ui";
 
@@ -28,9 +27,6 @@ export default async function MeView() {
         <PasswordChangeForm action={changePassword} />
       </Panel>
       <InstallAppCard />
-      <div className="flex justify-center">
-        <SignOutButton />
-      </div>
     </Screen>
   );
 }

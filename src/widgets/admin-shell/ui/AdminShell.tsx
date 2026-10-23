@@ -5,7 +5,7 @@ import { fetchMyGate } from "@/entities/member/server";
 import { PendingWatcher } from "@/features/pending-watch";
 import { SignOutButton } from "@/features/sign-out";
 import { ROUTES } from "@/shared/config";
-import { chipClass, Emblem } from "@/shared/ui";
+import { ACCOUNT_ITEM, chipClass, Emblem, MyPageLink } from "@/shared/ui";
 import AdminNav from "./AdminNav";
 
 /**
@@ -35,15 +35,17 @@ export default async function AdminShell({ children }: { children: ReactNode }) 
             </span>
           </Link>
           <AdminNav className="order-last -mx-1 basis-full md:order-none md:mx-0 md:basis-auto lg:pt-2" />
-          <div className="ml-auto flex items-center gap-4 text-sm lg:mt-auto lg:ml-0 lg:flex-col lg:items-stretch lg:gap-0 lg:border-t lg:border-border lg:pt-2">
+          <div className="ml-auto flex items-center gap-1 lg:mt-auto lg:ml-0 lg:flex-col lg:items-stretch lg:gap-0 lg:border-t lg:border-border lg:pt-2">
             {viewer === "admin" && (
-              <Link href={ROUTES.home} className="inline-flex h-11 items-center gap-3 text-text-secondary lg:rounded-box lg:px-3">
-                <House aria-hidden="true" className="hidden size-5 lg:block" />팀 화면
-              </Link>
+              <>
+                <Link href={ROUTES.home} className={`${ACCOUNT_ITEM} lg:w-full`}>
+                  <House aria-hidden="true" className="size-4 shrink-0" />팀 화면
+                </Link>
+                {/* 관리자는 선수라서 내 정보가 있다. 어드민 계정은 선수가 아니라 없다 */}
+                <MyPageLink className="lg:w-full" />
+              </>
             )}
-            <div className="lg:px-3">
-              <SignOutButton />
-            </div>
+            <SignOutButton className="lg:w-full" />
           </div>
         </div>
       </aside>
