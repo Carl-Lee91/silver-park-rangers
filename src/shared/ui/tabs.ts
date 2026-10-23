@@ -12,7 +12,7 @@ export const tabClass = (extra = "") =>
     .filter(Boolean)
     .join(" ");
 
-export type ChipTone = "accent" | "warn" | "muted" | "danger" | "good";
+export type ChipTone = "accent" | "warn" | "muted" | "danger" | "good" | "band";
 
 const CHIP_TONES: Record<ChipTone, string> = {
   accent: "bg-primary/15 text-primary",
@@ -20,6 +20,8 @@ const CHIP_TONES: Record<ChipTone, string> = {
   muted: "bg-bg-subtle text-text-secondary",
   danger: "border border-danger text-danger",
   good: "bg-result-win/15 text-result-win",
+  /** 머리띠(하늘색) 위: 남색 테두리 */
+  band: "border border-kit-label text-kit-label",
 };
 
 /** 작은 칩(참석 · 미정 · 투표 전 · 공개됨 · D-3 같은 표시). 색만이 아니라 글자로 뜻을 적는다 */
