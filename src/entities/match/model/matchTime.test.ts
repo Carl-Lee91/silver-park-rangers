@@ -4,6 +4,7 @@ import {
   deadlineToLocalInput,
   formatDeadline,
   daysUntil,
+  dDayLabel,
   formatMatchDate,
   isVotingOpen,
   matchDateParts,
@@ -52,6 +53,11 @@ describe("표기", () => {
     expect(daysUntil("2026-11-02", "2026-11-02")).toBe(0);
     expect(daysUntil("2026-11-02", "2026-11-03")).toBe(-1);
     expect(daysUntil("2027-01-01", "2026-12-31")).toBe(1);
+  });
+
+  it("남은 날 표시는 D-3, 당일은 D-day 다", () => {
+    expect(dDayLabel("2026-11-01", "2026-10-29")).toBe("D-3");
+    expect(dDayLabel("2026-11-01", "2026-11-01")).toBe("D-day");
   });
 
   it("투표 마감은 한국 시간으로 쓴다", () => {
