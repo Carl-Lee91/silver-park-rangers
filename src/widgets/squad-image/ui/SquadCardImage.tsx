@@ -9,7 +9,7 @@ export const CARD_SIZE = { width: 800, height: 400 } as const;
  * 카톡 미리보기 카드(PLAN.md §8). 카드 한 장에 전 쿼터 이름을 다 넣으면 못 읽으므로
  * 1쿼터 포메이션(이름 포함)과 요약만 넣는다. 전체는 링크로 본다.
  */
-export default function SquadCardImage({ squad }: { squad: SharedSquad }) {
+export default function SquadCardImage({ squad, emblem }: { squad: SharedSquad; emblem: string }) {
   const first = squad.quarters[0];
   return (
     <div
@@ -32,7 +32,7 @@ export default function SquadCardImage({ squad }: { squad: SharedSquad }) {
           padding: "36px 36px 32px",
         }}
       >
-        <MatchHeading squad={squad} />
+        <MatchHeading squad={squad} emblem={emblem} scale={0.8} />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 22, fontWeight: 700, color: PALETTE.textPrimary }}>
             {`스쿼드 공개 · ${countPlayers(squad.quarters)}명`}

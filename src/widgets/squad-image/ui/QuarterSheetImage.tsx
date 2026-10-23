@@ -17,7 +17,7 @@ export const quarterSheetSize = (squad: SharedSquad) => {
   return { width: WIDTH, height: PADDING * 2 + HEADING + rows * (CAPTION + pitchHeight(CELL)) + (rows - 1) * GAP };
 };
 
-export default function QuarterSheetImage({ squad }: { squad: SharedSquad }) {
+export default function QuarterSheetImage({ squad, emblem }: { squad: SharedSquad; emblem: string }) {
   const schedule = quarterSchedule(squad.match);
   return (
     <div
@@ -33,7 +33,7 @@ export default function QuarterSheetImage({ squad }: { squad: SharedSquad }) {
       }}
     >
       <div style={{ display: "flex", height: HEADING }}>
-        <MatchHeading squad={squad} />
+        <MatchHeading squad={squad} emblem={emblem} />
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: GAP }}>
         {squad.quarters.map((quarter) => (

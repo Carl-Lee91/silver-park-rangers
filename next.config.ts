@@ -14,11 +14,12 @@ const nextConfig: NextConfig = {
   */
   htmlLimitedBots: /.*/,
   /*
-    서버 이미지(/s/…/og · /s/…/image)가 실행 중에 읽는 한글 폰트를 배포 묶음에 넣는다
-    (src/shared/lib/server.ts 의 loadImageFonts).
+    서버 이미지(/s/…/og · /s/…/image · 관리자 스쿼드 이미지)가 실행 중에 읽는 한글 폰트와 엠블럼을 배포 묶음에 넣는다
+    (src/shared/lib/server.ts 의 loadImageFonts · loadImageEmblem).
   */
   outputFileTracingIncludes: {
-    "/s/**": ["./src/shared/assets/fonts/**"],
+    "/s/**": ["./src/shared/assets/fonts/**", "./src/shared/assets/brand/**"],
+    "/admin/matches/**": ["./src/shared/assets/fonts/**", "./src/shared/assets/brand/**"],
   },
   /*
     Turbopack 파일 캐시를 끈다(이 버전은 기본으로 켜져 있다). 켜 두면 Vercel 이 되살린 빌드 캐시에서

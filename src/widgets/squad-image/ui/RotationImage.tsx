@@ -16,7 +16,7 @@ export const rotationImageSize = (squad: SharedSquad) => ({
 });
 
 /** 출전표 한 장: 사람 × 쿼터. 키퍼 쿼터는 GK 로 쓰고 출전 수에 넣지 않는다. */
-export default function RotationImage({ squad }: { squad: SharedSquad }) {
+export default function RotationImage({ squad, emblem }: { squad: SharedSquad; emblem: string }) {
   const rows = rotationTable(squad.quarters);
   const cell = (WIDTH - PADDING * 2 - NAME - TOTAL) / Math.max(1, squad.quarters.length);
   const line = { display: "flex", height: ROW, alignItems: "center", borderBottom: `1px solid ${PALETTE.border}` } as const;
@@ -36,7 +36,7 @@ export default function RotationImage({ squad }: { squad: SharedSquad }) {
       }}
     >
       <div style={{ display: "flex", height: HEADING }}>
-        <MatchHeading squad={squad} />
+        <MatchHeading squad={squad} emblem={emblem} />
       </div>
       <div style={{ ...line, fontSize: 22, color: PALETTE.textSecondary }}>
         <div style={{ display: "flex", width: NAME }}>이름</div>

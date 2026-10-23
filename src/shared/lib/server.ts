@@ -22,3 +22,14 @@ export const loadImageFonts = () =>
     { name: "Pretendard", data: regular, weight: 400 as const, style: "normal" as const },
     { name: "Pretendard", data: bold, weight: 700 as const, style: "normal" as const },
   ]));
+
+/**
+ * 서버 이미지에 넣을 팀 엠블럼(data URI). Satori 는 앱 주소(public/)의 파일을 읽지 못해서 파일을 직접 읽어 넣는다.
+ * scripts/brand-icons.py 가 원본에서 만든다. 경로는 next.config 의 outputFileTracingIncludes 와 같다.
+ */
+const EMBLEM_FILE = path.join(process.cwd(), "src/shared/assets/brand/emblem.png");
+
+let emblem: Promise<string> | null = null;
+
+export const loadImageEmblem = () =>
+  (emblem ??= readFile(EMBLEM_FILE).then((buffer) => `data:image/png;base64,${buffer.toString("base64")}`));
