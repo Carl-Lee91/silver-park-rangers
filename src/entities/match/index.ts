@@ -1,4 +1,4 @@
-export { matchTitle, toMatch, type Match } from "./model/match";
+export { matchTitle, opponentInitial, toMatch, type Match } from "./model/match";
 export {
   deadlineFromLocalInput,
   deadlineToLocalInput,
