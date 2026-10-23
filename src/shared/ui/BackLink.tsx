@@ -1,9 +1,13 @@
 import Link from "next/link";
 
 const TONES = {
-  page: "text-sm text-text-secondary",
-  /** 머리띠(하늘색) 위 */
-  band: "text-sm font-semibold text-kit-label",
+  /** 본문 위: 긴 이름은 말줄임 */
+  page: { link: "max-w-full text-sm text-text-secondary", label: "truncate" },
+  /**
+   * 머리띠(하늘색) 위: 이름이 짧아("홈" · "매치") 말줄임하지 않는다. 띠의 이 칸은 내용 폭으로 정해져서
+   * max-w-full 같은 비율 폭이 0 으로 풀리면 "‹ …"만 남는다.
+   */
+  band: { link: "text-sm font-semibold text-kit-label", label: "whitespace-nowrap" },
 } as const;
 
 /**
@@ -15,12 +19,12 @@ export default function BackLink({ href, label, tone = "page" }: { href: string;
   return (
     <Link
       href={href}
-      className={`-ml-2 inline-flex h-11 max-w-full shrink-0 items-center gap-0.5 self-start rounded-box pr-3 pl-1 ${TONES[tone]}`}
+      className={`-ml-2 inline-flex h-11 shrink-0 items-center gap-0.5 self-start rounded-box pr-3 pl-1 ${TONES[tone].link}`}
     >
       <svg aria-hidden="true" viewBox="0 0 16 16" className="size-5 shrink-0">
         <path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <span className="truncate">{label}</span>
+      <span className={TONES[tone].label}>{label}</span>
     </Link>
   );
 }
