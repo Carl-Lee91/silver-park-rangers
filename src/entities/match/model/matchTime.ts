@@ -84,3 +84,9 @@ export const deadlineToLocalInput = (iso: string | null) => {
   });
   return `${year}-${month}-${day}T${hour}:${minute}`;
 };
+
+/** 남은 날 표시: "D-3", 당일은 "D-day" */
+export const dDayLabel = (date: string, today: string) => {
+  const days = daysUntil(date, today);
+  return days === 0 ? "D-day" : `D-${days}`;
+};

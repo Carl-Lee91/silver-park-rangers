@@ -3,6 +3,7 @@ export {
   deadlineFromLocalInput,
   deadlineToLocalInput,
   daysUntil,
+  dDayLabel,
   formatDeadline,
   formatMatchDate,
   isVotingOpen,
