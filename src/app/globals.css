@@ -6,7 +6,8 @@
       --color-primary  →  bg-primary · text-primary · border-primary
 
   다크 모드 하나뿐이다(PLAN.md §7 "색"). 바탕·선은 어두운 남색 회색 단계, 강조(primary)는 우리 유니폼 하늘색이다.
-  의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강, 자리 적합도)만 따로 색을 쓴다.
+  의미가 있는 색(경기장 초록, 카카오 노랑, 위험 빨강, 자리 적합도, 경기 결과)만 따로 색을 쓴다.
+  생김새는 풋볼매니저 24 다(PLAN.md §7 "테마"): 하늘색 머리띠, 바탕 위에 뜬 패널, 각진 모서리.
 */
 @theme {
   /* Pretendard 를 우리 서버에서 내보낸다(layout.tsx 가 pretendard 패키지의 글자 범위별 조각 CSS 를 불러온다).
@@ -27,18 +28,31 @@
   /* 차트 막대·미터 채움 */
   --color-chart: var(--color-kit);
 
-  /* ── Background ── */
-  --color-bg-base: #10151c;
-  --color-bg-subtle: #19202a;
+  /* ── Background: 앱 바탕 < 패널 < 표 줄무늬 < 패널 머리 순으로 밝아진다(theme.test.ts) ── */
+  --color-bg-base: #0b1016;
+  /* 패널(Panel) 본문 · 관리 메뉴 */
+  --color-bg-panel: #131a23;
+  /* 표의 짝수 줄 */
+  --color-bg-row: #161e28;
+  /* 패널 머리 줄 · 표 머리 · 칩 · 보조 단추 */
+  --color-bg-subtle: #1a2330;
 
   /* ── Text ── */
   --color-text-primary: #e9eef4;
   --color-text-secondary: #a3aebc;
-  --color-text-tertiary: #7d8999;
+  /* 가장 흐린 글자. 패널 머리 위에서도 4.5:1 이상 */
+  --color-text-tertiary: #8794a4;
 
   /* ── Line · State ── */
-  --color-border: #29323e;
+  --color-border: #263040;
+  /* 표 머리 밑줄 · 보조 단추 테두리 */
+  --color-border-strong: #3a4656;
   --color-danger: #ff7a7a;
+
+  /* ── 경기 결과(승 · 무 · 패) 칸. 승·패 칸 위 글자는 bg-base, 무 칸 위 글자는 text-primary ── */
+  --color-result-win: #4ade80;
+  --color-result-draw: #3a4656;
+  --color-result-loss: #f87171;
 
   /* ── 입력칸: 바탕보다 살짝 밝게 채우고, 테두리는 바탕·안쪽 패널과 3:1 이상(웹 접근성 입력칸 경계).
      카드·구분선의 border 는 옅어도 되지만 입력칸은 "칸"으로 보여야 한다(field.test.ts 가 대비를 검사한다) ── */
@@ -47,6 +61,8 @@
 
   /* ── 경기장: 어두운 바탕에 맞춘 짙은 초록 ── */
   --color-pitch: #245e3f;
+  /* 잔디 줄무늬: 경기장 색과 번갈아 깐다 */
+  --color-pitch-stripe: #215837;
   --color-pitch-line: rgb(255 255 255 / 0.55);
 
   /* ── 카카오 노랑: 카톡 공유 단추, 키퍼 유니폼 ── */
@@ -58,6 +74,11 @@
   --color-fit-good: #bef264;
   --color-fit-fair: #facc15;
   --color-fit-poor: #f87171;
+
+  /* ── 모서리: 각지게 두 가지만(theme.test.ts 가 다른 rounded-* 를 막는다) ──
+     rounded-box: 패널 · 단추 · 입력칸 · 카드,  rounded-chip: 칩 · 작은 칸 · 포지션 상자. 동그라미는 rounded-full */
+  --radius-box: 0.375rem;
+  --radius-chip: 0.25rem;
 
   /* ── 화면 폭 ──
      모바일 < 768px(md) ≤ 태블릿 < 1024px(lg) ≤ 데스크톱(PLAN.md §7 "화면 크기").
