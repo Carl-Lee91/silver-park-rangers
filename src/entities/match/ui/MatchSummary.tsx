@@ -6,12 +6,13 @@ type MatchInfo = Pick<Match, "date" | "startsAt" | "endsAt" | "quarterCount" | "
 
 /**
  * 매치 미리보기(풋볼매니저 경기 전 화면): 우리 팀 엠블럼 · 킥오프 · 상대, 아래 줄에 구장 · 시간 · 쿼터.
- * 날짜와 상대 이름은 화면 머리띠(제목 · 보조 줄)에 있다. 패널처럼 바탕 위에 뜬 상자다.
+ * 날짜와 상대 이름은 화면 머리띠(제목 · 보조 줄)에 있다. 패널처럼 바탕 위에 뜬 상자고,
+ * 패널 안에 넣을 때(framed=false)는 바깥 상자를 뺀다.
  */
-export default function MatchSummary({ match }: { match: MatchInfo }) {
+export default function MatchSummary({ match, framed = true }: { match: MatchInfo; framed?: boolean }) {
   const opponent = match.opponent ? match.opponent : matchTitle(match);
   return (
-    <div className="overflow-hidden rounded-box border border-border bg-bg-panel">
+    <div className={framed ? "overflow-hidden rounded-box border border-border bg-bg-panel" : ""}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 pt-5 pb-4">
         <span className="flex flex-col items-center gap-1.5">
           <Emblem className="h-12 w-11" />
