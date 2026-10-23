@@ -1,4 +1,4 @@
-import { toGoals, toQuarterScores, type Goal, type QuarterScore } from "./result";
+import { summarizeResult, toGoals, toQuarterScores, type Goal, type QuarterScore } from "./result";
 
 export type Outcome = "win" | "draw" | "loss";
 
@@ -55,3 +55,13 @@ export const groupResultsByMatch = (
       },
     ]),
   );
+
+/** 매치마다 쿼터 결과(우리 점수 = 골 수)를 붙인다. 기록을 못 읽은 매치는 결과가 없는 매치다 */
+export const withQuarterResults = <M extends { id: string; date: string; opponent: string | null; quarterCount: number }>(
+  matches: readonly M[],
+  results: Readonly<Record<string, { scores: QuarterScore[]; goals: Goal[] }>>,
+) =>
+  matches.map((match) => ({
+    ...match,
+    quarters: summarizeResult(match.quarterCount, results[match.id]?.scores ?? [], results[match.id]?.goals ?? []).quarters,
+  }));

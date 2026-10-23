@@ -14,6 +14,7 @@ export {
   recentResults,
   type MatchResultLine,
   type Outcome,
+  withQuarterResults,
 } from "./model/form";
 export { default as FormStrip } from "./ui/FormStrip";
 export { default as ResultChip } from "./ui/ResultChip";
