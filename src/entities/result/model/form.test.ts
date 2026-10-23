@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupResultsByMatch, outcomeOf, recentResults } from "./form";
+import { groupResultsByMatch, outcomeOf, recentResults, withQuarterResults } from "./form";
 
 const match = (id: string, date: string, quarters: { ours: number; theirs: number }[], opponent: string | null = `상대${id}`) => ({
   id,
@@ -54,5 +54,30 @@ describe("여러 매치의 점수 · 골 기록 나누기", () => {
     expect(grouped.m1.goals.map((goal) => goal.id)).toEqual(["g1", "g2"]);
     expect(grouped.m2).toEqual({ scores: [{ number: 2, theirScore: 3 }], goals: [] });
     expect(grouped.m3).toEqual({ scores: [], goals: [] });
+  });
+});
+
+describe("매치마다 쿼터 결과 붙이기", () => {
+  it("쿼터 점수와 골 기록으로 매치의 쿼터 결과를 만든다 — 우리 점수는 골 수", () => {
+    const [match] = withQuarterResults(
+      [{ id: "m1", date: "2026-10-25", opponent: "FC 한강", quarterCount: 6 }],
+      {
+        m1: {
+          scores: [{ number: 1, theirScore: 1 }],
+          goals: [
+            { id: "g1", quarter: 1, scorerId: "p1", scorerName: "김민준", assistId: null, assistName: null },
+            { id: "g2", quarter: 2, scorerId: null, scorerName: null, assistId: null, assistName: null },
+          ],
+        },
+      },
+    );
+    expect(match.quarters.map(({ ours, theirs }) => ({ ours, theirs }))).toEqual([
+      { ours: 1, theirs: 1 },
+      { ours: 1, theirs: 0 },
+    ]);
+  });
+
+  it("기록을 못 읽은 매치는 결과가 없는 매치다", () => {
+    expect(withQuarterResults([{ id: "m2", date: "2026-10-25", opponent: null, quarterCount: 6 }], {})[0].quarters).toEqual([]);
   });
 });
