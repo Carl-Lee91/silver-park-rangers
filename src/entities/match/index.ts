@@ -2,10 +2,12 @@ export { matchTitle, toMatch, type Match } from "./model/match";
 export {
   deadlineFromLocalInput,
   deadlineToLocalInput,
+  daysUntil,
   formatDeadline,
   formatMatchDate,
   isVotingOpen,
   kickoff,
+  matchDateParts,
   seoulToday,
   votingClosesAt,
 } from "./model/matchTime";
