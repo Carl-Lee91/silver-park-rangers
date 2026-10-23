@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import BackLink from "./BackLink";
 import Emblem from "./Emblem";
 
-const WIDTHS = { narrow: "max-w-narrow", page: "max-w-page", wide: "max-w-wide" } as const;
+/** 화면 폭(globals.css 의 컨테이너 토큰): 폼 하나 · 팀원 화면 · 관리 화면 */
+export const SCREEN_WIDTHS = { narrow: "max-w-narrow", page: "max-w-page", wide: "max-w-wide" } as const;
+export type ScreenWidth = keyof typeof SCREEN_WIDTHS;
 
 type Props = {
   /** 화면 제목(h1) */
@@ -14,7 +16,7 @@ type Props = {
   /** 오른쪽: 상태 칩 · 주요 단추 */
   actions?: ReactNode;
   /** 띠 안 내용 폭. 아래 본문 폭에 맞춘다 */
-  width?: keyof typeof WIDTHS;
+  width?: ScreenWidth;
 };
 
 /**
@@ -24,7 +26,7 @@ type Props = {
 export default function TitleBar({ title, overline, back, actions, width = "page" }: Props) {
   return (
     <header className="bg-kit text-kit-label">
-      <div className={`mx-auto flex min-h-14 w-full ${WIDTHS[width]} items-center gap-3 px-4 md:min-h-16 md:px-6 lg:px-8`}>
+      <div className={`mx-auto flex min-h-14 w-full ${SCREEN_WIDTHS[width]} items-center gap-3 px-4 md:min-h-16 md:px-6 lg:px-8`}>
         {back ? (
           <div className="shrink-0">
             <BackLink href={back.href} label={back.label} tone="band" />
