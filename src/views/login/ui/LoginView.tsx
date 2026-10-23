@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { passwordLogin, PasswordLoginForm } from "@/features/password-login";
 import { ROUTES } from "@/shared/config";
+import { Emblem, Panel, Screen } from "@/shared/ui";
 
 export default function LoginView() {
   return (
-    <main className="mx-auto flex w-full max-w-narrow flex-1 flex-col justify-center gap-10 px-4 py-12">
-      <header>
-        <p className="text-sm font-medium text-primary">우리 팀 전용</p>
-        <h1 className="mt-1 text-2xl font-bold">Silver Park Rangers</h1>
-        <p className="mt-2 text-sm text-text-secondary">참석 투표부터 쿼터별 스쿼드까지 한곳에서.</p>
-      </header>
+    <Screen title="로그인" overline="Silver Park Rangers" width="narrow" className="md:pt-10">
+      <div className="flex flex-col items-center gap-2 py-4 text-center">
+        <Emblem label="Silver Park Rangers" className="h-20 w-18" />
+        <p className="mt-2 text-xs font-bold tracking-wider text-primary">우리 팀 전용</p>
+        <p className="text-xl font-extrabold">Silver Park Rangers</p>
+        <p className="text-sm text-text-secondary">참석 투표부터 쿼터별 스쿼드까지 한곳에서.</p>
+      </div>
 
-      <PasswordLoginForm action={passwordLogin} />
+      <Panel title="로그인">
+        <PasswordLoginForm action={passwordLogin} />
+      </Panel>
 
       <div className="flex flex-col gap-3">
         <Link
           href={ROUTES.signup}
-          className="flex h-12 items-center justify-center rounded-box border border-border text-base font-semibold"
+          className="flex h-12 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-base font-semibold"
         >
           처음이면 가입 신청
         </Link>
@@ -24,6 +28,6 @@ export default function LoginView() {
           관리자가 승인한 사람만 쓸 수 있어요. 비밀번호를 잊었으면 관리자에게 임시 비밀번호를 받아 주세요.
         </p>
       </div>
-    </main>
+    </Screen>
   );
 }

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { MatchSummary, quarterSchedule } from "@/entities/match";
+import { formatMatchDate, matchTitle, MatchSummary, quarterSchedule } from "@/entities/match";
 import type { SharedSquad } from "@/entities/squad";
 import { ShareActions } from "@/features/squad-share";
 import { matchPath } from "@/shared/config";
+import { Panel, Screen } from "@/shared/ui";
 import { QuarterBoard } from "@/widgets/quarter-board";
 import { squadImagePath } from "@/widgets/squad-image";
 
@@ -14,21 +15,27 @@ type Props = { token: string; squad: SharedSquad; shareUrl: string; title: strin
  */
 export default function SharedSquadView({ token, squad, shareUrl, title, version }: Props) {
   return (
-    <main className="mx-auto flex w-full max-w-page flex-1 flex-col gap-6 px-4 md:px-6 lg:px-8 py-8">
-      <p className="text-sm font-medium text-primary">Silver Park Rangers</p>
+    <Screen title={matchTitle(squad.match)} overline={`${formatMatchDate(squad.match.date)} · Silver Park Rangers`}>
       <MatchSummary match={squad.match} />
-      <QuarterBoard quarters={squad.quarters} schedule={quarterSchedule(squad.match)} />
-      <ShareActions
-        shareUrl={shareUrl}
-        title={title}
-        imageUrls={{
-          quarters: squadImagePath(token, "quarters", version),
-          rotation: squadImagePath(token, "rotation", version),
-        }}
-      />
-      <Link href={matchPath(squad.matchId)} className="text-sm text-text-secondary underline underline-offset-4">
+      <Panel title="스쿼드" aside={`${squad.match.quarterCount}쿼터`}>
+        <div className="flex flex-col gap-5">
+          <QuarterBoard quarters={squad.quarters} schedule={quarterSchedule(squad.match)} />
+          <ShareActions
+            shareUrl={shareUrl}
+            title={title}
+            imageUrls={{
+              quarters: squadImagePath(token, "quarters", version),
+              rotation: squadImagePath(token, "rotation", version),
+            }}
+          />
+        </div>
+      </Panel>
+      <Link
+        href={matchPath(squad.matchId)}
+        className="flex h-12 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-sm font-semibold"
+      >
         팀원이면 로그인하고 참석 투표하기
       </Link>
-    </main>
+    </Screen>
   );
 }
