@@ -94,16 +94,19 @@
 - [ ] Import 화면의 **Environment Variables** 에 아래 5개를 넣는다(나중에는 Settings › Environment Variables).
   적용 범위는 **Production · Preview** 둘 다 체크한다.
 
-  | 이름 | 값 | 어디서 |
-  | --- | --- | --- |
-  | `NEXT_PUBLIC_SUPABASE_URL` | `https://dtpkyyethevbigjmiclk.supabase.co` | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 Project URL) |
-  | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ…` 로 시작하는 긴 값 | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 anon) |
-  | `SITE_URL` | `https://<Project Name>.vercel.app` | 🔴 `.env.local` 의 `localhost` 를 그대로 넣지 않는다. 끝에 `/` 는 없어도 된다 |
-  | `CRON_SECRET` | 아무 긴 문자열 | 터미널에서 `openssl rand -hex 32` 로 만든다. 여기에만 넣고 어디에도 적지 않는다 |
-  | `ENABLE_EXPERIMENTAL_COREPACK` | `1` | 이 저장소는 pnpm 11 을 쓴다(`packageManager`). 이걸 켜야 Vercel 도 같은 버전으로 설치한다 |
+  | 이름 | 종류 | 값 | 어디서 |
+  | --- | --- | --- | --- |
+  | `NEXT_PUBLIC_SUPABASE_URL` | Config | `https://dtpkyyethevbigjmiclk.supabase.co` | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 Project URL) |
+  | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Config | `eyJ…` 로 시작하는 긴 값 | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 anon) |
+  | `SITE_URL` | Config | `https://<Project Name>.vercel.app` | 🔴 `.env.local` 의 `localhost` 를 그대로 넣지 않는다. 끝에 `/` 는 없어도 된다 |
+  | `CRON_SECRET` | **Secret** | 아무 긴 문자열 | 터미널에서 `openssl rand -hex 32` 로 만든다. 여기에만 넣고 어디에도 적지 않는다 |
+  | `ENABLE_EXPERIMENTAL_COREPACK` | Config | `1` | 이 저장소는 pnpm 11 을 쓴다(`packageManager`). 이걸 켜야 Vercel 도 같은 버전으로 설치한다 |
 
   - `.env.local` 내용을 키 칸에 통째로 붙여 넣으면 한 번에 들어간다. 붙인 뒤 `SITE_URL` 만 고친다.
   - anon key 는 원래 브라우저에 공개되는 값이다(접근 통제는 RLS 가 한다). 그래도 저장소에는 넣지 않는다.
+  - **종류**: Vercel 은 변수마다 Config(저장 뒤에도 보임) · Secret(저장 뒤 못 봄)을 고른다. `NEXT_PUBLIC_` 변수를 Secret 으로 두면
+    "Remove the public framework prefix … change the variable to Config" 경고가 뜬다 — 접두사를 지우지 말고 **Config** 로 바꾼다.
+    🔴 접두사를 지우면 브라우저(가입 대기 실시간 갱신 등)에서 Supabase 주소 · 키를 못 읽어 앱이 깨진다. 진짜 비밀인 `CRON_SECRET` 만 Secret 이다.
   - 🔴 `NEXT_PUBLIC_` 값은 빌드할 때 박힌다. 값을 바꾸면 Deployments › 최신 배포 › **Redeploy** 를 눌러야 반영된다.
 - [ ] Deploy 를 누른다. 끝나면 실제 주소가 `SITE_URL` 과 같은지 본다. 다르면 고치고 Redeploy 한다.
 - [ ] Settings › General › **Production Branch** 가 `main` 인지 본다(기본값).
