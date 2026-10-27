@@ -73,6 +73,14 @@ describe("자동 배치·점검에 넘길 선수", () => {
     const placed: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: "b" }] }];
     expect(squadPlayersFor(pool, placed).map((player) => player.id)).toEqual(["a", "b"]);
   });
+
+  it("선수 전력(능력치)을 실어 넘긴다. 없는 사람은 null 이다 — 자동 배치 스타일이 평균으로 본다", () => {
+    const placed: Builder = [{ formationName: "x", slots: [{ position: "MF", x: 50, y: 50, memberId: "b" }] }];
+    expect(squadPlayersFor(pool, placed, { a: 7.5 }).map((player) => [player.id, player.strength])).toEqual([
+      ["a", 7.5],
+      ["b", null],
+    ]);
+  });
 });
 
 describe("배치 문제", () => {
