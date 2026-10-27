@@ -774,6 +774,56 @@ select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::tex
   '공유 링크에는 능력치가 없다');
 reset role;
 
+-- ── 풋살 팀 나누기 (20261027010000) ───────────────────────────────────
+select verify.ok((select format from public.matches where id = '10000000-0000-0000-0000-000000000011') = 'football',
+  '매치 종류는 기본이 축구다');
+insert into public.matches (id, match_date, format) values ('10000000-0000-0000-0000-000000000031', current_date + 10, 'futsal5');
+select verify.fails($$update public.matches set team_count = 4 where id = '10000000-0000-0000-0000-000000000031'$$, '풋살 팀은 2 · 3팀뿐이다');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 3, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000001', 'team_number', 1),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000002', 'team_number', 2),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000005', 'team_number', 3)));
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 3, '관리자는 팀을 저장한다');
+select verify.ok((select team_count from public.matches where id = '10000000-0000-0000-0000-000000000031') = 3, '팀 수도 같이 저장한다');
+select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000001', 'team_number', 1),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000002', 'team_number', 2)));
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2,
+  '다시 저장하면 명단을 통째로 바꾼다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000005', 'team_number', 3)))$$, '팀 수보다 큰 팀 번호는 저장하지 않는다');
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2,
+  '저장에 실패하면 전의 팀이 그대로 남는다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000011', 2, '[]'::jsonb)$$,
+  '축구 매치에는 풋살 팀을 저장하지 않는다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.futsal_team_members) = 0, '공개 전에는 팀원이 팀을 못 본다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, '[]'::jsonb)$$, '일반 멤버는 팀을 저장하지 못한다');
+reset role;
+
+set role anon;
+select verify.ok(public.shared_teams((select share_token from public.matches where id = '10000000-0000-0000-0000-000000000031')) is null,
+  '공개 전에는 공유 링크로 팀을 못 본다');
+reset role;
+
+update public.matches set squad_published_at = now() where id = '10000000-0000-0000-0000-000000000031';
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2, '공개하면 팀원이 팀을 본다');
+reset role;
+
+set role anon;
+select set_config('verify.futsal', public.shared_teams((select share_token from public.matches where id = '10000000-0000-0000-0000-000000000031'))::text, false);
+select verify.ok((current_setting('verify.futsal')::jsonb ->> 'format') = 'futsal5', '공유 링크는 풋살 종류를 준다');
+select verify.ok(jsonb_array_length(current_setting('verify.futsal')::jsonb -> 'members') = 2, '공유 링크는 팀 명단을 준다');
+select verify.ok(current_setting('verify.futsal') not like '%member_id%' and current_setting('verify.futsal') not like '%guest%',
+  '공유 링크에는 멤버 id · 용병 구분이 없다');
+reset role;
+
 delete from auth.users where id = '00000000-0000-0000-0000-000000000009';
 select verify.ok(not exists (select 1 from public.members where id = '00000000-0000-0000-0000-000000000009'),
   '계정을 지우면 멤버 행도 지운다');
