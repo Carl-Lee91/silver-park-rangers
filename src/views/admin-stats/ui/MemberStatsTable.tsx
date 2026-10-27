@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { Position } from "@/entities/position";
 import { rateScale, type MemberStats, type RateScale } from "@/entities/stats";
+import { adminMemberPath } from "@/shared/config";
 
 type Direction = "descending" | "ascending";
 
@@ -143,8 +145,10 @@ export default function MemberStatsTable({ stats }: { stats: readonly MemberStat
         <tbody>
           {sorted.map((row) => (
             <tr key={row.memberId} className="border-b border-border last:border-b-0 odd:bg-bg-panel even:bg-bg-row">
-              <th scope="row" className="sticky left-0 z-10 bg-inherit px-3 py-2.5 text-left font-bold md:px-4">
-                {row.realName}
+              <th scope="row" className="sticky left-0 z-10 bg-inherit px-3 py-1 text-left font-bold md:px-4">
+                <Link href={adminMemberPath(row.memberId)} className="inline-flex h-11 items-center underline-offset-4 hover:underline">
+                  {row.realName}
+                </Link>
               </th>
               {COLUMNS.map((item) => (
                 <td key={item.key} className="px-3 py-2.5 text-right">
