@@ -1,7 +1,9 @@
-import { deadlineFromLocalInput, deadlineToLocalInput, kickoff, type Match } from "@/entities/match";
+import { deadlineFromLocalInput, deadlineToLocalInput, kickoff, MATCH_FORMATS, type Match, type MatchFormat } from "@/entities/match";
 
 /** 폼 입력칸 그대로의 값(모두 문자열) */
 export type MatchFormValues = {
+  /** 축구 · 풋살 5:5 · 풋살 6:6 (PLAN.md §6 "풋살") */
+  format: string;
   date: string;
   startsAt: string;
   endsAt: string;
@@ -20,6 +22,7 @@ export type MatchFormState = {
 };
 
 export type NewMatch = {
+  format: MatchFormat;
   date: string;
   startsAt: string;
   endsAt: string;
@@ -31,6 +34,7 @@ export type NewMatch = {
 
 /** 보통 10:00~13:00 에 6쿼터를 한다(PLAN.md §6). */
 export const DEFAULT_MATCH_FORM: MatchFormValues = {
+  format: "football",
   date: "",
   startsAt: "10:00",
   endsAt: "13:00",
@@ -39,6 +43,11 @@ export const DEFAULT_MATCH_FORM: MatchFormValues = {
   opponent: "",
   voteDeadline: "",
 };
+
+/** 풋살은 쿼터가 없다. DB 의 쿼터 수 칸에는 기본값을 둔다(쓰지 않는다) */
+const FUTSAL_QUARTER_COUNT = 6;
+
+const isFormat = (value: string): value is MatchFormat => (MATCH_FORMATS as readonly string[]).includes(value);
 
 /** 한 쿼터가 이보다 짧으면 입력 실수로 본다. */
 const MIN_QUARTER_MINUTES = 10;
@@ -60,6 +69,8 @@ export const validateMatch = (
   const venue = input.venue.trim();
   const opponent = input.opponent.trim();
 
+  if (!isFormat(input.format)) errors.format = "종류를 골라 주세요.";
+  const futsal = isFormat(input.format) && input.format !== "football";
   if (!DATE.test(input.date)) errors.date = "날짜를 골라 주세요.";
   if (!TIME.test(input.startsAt)) errors.startsAt = "시작 시간을 골라 주세요.";
   if (!TIME.test(input.endsAt)) errors.endsAt = "끝 시간을 골라 주세요.";
@@ -68,8 +79,10 @@ export const validateMatch = (
   const length = timesValid ? minutes(input.endsAt) - minutes(input.startsAt) : 0;
   if (timesValid && length <= 0) errors.endsAt = "끝 시간은 시작 시간보다 늦어야 해요.";
 
-  const quarterCount = Number(input.quarterCount);
-  if (!/^\d+$/.test(input.quarterCount) || quarterCount < 1 || quarterCount > 12) {
+  const quarterCount = futsal ? FUTSAL_QUARTER_COUNT : Number(input.quarterCount);
+  if (futsal) {
+    // 풋살은 쿼터가 없다
+  } else if (!/^\d+$/.test(input.quarterCount) || quarterCount < 1 || quarterCount > 12) {
     errors.quarterCount = "쿼터 수는 1~12 사이로 골라 주세요.";
   } else if (length > 0 && length / quarterCount < MIN_QUARTER_MINUTES) {
     errors.quarterCount = "쿼터가 너무 짧아요. 쿼터 수를 줄이거나 시간을 늘려 주세요.";
@@ -95,6 +108,7 @@ export const validateMatch = (
   return {
     ok: true,
     value: {
+      format: input.format as MatchFormat,
       date: input.date,
       startsAt: input.startsAt,
       endsAt: input.endsAt,
@@ -106,13 +120,14 @@ export const validateMatch = (
   };
 };
 
-const FIELDS: MatchField[] = ["date", "startsAt", "endsAt", "quarterCount", "venue", "opponent", "voteDeadline"];
+const FIELDS: MatchField[] = ["format", "date", "startsAt", "endsAt", "quarterCount", "venue", "opponent", "voteDeadline"];
 
 export const readMatchForm = (formData: FormData): MatchFormValues =>
   Object.fromEntries(FIELDS.map((field) => [field, String(formData.get(field) ?? "")])) as MatchFormValues;
 
 /** 고치기 화면은 저장된 매치로 시작한다. */
 export const matchToFormValues = (match: Match): MatchFormValues => ({
+  format: match.format,
   date: match.date,
   startsAt: match.startsAt,
   endsAt: match.endsAt,

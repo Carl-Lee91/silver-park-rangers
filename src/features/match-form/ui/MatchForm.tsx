@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { quarterSchedule } from "@/entities/match";
+import { FORMAT_LABELS, MATCH_FORMATS, quarterSchedule } from "@/entities/match";
 import { fieldClass, Select, SubmitButton } from "@/shared/ui";
 import { DEFAULT_MATCH_FORM, type MatchField, type MatchFormState, type MatchFormValues } from "../model/matchSchema";
 
@@ -38,6 +38,23 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
       {matchId && <input type="hidden" name="matchId" value={matchId} />}
 
       <div>
+        <label htmlFor="format" className="text-sm font-semibold">
+          종류
+        </label>
+        <Select id="format" name="format" value={values.format} onChange={set("format")} className="mt-2">
+          {MATCH_FORMATS.map((format) => (
+            <option key={format} value={format}>
+              {FORMAT_LABELS[format]}
+            </option>
+          ))}
+        </Select>
+        {values.format !== "football" && (
+          <p className="mt-2 text-xs text-text-tertiary">풋살은 쿼터 대신 참석한 사람을 2 · 3팀으로 나눠요(하루 동안 고정).</p>
+        )}
+        {error("format")}
+      </div>
+
+      <div>
         <label htmlFor="date" className="text-sm font-semibold">
           날짜
         </label>
@@ -62,27 +79,29 @@ export default function MatchForm({ action, submitLabel, initial = DEFAULT_MATCH
         </div>
       </div>
 
-      <div>
-        <label htmlFor="quarterCount" className="text-sm font-semibold">
-          쿼터 수
-        </label>
-        <Select
-          id="quarterCount"
-          name="quarterCount"
-          value={values.quarterCount}
-          onChange={set("quarterCount")}
-          className="mt-2"
-        >
-          {QUARTER_COUNTS.map((count) => (
-            <option key={count} value={count}>
-              {count}쿼터
-            </option>
-          ))}
-        </Select>
-        <p className="mt-2 text-xs text-text-tertiary">쿼터 시작</p>
-        <p className="text-sm text-text-secondary">{preview ?? "시간을 확인해 주세요."}</p>
-        {error("quarterCount")}
-      </div>
+      {values.format === "football" && (
+        <div>
+          <label htmlFor="quarterCount" className="text-sm font-semibold">
+            쿼터 수
+          </label>
+          <Select
+            id="quarterCount"
+            name="quarterCount"
+            value={values.quarterCount}
+            onChange={set("quarterCount")}
+            className="mt-2"
+          >
+            {QUARTER_COUNTS.map((count) => (
+              <option key={count} value={count}>
+                {count}쿼터
+              </option>
+            ))}
+          </Select>
+          <p className="mt-2 text-xs text-text-tertiary">쿼터 시작</p>
+          <p className="text-sm text-text-secondary">{preview ?? "시간을 확인해 주세요."}</p>
+          {error("quarterCount")}
+        </div>
+      )}
 
       <div>
         <label htmlFor="venue" className="text-sm font-semibold">

@@ -9,6 +9,7 @@ import { readMatchForm, validateMatch, type MatchFormState, type NewMatch } from
 
 /** 권한 검사는 RLS 가 한다(매치 쓰기는 관리자 이상). */
 const toRow = (match: NewMatch) => ({
+  format: match.format,
   match_date: match.date,
   starts_at: match.startsAt,
   ends_at: match.endsAt,
