@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { matchTitle, type Match } from "../model/match";
+import { matchShape, matchTitle, type Match } from "../model/match";
 import { formatMatchDate, matchDateParts } from "../model/matchTime";
 
 /**
@@ -24,7 +24,7 @@ export default function MatchCard({ match, href, aside }: { match: Match; href: 
         <span className="sr-only">{formatMatchDate(match.date)}</span>
         <span className="block truncate font-bold">{matchTitle(match)}</span>
         <span className="mt-0.5 block truncate text-sm text-text-secondary">
-          {match.startsAt}~{match.endsAt} · {match.quarterCount}쿼터{match.venue && ` · ${match.venue}`}
+          {match.startsAt}~{match.endsAt} · {matchShape(match)}{match.venue && ` · ${match.venue}`}
         </span>
       </span>
       {aside}

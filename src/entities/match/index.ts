@@ -1,4 +1,15 @@
-export { matchTitle, opponentInitial, toMatch, type Match } from "./model/match";
+export {
+  FORMAT_LABELS,
+  isFutsal,
+  MATCH_FORMATS,
+  matchShape,
+  matchTitle,
+  opponentInitial,
+  playersPerSide,
+  toMatch,
+  type Match,
+  type MatchFormat,
+} from "./model/match";
 export {
   deadlineFromLocalInput,
   deadlineToLocalInput,
