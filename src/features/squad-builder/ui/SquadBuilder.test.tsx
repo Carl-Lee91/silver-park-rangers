@@ -271,3 +271,34 @@ describe("스쿼드 빌더", () => {
     });
   });
 });
+
+describe("자동 배치 스타일 (PLAN.md §6)", () => {
+  // 필드 자리가 하나(FW)뿐인 2쿼터: 필드 선수 둘이 한 쿼터씩 뛴다. 누가 언제 뛰는지만 스타일이 정한다
+  const ONE: Formation = { id: "one", name: "하나", isPreset: true, slots: [{ position: "GK", x: 50, y: 92 }, { position: "FW", x: 50, y: 20 }] };
+  const players = [player("k", "김키퍼", ["GK"]), player("s", "강공격", ["FW"]), player("w", "약공격", ["FW"])];
+
+  it.each([
+    ["초반 집중", "1쿼터"],
+    ["후반 집중", "2쿼터"],
+  ])("%s 를 고르고 자동 배치하면 잘하는 사람이 %s 에 뛴다", async (style, strongQuarter) => {
+    const user = userEvent.setup();
+    render(
+      <SquadBuilder
+        matchId="m1"
+        schedule={schedule}
+        pool={players}
+        formations={[ONE]}
+        initial={initialBuilder(2, [], ONE)}
+        published={false}
+        saveAction={noop}
+        publishAction={noop}
+        strengths={{ s: 9, w: 3 }}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: style }));
+    await user.click(screen.getByRole("button", { name: "이 스타일로" }));
+    await user.click(screen.getByRole("button", { name: "자동 배치" }));
+    await user.click(screen.getByRole("tab", { name: new RegExp(`^${strongQuarter}`) }));
+    expect(within(pitch()).getByText("강공격")).toBeInTheDocument();
+  });
+});
