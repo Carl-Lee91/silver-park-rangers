@@ -75,5 +75,24 @@ describe("매치 폼", () => {
     expect(document.querySelector('label[for="opponent"]')).toHaveTextContent("상대 팀 (선택)");
     expect(screen.getByLabelText(/^상대 팀/)).toHaveAttribute("placeholder", "예: FC 서울");
   });
-});
 
+  it("종류(축구 · 풋살 5:5 · 풋살 6:6)를 고르고, 풋살이면 쿼터 수 칸이 없다", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn<Action>(noop);
+    render(<MatchForm action={action} submitLabel="만들기" />);
+    expect(screen.getByLabelText("종류")).toHaveValue("football");
+    expect(screen.getAllByRole("option").filter((option) => option.closest("select")?.id === "format").map((option) => option.textContent)).toEqual([
+      "축구",
+      "풋살 5:5",
+      "풋살 6:6",
+    ]);
+
+    await user.selectOptions(screen.getByLabelText("종류"), "futsal6");
+    expect(screen.queryByLabelText("쿼터 수")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("날짜"), { target: { value: "2026-10-25" } });
+    await user.click(screen.getByRole("button", { name: "만들기" }));
+    await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    expect(action.mock.calls[0][1].get("format")).toBe("futsal6");
+  });
+});

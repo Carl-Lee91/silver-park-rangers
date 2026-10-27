@@ -14,6 +14,8 @@ const previous: Match = {
   voteDeadline: "2026-10-24T13:00:00+00:00",
   squadPublishedAt: null,
   shareToken: "t",
+  format: "football",
+  teamCount: 2,
 };
 
 describe("새 매치 미리 채우기 — 매주 같은 요일·시간·장소에서 하니까", () => {
@@ -23,6 +25,7 @@ describe("새 매치 미리 채우기 — 매주 같은 요일·시간·장소�
 
   it("가장 늦은 매치의 다음 주 같은 요일로, 시간·쿼터 수·장소는 그대로 불러온다", () => {
     expect(suggestNewMatch(previous, "2026-10-22")).toEqual({
+      format: "football",
       date: "2026-11-01",
       startsAt: "09:00",
       endsAt: "11:00",
@@ -45,6 +48,10 @@ describe("새 매치 미리 채우기 — 매주 같은 요일·시간·장소�
 
   it("오늘이 바로 그 요일이면 오늘로 둔다", () => {
     expect(suggestNewMatch({ ...previous, date: "2026-10-18" }, "2026-10-25").date).toBe("2026-10-25");
+  });
+
+  it("종류(축구 · 풋살)도 그대로 불러온다", () => {
+    expect(suggestNewMatch({ ...previous, format: "futsal6" }, "2026-10-22").format).toBe("futsal6");
   });
 
   it("장소가 없던 매치면 장소도 비운다", () => {

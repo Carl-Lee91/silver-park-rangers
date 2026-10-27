@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { matchToFormValues, readMatchForm, validateMatch, type MatchFormValues } from "./matchSchema";
 
 const valid: MatchFormValues = {
+  format: "football",
   date: "2026-10-25",
   startsAt: "10:00",
   endsAt: "13:00",
@@ -16,6 +17,7 @@ describe("매치 입력 검증", () => {
     expect(validateMatch(valid)).toEqual({
       ok: true,
       value: {
+        format: "football",
         date: "2026-10-25",
         startsAt: "10:00",
         endsAt: "13:00",
@@ -25,6 +27,15 @@ describe("매치 입력 검증", () => {
         voteDeadline: "2026-10-24T22:00:00+09:00",
       },
     });
+  });
+
+  it("종류는 축구 · 풋살 5:5 · 풋살 6:6 중 하나다", () => {
+    expect(validateMatch({ ...valid, format: "basketball" })).toEqual({ ok: false, errors: { format: "종류를 골라 주세요." } });
+  });
+
+  it("풋살은 쿼터가 없어 쿼터 수를 보지 않는다", () => {
+    const result = validateMatch({ ...valid, format: "futsal5", quarterCount: "0" });
+    expect(result.ok && result.value).toMatchObject({ format: "futsal5", quarterCount: 6 });
   });
 
   it("장소·상대·마감은 비워도 된다", () => {
@@ -89,6 +100,8 @@ describe("폼 ↔ 매치", () => {
         voteDeadline: "2026-10-24T13:00:00+00:00",
         squadPublishedAt: null,
         shareToken: "t",
+        format: "football",
+        teamCount: 2,
       }),
     ).toEqual({ ...valid, venue: "" });
   });
