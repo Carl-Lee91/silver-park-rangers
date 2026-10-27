@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { MatchFormat } from "@/entities/match";
 
+type FutsalFormat = Exclude<MatchFormat, "football">;
+
 /** 팀원 · 공유 링크에 보이는 사람: 이름 · 등번호만(능력치 · 용병 구분 없음) */
 export type TeamMember = { name: string; jerseyNumber: number | null };
 
@@ -31,9 +33,10 @@ export const toTeamLists = (rows: unknown, teamCount: number): TeamMember[][] =>
 };
 
 const time = z.string().transform((value) => value.slice(0, 5));
-/** 매치 종류. 엔티티끼리는 값을 가져오지 않아 여기 적고, 타입으로 매치 종류와 같은지 확인한다 */
-const FORMATS = ["football", "futsal5", "futsal6"] as const satisfies readonly MatchFormat[];
+/** 풋살 종류(공유 링크는 풋살 매치만 준다). 엔티티끼리는 값을 가져오지 않아 여기 적고, 타입으로 매치 종류와 같은지 확인한다 */
+const FORMATS = ["futsal5", "futsal6"] as const satisfies readonly FutsalFormat[];
 const sharedSchema = z.object({
+  match_id: z.string(),
   match_date: z.string(),
   starts_at: time,
   ends_at: time,
@@ -45,7 +48,9 @@ const sharedSchema = z.object({
 });
 
 export type SharedTeams = {
-  match: { date: string; startsAt: string; endsAt: string; venue: string | null; opponent: string | null; format: MatchFormat };
+  /** 팀원이 로그인해서 투표하러 갈 매치 */
+  matchId: string;
+  match: { date: string; startsAt: string; endsAt: string; venue: string | null; opponent: string | null; format: FutsalFormat };
   teams: TeamMember[][];
 };
 
@@ -60,6 +65,7 @@ export const toSharedTeams = (json: unknown): SharedTeams | null => {
     }
   }
   return {
+    matchId: parsed.match_id,
     match: {
       date: parsed.match_date,
       startsAt: parsed.starts_at,

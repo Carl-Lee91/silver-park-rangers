@@ -70,6 +70,7 @@ revoke execute on function public.save_futsal_teams(uuid, integer, jsonb) from p
 grant execute on function public.save_futsal_teams(uuid, integer, jsonb) to authenticated;
 
 -- 공유 링크(/s/[token]): 공개된 풋살 매치의 팀 명단. 이름 · 등번호만 준다(멤버 id · 용병 구분 · 능력치 없음).
+-- 매치 id 는 "로그인하고 참석 투표하기" 링크에 쓴다.
 create function public.shared_teams(token uuid)
 returns jsonb
 language sql
@@ -78,6 +79,7 @@ security definer
 set search_path = ''
 as $$
   select jsonb_build_object(
+    'match_id', m.id,
     'match_date', m.match_date,
     'starts_at', m.starts_at,
     'ends_at', m.ends_at,
