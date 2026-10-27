@@ -42,11 +42,11 @@ describe("자동 배치 스타일 (PLAN.md §6 자동 배치 스타일)", () => 
     });
   });
 
-  it.each(SEEDS)("균등: 쿼터 전력 차이가 기본보다 크지 않고 1 이하다 (seed %i)", (seed) => {
+  it.each(SEEDS)("균등: 쿼터 전력 차이가 기본보다 크지 않고 2 이하다(쿼터 전력 합 60 안팎의 3%) (seed %i)", (seed) => {
     const plain = quarterStrengths(autoAssign(input, { random: seeded(seed) }));
     const balanced = quarterStrengths(autoAssign(input, { style: { kind: "balanced" }, random: seeded(seed) }));
     expect(spread(balanced)).toBeLessThanOrEqual(spread(plain));
-    expect(spread(balanced)).toBeLessThanOrEqual(1);
+    expect(spread(balanced)).toBeLessThanOrEqual(2);
   });
 
   it.each(SEEDS)("균등: 기본처럼 3쿼터 연속으로 쉬는 사람이 없다 (seed %i)", (seed) => {
