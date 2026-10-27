@@ -94,7 +94,7 @@ describe("풋살 팀 나누기 화면 (PLAN.md §6 풋살)", () => {
         { member_id: "p3", team_number: 1 },
       ]),
     );
-    expect(await screen.findByRole("status", { name: "" })).toBeTruthy();
+    expect(await screen.findByText("팀을 저장했어요.")).toBeInTheDocument();
   });
 
   it("저장하기 전에는 공개할 수 없다", async () => {
