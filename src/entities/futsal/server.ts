@@ -14,7 +14,7 @@ export const fetchTeamLists = async (matchId: string, teamCount: number): Promis
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("futsal_team_members")
-    .select("team_number, members(real_name, jersey_number)")
+    .select("member_id, team_number, members(real_name, jersey_number)")
     .eq("match_id", matchId);
   if (error) throw new Error(`풋살 팀을 읽지 못했습니다 — ${error.message}`);
   return toTeamLists(data, teamCount);

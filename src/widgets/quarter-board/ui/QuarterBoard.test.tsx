@@ -72,6 +72,14 @@ describe("쿼터 보드", () => {
     expect(within(pitch).getByText("FW")).toBeInTheDocument();
   });
 
+  it("출전표 이름 앞에 ! 단추를 둔다(팀원 화면). 공유 링크처럼 안 넘기면 없다", async () => {
+    const user = userEvent.setup();
+    render(<QuarterBoard quarters={quarters} schedule={schedule} tips={{ k: <button type="button">김키퍼 정보</button> }} />);
+    await user.click(screen.getByRole("tab", { name: "출전표" }));
+    expect(within(screen.getByRole("row", { name: /김키퍼/ })).getAllByRole("cell")[0]).toHaveTextContent("김키퍼 정보1 김키퍼");
+    expect(within(screen.getByRole("row", { name: /나공격/ })).queryByRole("button")).not.toBeInTheDocument();
+  });
+
   it("출전표 이름 앞에 등번호를 붙인다", async () => {
     const user = userEvent.setup();
     render(<QuarterBoard quarters={quarters} schedule={schedule} />);

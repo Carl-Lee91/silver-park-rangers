@@ -8,7 +8,7 @@ import {
 } from "./attendance";
 
 describe("DB 행 → 참석", () => {
-  it("이름과 시각을 함께 읽고 초를 뗀다", () => {
+  it("이름 · 등번호와 시각을 함께 읽고 초를 뗀다", () => {
     expect(
       toAttendance({
         member_id: "m1",
@@ -16,9 +16,9 @@ describe("DB 행 → 참석", () => {
         arrive_at: "11:00:00",
         leave_at: null,
         attended: null,
-        members: { real_name: "김민수" },
+        members: { real_name: "김민수", jersey_number: 7 },
       }),
-    ).toEqual({ memberId: "m1", realName: "김민수", response: "yes", arriveAt: "11:00", leaveAt: null, attended: null });
+    ).toEqual({ memberId: "m1", realName: "김민수", jerseyNumber: 7, response: "yes", arriveAt: "11:00", leaveAt: null, attended: null });
   });
 
   it("볼 수 없는 멤버(휴면 등)는 이름이 null 이다", () => {
@@ -31,12 +31,14 @@ describe("DB 행 → 참석", () => {
       members: null,
     });
     expect(attendance.realName).toBeNull();
+    expect(attendance.jerseyNumber).toBeNull();
   });
 });
 
 const vote = (realName: string, response: Attendance["response"], extra: Partial<Attendance> = {}): Attendance => ({
   memberId: realName,
   realName,
+  jerseyNumber: null,
   response,
   arriveAt: null,
   leaveAt: null,

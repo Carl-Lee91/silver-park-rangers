@@ -6,6 +6,7 @@ import AttendanceList from "./AttendanceList";
 const row = (memberId: string, realName: string, response: Attendance["response"]): Attendance => ({
   memberId,
   realName,
+  jerseyNumber: null,
   response,
   arriveAt: null,
   leaveAt: null,
@@ -24,5 +25,22 @@ describe("참석 명단", () => {
     render(<AttendanceList attendance={attendance} hrefOf={(id) => `/admin/members/${id}`} />);
     expect(screen.getByRole("link", { name: "김철수" })).toHaveAttribute("href", "/admin/members/a");
     expect(screen.getByRole("link", { name: "이영희" })).toHaveClass("min-h-11");
+  });
+
+  it("! 단추 · 등번호 · 이름 순서로 둔다", () => {
+    render(<AttendanceList attendance={[{ ...attendance[0], jerseyNumber: 7 }]} tips={{ a: <button type="button">김철수 정보</button> }} />);
+    expect(screen.getByRole("listitem")).toHaveTextContent("김철수 정보7김철수");
+  });
+
+  it("관리 화면에서도 ! 단추는 링크 밖에 있다(누르면 상세로 가지 않고 툴팁이 뜬다)", () => {
+    render(
+      <AttendanceList
+        attendance={[{ ...attendance[0], jerseyNumber: 7 }]}
+        tips={{ a: <button type="button">김철수 정보</button> }}
+        hrefOf={(id) => `/admin/members/${id}`}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "김철수 정보" }).closest("a")).toBeNull();
+    expect(screen.getByRole("link")).toHaveTextContent("7김철수");
   });
 });

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { RESPONSE_LABELS } from "@/entities/attendance";
 import { ActionButton } from "@/shared/ui";
 import { confirmFromSquad, setAttended } from "../api/actions";
@@ -11,12 +12,14 @@ type Props = {
   hasSquad: boolean;
   /** 한꺼번에 확정할 기준의 이름: 축구는 "스쿼드", 풋살은 "팀 명단" */
   squadLabel?: string;
+  /** 이름 앞 ! 단추(선수 정보, 멤버 id → 단추) */
+  tips?: Readonly<Record<string, ReactNode>>;
 };
 
 const STATE = { true: "출석", false: "불참", null: "미확정" } as const;
 
 /** 매치 후 실제 출석을 정한다. 참석률·노쇼율 통계가 이 값을 쓴다(PLAN.md §10 2차). */
-export default function AttendanceConfirm({ matchId, rows, members, hasSquad, squadLabel = "스쿼드" }: Props) {
+export default function AttendanceConfirm({ matchId, rows, members, hasSquad, squadLabel = "스쿼드", tips }: Props) {
   const confirmed = rows.filter((row) => row.attended !== null).length;
 
   return (
@@ -37,6 +40,8 @@ export default function AttendanceConfirm({ matchId, rows, members, hasSquad, sq
         {rows.map((row) => (
           <li key={row.memberId} className="flex items-center justify-between gap-2 rounded-box border border-border px-3 py-2">
             <span className="min-w-0 text-sm">
+              {tips?.[row.memberId] && <span className="mr-1 inline-flex align-middle">{tips[row.memberId]}</span>}
+              {row.jerseyNumber !== null && <span className="mr-1 text-xs text-text-tertiary tabular-nums">{row.jerseyNumber}</span>}
               <span className="font-semibold">{row.realName}</span>
               <span className="ml-1.5 text-xs text-text-tertiary">
                 {row.response ? `투표 ${RESPONSE_LABELS[row.response]}` : "투표 없음"}

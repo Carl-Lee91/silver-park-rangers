@@ -12,6 +12,8 @@ export type Attendance = {
   memberId: string;
   /** 볼 수 없는 멤버(휴면 등)면 null */
   realName: string | null;
+  /** 이름 앞 등번호. 없거나 볼 수 없으면 null */
+  jerseyNumber: number | null;
   /** 관리자가 출석만 남긴 행은 투표가 없다 */
   response: AttendanceResponse | null;
   arriveAt: string | null;
@@ -20,14 +22,14 @@ export type Attendance = {
   attended: boolean | null;
 };
 
-export const ATTENDANCE_COLUMNS = "member_id, response, arrive_at, leave_at, attended, members(real_name)";
+export const ATTENDANCE_COLUMNS = "member_id, response, arrive_at, leave_at, attended, members(real_name, jersey_number)";
 
 const time = z
   .string()
   .regex(/^\d{2}:\d{2}(:\d{2})?$/)
   .transform((value) => value.slice(0, 5))
   .nullable();
-const name = z.object({ real_name: z.string() });
+const name = z.object({ real_name: z.string(), jersey_number: z.number().int().nullable() });
 
 const rowSchema = z.object({
   member_id: z.string(),
@@ -45,6 +47,7 @@ export const toAttendance = (row: unknown): Attendance => {
   return {
     memberId: parsed.member_id,
     realName: member?.real_name ?? null,
+    jerseyNumber: member?.jersey_number ?? null,
     response: parsed.response,
     arriveAt: parsed.arrive_at,
     leaveAt: parsed.leave_at,

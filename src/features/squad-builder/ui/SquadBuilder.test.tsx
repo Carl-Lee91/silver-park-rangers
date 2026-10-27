@@ -143,6 +143,22 @@ describe("스쿼드 빌더", () => {
     expect(router.push).toHaveBeenCalledWith("/admin/members/c?from=%2Fadmin%2Fmatches%2Fm1%2Fsquad");
   });
 
+  it("선수 표의 줄마다 ! 단추가 있고, 줄(고르기 단추) 밖에 있다", () => {
+    renderBuilder({ tips: { c: <button type="button">이수비 정보</button> } });
+    const tip = within(bench()).getByRole("button", { name: "이수비 정보" });
+    expect(tip.parentElement?.closest("button")).toBeNull();
+  });
+
+  it("고른 선수 칸에 능력치를 막대와 숫자로 보여 준다", async () => {
+    const user = userEvent.setup();
+    renderBuilder({
+      ratings: { c: { pace: 5, shooting: 3, passing: 5, dribbling: 3, defending: 8, physical: 8, goalkeeping: null } },
+    });
+    await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
+    const panel = screen.getByRole("region", { name: "고른 선수" });
+    expect(within(panel).getByRole("meter", { name: "수비" })).toHaveAttribute("aria-valuenow", "8");
+  });
+
   it("저장하지 않은 변경이 있으면 공개할 수 없다", async () => {
     const user = userEvent.setup();
     renderBuilder();

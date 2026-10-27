@@ -7,6 +7,7 @@ import { formatDeadline, formatMatchDate, isFutsal, isVotingOpen, matchTitle, Ma
 import { fetchMatch } from "@/entities/match/server";
 import { regularMembers } from "@/entities/member";
 import { fetchAdminMembers } from "@/entities/member/server";
+import { fetchAllRatings } from "@/entities/rating/server";
 import { fetchMatchResult } from "@/entities/result/server";
 import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
@@ -15,22 +16,26 @@ import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
 import { adminMatchEditPath, adminMatchPath, adminMemberPath, adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
 import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
+import { playerTips } from "@/widgets/player-tip";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
   const futsal = isFutsal(match);
-  const [attendance, members, squad, result, teams] = await Promise.all([
+  const [attendance, members, squad, result, teams, ratings] = await Promise.all([
     fetchMatchAttendance(match.id),
     fetchAdminMembers(),
     fetchSquad(match.id),
     fetchMatchResult(match.id),
     futsal ? fetchTeamAssignments(match.id) : Promise.resolve({}),
+    fetchAllRatings(),
   ]);
   // 이 매치에서 볼 사람: 승인된 멤버와 이 매치의 그날 용병. 다른 매치의 그날 용병은 뺀다.
   const approved = regularMembers(members, match.id);
   const guests = approved.filter((member) => member.guestMatchId === match.id);
+  // 이름 앞 ! 단추(선수 정보): 포지션 · 주발 · 능력치(관리 화면이라 능력치까지)
+  const tips = playerTips(approved, ratings);
   const waiting = unrespondedMembers(approved, attendance);
   // 출석 확정의 기준: 축구는 스쿼드에 든 사람, 풋살은 팀에 든 사람(PLAN.md §6 "풋살")
   const squadIds = futsal
@@ -86,7 +91,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
         <div className="flex flex-col gap-4 lg:gap-6">
           <Panel title="참석 투표" aside={`참석 ${groups.yes.length} · 미정 ${groups.maybe.length} · 불참 ${groups.no.length}`} flush>
             {/* 이름을 누르면 선수 상세(능력치)로 가고, 뒤로 가면 이 화면으로 온다 */}
-            <AttendanceList attendance={attendance} hrefOf={(id) => adminMemberPath(id, adminMatchPath(match.id))} />
+            <AttendanceList attendance={attendance} tips={tips} hrefOf={(id) => adminMemberPath(id, adminMatchPath(match.id))} />
             <div className="border-t border-border px-3 py-3 md:px-4">
               <h3 className="flex items-baseline gap-1.5 text-xs font-bold">
                 <span className="text-danger">아직 투표 안 함</span>
@@ -97,8 +102,14 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               ) : (
                 <ul className="mt-2 flex flex-wrap gap-1.5">
                   {waiting.map((member) => (
-                    <li key={member.id} className="rounded-chip border border-border-strong px-2 py-1 text-sm">
-                      {member.realName}
+                    <li key={member.id} className="inline-flex items-center gap-1 rounded-chip border border-border-strong px-2 py-1 text-sm">
+                      {tips[member.id]}
+                      <span>
+                        {member.jerseyNumber !== null && (
+                          <span className="mr-1 text-xs text-text-tertiary tabular-nums">{member.jerseyNumber}</span>
+                        )}
+                        {member.realName}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -112,6 +123,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
             </p>
             <MatchGuests
               matchId={match.id}
+              tips={tips}
               guests={guests.map(({ id, realName, feet, preferredPositions, jerseyNumber }) => ({
                 id,
                 realName,
@@ -132,6 +144,7 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               members={approved}
               hasSquad={squadIds.size > 0}
               squadLabel={futsal ? "팀 명단" : "스쿼드"}
+              tips={tips}
             />
           </Panel>
 

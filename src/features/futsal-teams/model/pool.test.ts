@@ -8,6 +8,7 @@ const member = (id: string, realName: string, extra: Partial<AdminMember> = {}) 
 const vote = (memberId: string, response: Attendance["response"]): Attendance => ({
   memberId,
   realName: memberId,
+  jerseyNumber: null,
   response,
   arriveAt: null,
   leaveAt: null,
