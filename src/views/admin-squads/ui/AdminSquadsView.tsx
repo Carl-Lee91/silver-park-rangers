@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { fetchYesCounts } from "@/entities/attendance/server";
-import { MatchCard, type Match } from "@/entities/match";
+import { fetchTeamMatchIds } from "@/entities/futsal/server";
+import { isFutsal, MatchCard, type Match } from "@/entities/match";
 import { fetchPastMatches, fetchUpcomingMatches } from "@/entities/match/server";
 import { SQUAD_STATUS_LABELS, squadStatus, type SquadStatus } from "@/entities/squad";
 import { fetchSquadMatchIds } from "@/entities/squad/server";
-import { adminSquadPath, ROUTES } from "@/shared/config";
+import { adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
 import { chipClass, Panel, Screen, type ChipTone } from "@/shared/ui";
 
 /** 지난 매치는 최근 몇 개만 둔다. 스쿼드는 다가오는 매치를 짜는 곳이라서다. */
@@ -28,7 +29,7 @@ function MatchRows({ matches, saved, yes }: { matches: Match[]; saved: Set<strin
         <li key={match.id} className="even:bg-bg-row">
           <MatchCard
             match={match}
-            href={adminSquadPath(match.id)}
+            href={isFutsal(match) ? adminTeamsPath(match.id) : adminSquadPath(match.id)}
             aside={
               <SquadAside
                 status={squadStatus({ hasSquad: saved.has(match.id), squadPublishedAt: match.squadPublishedAt })}
@@ -46,7 +47,9 @@ function MatchRows({ matches, saved, yes }: { matches: Match[]; saved: Set<strin
 export default async function AdminSquadsView() {
   const [upcoming, past] = await Promise.all([fetchUpcomingMatches(), fetchPastMatches(undefined, RECENT_PAST)]);
   const ids = [...upcoming, ...past].map((match) => match.id);
-  const [saved, yes] = await Promise.all([fetchSquadMatchIds(ids), fetchYesCounts(ids)]);
+  const [squads, teams, yes] = await Promise.all([fetchSquadMatchIds(ids), fetchTeamMatchIds(ids), fetchYesCounts(ids)]);
+  // 풋살은 팀을 저장했으면 "저장됨"이다(PLAN.md §6 "풋살")
+  const saved = new Set([...squads, ...teams]);
 
   return (
     <Screen title="스쿼드" overline="쿼터별 편성" width="wide">

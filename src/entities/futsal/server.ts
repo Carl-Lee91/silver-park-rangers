@@ -27,3 +27,12 @@ export const fetchSharedTeams = async (token: string): Promise<SharedTeams | nul
   if (error) throw new Error(`공유 팀을 읽지 못했습니다 — ${error.message}`);
   return toSharedTeams(data);
 };
+
+/** 팀을 저장한 풋살 매치 id(관리 › 스쿼드 목록의 상태) */
+export const fetchTeamMatchIds = async (matchIds: readonly string[]): Promise<Set<string>> => {
+  if (matchIds.length === 0) return new Set();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("futsal_team_members").select("match_id").in("match_id", [...matchIds]);
+  if (error) throw new Error(`풋살 팀을 읽지 못했습니다 — ${error.message}`);
+  return new Set((data as { match_id: string }[]).map((row) => row.match_id));
+};

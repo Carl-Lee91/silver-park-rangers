@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AttendanceList, groupAttendance, unrespondedMembers } from "@/entities/attendance";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
-import { formatDeadline, formatMatchDate, isVotingOpen, matchTitle, MatchSummary, votingClosesAt } from "@/entities/match";
+import { fetchTeamAssignments } from "@/entities/futsal/server";
+import { formatDeadline, formatMatchDate, isFutsal, isVotingOpen, matchTitle, MatchSummary, votingClosesAt } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { regularMembers } from "@/entities/member";
 import { fetchAdminMembers } from "@/entities/member/server";
@@ -12,24 +13,29 @@ import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
 import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
-import { adminMatchEditPath, adminSquadPath, ROUTES } from "@/shared/config";
+import { adminMatchEditPath, adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
 import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
 
-  const [attendance, members, squad, result] = await Promise.all([
+  const futsal = isFutsal(match);
+  const [attendance, members, squad, result, teams] = await Promise.all([
     fetchMatchAttendance(match.id),
     fetchAdminMembers(),
     fetchSquad(match.id),
     fetchMatchResult(match.id),
+    futsal ? fetchTeamAssignments(match.id) : Promise.resolve({}),
   ]);
   // 이 매치에서 볼 사람: 승인된 멤버와 이 매치의 그날 용병. 다른 매치의 그날 용병은 뺀다.
   const approved = regularMembers(members, match.id);
   const guests = approved.filter((member) => member.guestMatchId === match.id);
   const waiting = unrespondedMembers(approved, attendance);
-  const squadIds = new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
+  // 출석 확정의 기준: 축구는 스쿼드에 든 사람, 풋살은 팀에 든 사람(PLAN.md §6 "풋살")
+  const squadIds = futsal
+    ? new Set(Object.keys(teams))
+    : new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   const open = isVotingOpen(match);
   const groups = groupAttendance(attendance);
 
@@ -40,8 +46,11 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       back={{ href: ROUTES.adminMatches, label: "매치" }}
       width="wide"
       actions={
-        <Link href={adminSquadPath(match.id)} className="inline-flex h-11 items-center rounded-box bg-kit-label px-4 text-sm font-bold text-kit">
-          스쿼드 짜기
+        <Link
+          href={futsal ? adminTeamsPath(match.id) : adminSquadPath(match.id)}
+          className="inline-flex h-11 items-center rounded-box bg-kit-label px-4 text-sm font-bold text-kit"
+        >
+          {futsal ? "팀 나누기" : "스쿼드 짜기"}
         </Link>
       }
     >
@@ -121,20 +130,24 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               rows={confirmRows(attendance, squadIds, members)}
               members={approved}
               hasSquad={squadIds.size > 0}
+              squadLabel={futsal ? "팀 명단" : "스쿼드"}
             />
           </Panel>
 
-          <Panel title="경기 결과" aside="쿼터마다">
-            <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
-            <ResultEditor
-              matchId={match.id}
-              quarterCount={match.quarterCount}
-              scores={result.scores}
-              goals={result.goals}
-              squad={squad}
-              members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
-            />
-          </Panel>
+          {/* 풋살은 경기 결과를 아직 남기지 않는다(PLAN.md §6 "풋살") */}
+          {!futsal && (
+            <Panel title="경기 결과" aside="쿼터마다">
+              <p className="mb-3 text-xs text-text-tertiary">쿼터마다 골과 상대 점수를 남겨요. 우리 점수는 골 수로 세요.</p>
+              <ResultEditor
+                matchId={match.id}
+                quarterCount={match.quarterCount}
+                scores={result.scores}
+                goals={result.goals}
+                squad={squad}
+                members={approved.map((member) => ({ id: member.id, realName: member.realName }))}
+              />
+            </Panel>
+          )}
         </div>
       </div>
     </Screen>
