@@ -23,6 +23,9 @@ export const adminMatchPath = (id: string) => `/admin/matches/${id}`;
 export const adminMatchEditPath = (id: string) => `/admin/matches/${id}/edit`;
 export const adminSquadPath = (id: string) => `/admin/matches/${id}/squad`;
 
+/** 관리자 전용 선수 상세(PLAN.md §7 관리자) */
+export const adminMemberPath = (id: string) => `/admin/members/${id}`;
+
 /**
  * `pathname` 이 `base` 이거나 그 아래 주소인지. `/admin` 은 `/admin/members` 를 품지만
  * `/administrator` 는 품지 않는다.
