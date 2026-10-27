@@ -23,7 +23,8 @@ describe("능력치 매기기 (PLAN.md §5 능력치)", () => {
   it("매기지 않은 칸은 '미평가'이고, 매긴 칸은 그 숫자가 색과 함께 보인다", () => {
     render(<RatingForm action={ok} memberId="m1" initial={rated} />);
     expect(screen.getByLabelText("슛")).toHaveValue("");
-    expect(screen.getByRole("option", { name: "미평가", selected: true, hidden: false })).toBeTruthy();
+    expect(screen.getByLabelText("슛")).toHaveDisplayValue("미평가");
+    expect(screen.getByTestId("rating-shooting")).toHaveTextContent("–");
     expect(screen.getByLabelText("속도")).toHaveValue("9");
     expect(screen.getByTestId("rating-pace")).toHaveTextContent("9");
     expect(screen.getByTestId("rating-pace")).toHaveClass("text-fit-best");
