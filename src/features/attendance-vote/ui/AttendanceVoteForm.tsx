@@ -13,6 +13,8 @@ type Props = {
   /** 이미 한 투표. 없으면 null */
   current: Vote | null;
   open: boolean;
+  /** 도착 · 떠나는 시간을 묻는지. 풋살은 쿼터가 없어 묻지 않는다(PLAN.md §6 "풋살") */
+  askTime?: boolean;
 };
 
 const RESPONSES: AttendanceResponse[] = ["yes", "maybe", "no"];
@@ -26,7 +28,7 @@ const playableSummary = (schedule: readonly QuarterTime[], quarters: number[]) =
 };
 
 /** 참석 · 미정 · 불참을 고르고, 오는 사람은 도착·떠나는 시간을 고른다(PLAN.md §6). */
-export default function AttendanceVoteForm({ action, matchId, schedule, current, open }: Props) {
+export default function AttendanceVoteForm({ action, matchId, schedule, current, open, askTime = true }: Props) {
   const [state, formAction] = useActionState(action, {});
   const [response, setResponse] = useState<AttendanceResponse | "">(current?.response ?? "");
   const [arriveAt, setArriveAt] = useState(current?.arriveAt ?? "");
@@ -59,7 +61,7 @@ export default function AttendanceVoteForm({ action, matchId, schedule, current,
         ))}
       </div>
 
-      {coming && (
+      {coming && askTime && (
         <>
           <div className="grid grid-cols-2 gap-3">
             <div>
