@@ -142,7 +142,8 @@ export const copyQuarter = (
   );
 
 /** 선수 표의 줄: 키퍼 → 수비 → 미드필드 → 공격 */
-const LINE: Record<Position, number> = { GK: 0, CB: 1, WB: 1, MF: 2, AM: 2, WG: 3, FW: 3 };
+/** 선수 표의 줄: 키퍼 → 5선(센터백 · 풀백) → … → 1선(공격수). PLAN.md §5 */
+const LINE: Record<Position, number> = { GK: 0, CB: 1, FB: 1, DM: 2, WB: 2, MF: 3, WM: 3, AM: 4, WG: 4, FW: 5 };
 
 /** 선발 명단에 놓을 자리 순서. 풋볼매니저 선수 표처럼 뒤에서 앞으로, 같은 줄은 왼쪽부터다. */
 export const lineupOrder = (slots: readonly Pick<BuilderSlot, "position" | "x">[]): number[] =>
