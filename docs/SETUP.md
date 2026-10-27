@@ -5,7 +5,7 @@
 
 ## 1. Supabase — DB 만들기
 
-프로젝트: `(서울 새 프로젝트 id — 만든 뒤 적는다)`
+프로젝트: `dtpkyyethevbigjmiclk` (서울)
 
 > 2026-10-27 — 처음 프로젝트(`dgncyxocvoglinbdppul`)를 **시드니**에 만들어서, 데이터를 옮기지 않고 **서울**에 새로 만든다.
 > 쓸 데이터가 없어서(테스트 계정 · 더미 선수뿐) 옮기지 않는다. 가입했던 계정도 새 프로젝트에서 다시 만든다.
@@ -13,11 +13,11 @@
 
 ### 새 프로젝트 만들기(처음 한 번)
 
-- [ ] [supabase.com](https://supabase.com/dashboard) › New project
+- [x] [supabase.com](https://supabase.com/dashboard) › New project
   - **Region: Northeast Asia (Seoul)** 🔴 다른 지역을 고르지 않는다. 지역은 나중에 못 바꾼다.
   - 플랜: Free. Database password 는 아무 긴 값으로 만들고 비밀번호 관리자에 둔다(앱은 쓰지 않는다).
   - 무료 플랜은 조직당 활성 프로젝트 2개다. 이미 2개면 아래 "시드니 프로젝트 지우기"를 먼저 한다.
-- [ ] **SQL Editor** › New query 에 마이그레이션 전부를 **한 번에** 붙여 실행한다.
+- [x] **SQL Editor** › New query 에 마이그레이션 전부를 **한 번에** 붙여 실행한다.
   - 터미널에서 `pnpm -s db:bundle | pbcopy` 로 복사한다([supabase/migrations/](../supabase/migrations/) 전부를 이름 순서대로 한 트랜잭션에 묶은 것).
   - 한 트랜잭션이라 중간에 실패하면 아무것도 깔리지 않는다. 오류 메시지를 알려 주면 고쳐서 다시 붙인다.
   - 붙이기 전에 로컬에서 `pnpm db:verify` 가 통과하는지 본다 — 같은 묶음을 깔아 RLS 시나리오를 검사한다.
@@ -30,29 +30,29 @@
 
 | 마이그레이션 | 적용일 |
 | --- | --- |
-| `20261019000000_init.sql` | |
-| `20261019010000_admin_account.sql` | |
-| `20261019020000_voting_closes_at_kickoff.sql` | |
-| `20261019030000_save_squad.sql` | |
-| `20261019040000_shared_squad.sql` | |
-| `20261019050000_admin_stats_source.sql` | |
-| `20261019060000_match_notes.sql` | |
-| `20261019070000_match_results.sql` | |
-| `20261019080000_realtime_members.sql` | |
-| `20261020000000_jersey_numbers.sql` | |
-| `20261021000000_email_signup.sql` | |
-| `20261021010000_match_guests.sql` | |
+| `20261019000000_init.sql` | 2026-10-27 |
+| `20261019010000_admin_account.sql` | 2026-10-27 |
+| `20261019020000_voting_closes_at_kickoff.sql` | 2026-10-27 |
+| `20261019030000_save_squad.sql` | 2026-10-27 |
+| `20261019040000_shared_squad.sql` | 2026-10-27 |
+| `20261019050000_admin_stats_source.sql` | 2026-10-27 |
+| `20261019060000_match_notes.sql` | 2026-10-27 |
+| `20261019070000_match_results.sql` | 2026-10-27 |
+| `20261019080000_realtime_members.sql` | 2026-10-27 |
+| `20261020000000_jersey_numbers.sql` | 2026-10-27 |
+| `20261021000000_email_signup.sql` | 2026-10-27 |
+| `20261021010000_match_guests.sql` | 2026-10-27 |
 
 ## 2. Supabase — 이메일 가입 설정
 
 로그인은 이메일·비밀번호만 쓴다(PLAN.md §2). 카카오 개발자 콘솔은 쓰지 않는다.
 
-- [ ] **Authentication › Sign In / Providers › Email**
-  - Email: **ON** (지금 켜져 있다)
-  - **Confirm email: OFF** — 🔴 지금 켜져 있다. Supabase 기본 메일은 팀원에게 가지 않아서, 켜 두면 신청한 사람이 로그인하지 못한다. 가입 신청 화면이 켜져 있는 동안 이 안내를 띄운다.
+- [x] **Authentication › Sign In / Providers › Email**
+  - Email: **ON** (서울 프로젝트 확인됨, 2026-10-27)
+  - **Confirm email: OFF** — 서울 프로젝트는 꺼져 있다(2026-10-27 확인). Supabase 기본 메일은 팀원에게 가지 않아서, 켜 두면 신청한 사람이 로그인하지 못한다. 가입 신청 화면이 켜져 있는 동안 이 안내를 띄운다.
   - Minimum password length: `8` (앱도 8자 이상만 받는다. 기본값 6이어도 동작은 한다)
-- [ ] **Authentication › Sign In / Providers** 의 **Allow new users to sign up: ON** (지금 켜져 있다)
-- [ ] 카카오 제공자를 켰었다면 끈다(Authentication › Sign In / Providers › Kakao). 코드에서 뺐다.
+- [x] **Authentication › Sign In / Providers** 의 **Allow new users to sign up: ON** (서울 프로젝트 확인됨)
+- [x] 카카오 제공자를 켰었다면 끈다(Authentication › Sign In / Providers › Kakao). 코드에서 뺐다. 서울 프로젝트는 처음부터 꺼져 있다.
 
 끄고 나면 `/signup` 의 "이메일 확인이 켜져 있어요" 안내가 가입 신청 폼으로 바뀐다. 코드는 바꾸지 않는다.
 
@@ -96,7 +96,7 @@
 
   | 이름 | 값 | 어디서 |
   | --- | --- | --- |
-  | `NEXT_PUBLIC_SUPABASE_URL` | `https://<서울 프로젝트 id>.supabase.co` | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 Project URL) |
+  | `NEXT_PUBLIC_SUPABASE_URL` | `https://dtpkyyethevbigjmiclk.supabase.co` | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 Project URL) |
   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJ…` 로 시작하는 긴 값 | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 anon) |
   | `SITE_URL` | `https://<Project Name>.vercel.app` | 🔴 `.env.local` 의 `localhost` 를 그대로 넣지 않는다. 끝에 `/` 는 없어도 된다 |
   | `CRON_SECRET` | 아무 긴 문자열 | 터미널에서 `openssl rand -hex 32` 로 만든다. 여기에만 넣고 어디에도 적지 않는다 |
