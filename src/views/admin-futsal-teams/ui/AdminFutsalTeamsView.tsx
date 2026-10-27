@@ -10,6 +10,7 @@ import { futsalPool, saveTeams, TeamBuilder } from "@/features/futsal-teams";
 import { publishSquad } from "@/features/squad-builder";
 import { adminMatchPath, adminSquadPath } from "@/shared/config";
 import { chipClass, Screen } from "@/shared/ui";
+import { playerTips } from "@/widgets/player-tip";
 
 /** 풋살 팀 나누기(PLAN.md §6 "풋살", 관리자 전용). 축구 매치면 스쿼드 빌더로 보낸다 */
 export default async function AdminFutsalTeamsView({ matchId }: { matchId: string }) {
@@ -24,6 +25,8 @@ export default async function AdminFutsalTeamsView({ matchId }: { matchId: strin
     fetchTeamAssignments(match.id),
   ]);
   const strengths = Object.fromEntries(Object.entries(ratings).map(([id, values]) => [id, fieldStrength(values)]));
+  const players = futsalPool(attendance, members, saved, strengths);
+  const shown = new Set(players.map((player) => player.id));
 
   return (
     <Screen
@@ -36,12 +39,16 @@ export default async function AdminFutsalTeamsView({ matchId }: { matchId: strin
       <TeamBuilder
         matchId={match.id}
         format={match.format}
-        players={futsalPool(attendance, members, saved, strengths)}
+        players={players}
         initialTeamCount={match.teamCount === 3 ? 3 : 2}
         initialAssignments={saved}
         published={match.squadPublishedAt !== null}
         saveAction={saveTeams}
         publishAction={publishSquad}
+        tips={playerTips(
+          members.filter((member) => shown.has(member.id)),
+          ratings,
+        )}
       />
     </Screen>
   );

@@ -19,6 +19,7 @@ import { ShareActions, SquadImageViewer } from "@/features/squad-share";
 import { adminMatchPath, adminTeamsPath, getServerEnv, ROUTES } from "@/shared/config";
 import { adminSquadImagePath, squadImageVersion } from "@/widgets/squad-image";
 import { chipClass, Panel, Screen } from "@/shared/ui";
+import { playerTips } from "@/widgets/player-tip";
 
 /** 기본 포메이션. 새 쿼터는 이것으로 시작한다(PLAN.md §5). */
 const DEFAULT_FORMATION = "4-3-3";
@@ -58,6 +59,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const schedule = quarterSchedule(match);
   const current = saved.filter((quarter) => quarter.number <= match.quarterCount);
   const placed = new Set(current.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
+  const pool = buildPool(attendance, members, schedule, placed);
   // 이미지는 저장한 배치로 그린다. 공개 전에도 관리자는 본다(관리자 전용 주소, PLAN.md §7).
   const image = squadForImage(match, current);
   const version = image === null ? "" : squadImageVersion(image);
@@ -81,7 +83,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
       <SquadBuilder
         matchId={match.id}
         schedule={schedule}
-        pool={buildPool(attendance, members, schedule, placed)}
+        pool={pool}
         formations={formations}
         initial={initialBuilder(match.quarterCount, current, fallback)}
         published={match.squadPublishedAt !== null}
@@ -92,6 +94,8 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         noteAction={saveMatchNote}
         windowAction={setAttendanceWindow}
         strengths={strengths}
+        ratings={ratings}
+        tips={playerTips(pool, ratings)}
       />
       {current.length > 0 &&
         (match.squadPublishedAt !== null ? (

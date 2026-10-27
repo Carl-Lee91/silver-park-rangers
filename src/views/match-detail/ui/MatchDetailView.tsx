@@ -15,6 +15,9 @@ import {
   votingClosesAt,
 } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
+import { canManageMembers } from "@/entities/member";
+import { fetchMemberProfiles, fetchMyGate } from "@/entities/member/server";
+import { fetchAllRatings } from "@/entities/rating/server";
 import { ResultSummaryView, summarizeResult } from "@/entities/result";
 import { fetchMatchResult } from "@/entities/result/server";
 import { squadForImage } from "@/entities/squad";
@@ -24,6 +27,7 @@ import { ShareActions } from "@/features/squad-share";
 import { getAuthUserId } from "@/shared/api";
 import { getServerEnv, ROUTES } from "@/shared/config";
 import { QuarterBoard } from "@/widgets/quarter-board";
+import { playerTips } from "@/widgets/player-tip";
 import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
 import { chipClass, Panel, Screen } from "@/shared/ui";
 
@@ -41,6 +45,17 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
     fetchMatchResult(match.id),
     published && futsal ? fetchTeamLists(match.id, match.teamCount) : Promise.resolve([]),
   ]);
+  // 이름 앞 ! 단추(선수 정보): 이 매치에 나오는 사람의 포지션 · 주발. 능력치는 관리자가 볼 때만 읽는다(PLAN.md §5)
+  const ids = new Set([
+    ...attendance.map((row) => row.memberId),
+    ...squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))),
+    ...teams.flatMap((team) => team.flatMap((member) => (member.id ? [member.id] : []))),
+  ]);
+  const [profiles, ratings] = await Promise.all([
+    fetchMemberProfiles([...ids]),
+    fetchMyGate().then((gate) => (canManageMembers(gate) ? fetchAllRatings() : null)),
+  ]);
+  const tips = playerTips(profiles, ratings);
   const summary = summarizeResult(match.quarterCount, result.scores, result.goals);
   const mine = attendance.find((row) => row.memberId === userId && row.response !== null);
   const open = isVotingOpen(match);
@@ -77,7 +92,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
           </Panel>
 
           <Panel title="참석자" aside={`참석 ${groups.yes.length} · 미정 ${groups.maybe.length} · 불참 ${groups.no.length}`} flush>
-            <AttendanceList attendance={attendance} />
+            <AttendanceList attendance={attendance} tips={tips} />
           </Panel>
         </div>
 
@@ -89,7 +104,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
           >
             {published ? (
               <div className="flex flex-col gap-5">
-                <TeamRoster teams={teams} perSide={playersPerSide(match.format)} />
+                <TeamRoster teams={teams} perSide={playersPerSide(match.format)} tips={tips} />
                 <ShareActions
                   shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
                   title={`${formatMatchDate(match.date)} ${matchTitle(match)} 팀`}
@@ -107,7 +122,7 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
           >
             {squad.length > 0 ? (
               <div className="flex flex-col gap-5">
-                <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} />
+                <QuarterBoard quarters={squad} schedule={quarterSchedule(match)} tips={tips} />
                 <ShareActions
                   shareUrl={`${getServerEnv().SITE_URL}/s/${match.shareToken}`}
                   title={`${formatMatchDate(match.date)} ${matchTitle(match)} 스쿼드`}
