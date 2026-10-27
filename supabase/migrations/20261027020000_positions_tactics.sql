@@ -1,0 +1,34 @@
+-- 포지션 10개와 기본 전술 (docs/PLAN.md §5 "포지션 분류" · "기본 전술")
+--
+-- 줄마다 중앙 하나 · 측면 하나: 1선 FW · 2선 AM WG · 3선 MF WM · 4선 DM WB · 5선 CB FB, 그리고 GK.
+-- 원래 WG 에 들어 있던 와이드 미드(WM), MF 에 들어 있던 수비형 미드(DM), WB 에 들어 있던 풀백(FB)을 따로 둔다.
+-- 이미 고른 선호 포지션은 그대로 둔다(팀원이 내 정보에서 고친다). 저장된 스쿼드는 자리를 복사해 두어서 바뀌지 않는다.
+--
+-- 🔴 새 값은 이 트랜잭션 안에서 enum 으로 쓰지 않는다(Postgres 는 커밋 전에 새 enum 값을 못 쓰게 한다).
+--    아래 기본 전술은 jsonb 라서 괜찮다.
+
+alter type public.player_position add value if not exists 'WM' after 'MF';
+alter type public.player_position add value if not exists 'DM' after 'WM';
+alter type public.player_position add value if not exists 'FB' after 'CB';
+
+-- 기본 전술: 풋볼매니저 기본 전술처럼 여러 개. 자리는 커스텀 포메이션과 같은 규칙(entities/formation 의
+-- layoutFormation)으로 잡았다. 4-3-3 · 4-4-2 는 측면 수비를 풀백으로, 4-4-2 의 측면 미드를 와이드 미드로 바꾼다.
+update public.formations set slots = '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 25, "y": 52}, {"position": "MF", "x": 50, "y": 52}, {"position": "MF", "x": 75, "y": 52}, {"position": "WG", "x": 15, "y": 27}, {"position": "WG", "x": 85, "y": 27}, {"position": "FW", "x": 50, "y": 17}]'
+ where name = '4-3-3' and is_preset;
+update public.formations set slots = '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WM", "x": 12, "y": 50}, {"position": "WM", "x": 88, "y": 50}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'
+ where name = '4-4-2' and is_preset;
+
+-- 관리자가 같은 이름으로 만든 커스텀 포메이션이 있으면 그것을 둔다(이름은 하나뿐이다).
+insert into public.formations (name, is_preset, slots) values
+  ('4-3-3 DM', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "DM", "x": 50, "y": 66}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WG", "x": 15, "y": 27}, {"position": "WG", "x": 85, "y": 27}, {"position": "FW", "x": 50, "y": 17}]'),
+  ('4-4-2 다이아몬드', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "DM", "x": 50, "y": 66}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "AM", "x": 50, "y": 38}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'),
+  ('4-4-1-1', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WM", "x": 12, "y": 50}, {"position": "WM", "x": 88, "y": 50}, {"position": "AM", "x": 50, "y": 38}, {"position": "FW", "x": 50, "y": 17}]'),
+  ('4-2-3-1', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "DM", "x": 37.5, "y": 66}, {"position": "DM", "x": 62.5, "y": 66}, {"position": "AM", "x": 50, "y": 38}, {"position": "WG", "x": 15, "y": 27}, {"position": "WG", "x": 85, "y": 27}, {"position": "FW", "x": 50, "y": 17}]'),
+  ('4-1-4-1', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "DM", "x": 50, "y": 66}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WM", "x": 12, "y": 50}, {"position": "WM", "x": 88, "y": 50}, {"position": "FW", "x": 50, "y": 17}]'),
+  ('4-2-2-2', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "DM", "x": 37.5, "y": 66}, {"position": "DM", "x": 62.5, "y": 66}, {"position": "AM", "x": 37.5, "y": 38}, {"position": "AM", "x": 62.5, "y": 38}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'),
+  ('4-3-1-2', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 39, "y": 79}, {"position": "CB", "x": 61, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 25, "y": 52}, {"position": "MF", "x": 50, "y": 52}, {"position": "MF", "x": 75, "y": 52}, {"position": "AM", "x": 50, "y": 38}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'),
+  ('3-5-2', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 28, "y": 79}, {"position": "CB", "x": 50, "y": 79}, {"position": "CB", "x": 72, "y": 79}, {"position": "DM", "x": 50, "y": 66}, {"position": "WB", "x": 10, "y": 62}, {"position": "WB", "x": 90, "y": 62}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'),
+  ('3-4-3', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 28, "y": 79}, {"position": "CB", "x": 50, "y": 79}, {"position": "CB", "x": 72, "y": 79}, {"position": "WB", "x": 10, "y": 62}, {"position": "WB", "x": 90, "y": 62}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WG", "x": 15, "y": 27}, {"position": "WG", "x": 85, "y": 27}, {"position": "FW", "x": 50, "y": 17}]'),
+  ('5-3-2', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 28, "y": 79}, {"position": "CB", "x": 50, "y": 79}, {"position": "CB", "x": 72, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 25, "y": 52}, {"position": "MF", "x": 50, "y": 52}, {"position": "MF", "x": 75, "y": 52}, {"position": "FW", "x": 37.5, "y": 17}, {"position": "FW", "x": 62.5, "y": 17}]'),
+  ('5-4-1', true, '[{"position": "GK", "x": 50, "y": 92}, {"position": "CB", "x": 28, "y": 79}, {"position": "CB", "x": 50, "y": 79}, {"position": "CB", "x": 72, "y": 79}, {"position": "FB", "x": 10, "y": 74}, {"position": "FB", "x": 90, "y": 74}, {"position": "MF", "x": 37.5, "y": 52}, {"position": "MF", "x": 62.5, "y": 52}, {"position": "WM", "x": 12, "y": 50}, {"position": "WM", "x": 88, "y": 50}, {"position": "FW", "x": 50, "y": 17}]')
+on conflict (name) do nothing;
