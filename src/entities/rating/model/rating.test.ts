@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RATING_ATTRIBUTES, ratingTone, toRatings } from "./rating";
+import { fieldStrength, RATING_ATTRIBUTES, ratingTone, toRatings } from "./rating";
 
 describe("능력치 항목 (PLAN.md §5 능력치)", () => {
   it("일곱 가지를 이 순서로 둔다 — 피파 카드 여섯 가지 + 골키퍼", () => {
@@ -52,5 +52,22 @@ describe("능력치 읽기", () => {
       values: { pace: null, shooting: null, passing: null, dribbling: null, defending: null, physical: null, goalkeeping: null },
       updatedAt: null,
     });
+  });
+});
+
+describe("선수 전력 (PLAN.md §6 자동 배치 스타일)", () => {
+  const none = { pace: null, shooting: null, passing: null, dribbling: null, defending: null, physical: null, goalkeeping: null };
+
+  it("필드 능력치 6개의 평균이다 — 골키퍼는 넣지 않는다", () => {
+    expect(fieldStrength({ pace: 9, shooting: 7, passing: 5, dribbling: 6, defending: 4, physical: 5, goalkeeping: 10 })).toBe(6);
+  });
+
+  it("미평가 항목은 빼고 평균한다", () => {
+    expect(fieldStrength({ ...none, pace: 8, shooting: 6 })).toBe(7);
+  });
+
+  it("하나도 매기지 않았으면 전력을 모른다(null) — 골키퍼만 매겨도 마찬가지다", () => {
+    expect(fieldStrength(none)).toBeNull();
+    expect(fieldStrength({ ...none, goalkeeping: 9 })).toBeNull();
   });
 });
