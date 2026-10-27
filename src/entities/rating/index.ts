@@ -6,6 +6,7 @@ export {
   RATING_MIN,
   ratingTone,
   toRatings,
+  toRatingsByMember,
   type MemberRatings,
   type RatingKey,
   type RatingTone,

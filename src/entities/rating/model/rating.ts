@@ -74,3 +74,12 @@ export const fieldStrength = (values: RatingValues): number | null => {
   const rated = FIELD_KEYS.flatMap((key) => (values[key] === null ? [] : [values[key]]));
   return rated.length === 0 ? null : rated.reduce((sum, value) => sum + value, 0) / rated.length;
 };
+
+/** 여러 선수의 `member_ratings` 줄을 선수 id → 항목별 값으로 묶는다(스쿼드 빌더 · 풋살 팀 나누기) */
+export const toRatingsByMember = (rows: unknown): Record<string, RatingValues> =>
+  Object.fromEntries(
+    z
+      .array(z.object({ member_id: z.string() }).passthrough())
+      .parse(rows)
+      .map((row) => [row.member_id, toRatings(row).values]),
+  );
