@@ -1,13 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Jersey, Pitch, PitchSpot } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { rotationTable, type SavedQuarter } from "@/entities/squad";
 import { TABLET_UP, useMediaQuery } from "@/shared/lib";
 import { tabClass } from "@/shared/ui";
 
-type Props = { quarters: readonly SavedQuarter[]; schedule: readonly QuarterTime[] };
+type Tips = Readonly<Record<string, ReactNode>>;
+
+type Props = {
+  quarters: readonly SavedQuarter[];
+  schedule: readonly QuarterTime[];
+  /** 출전표 이름 앞 ! 단추(선수 정보). 팀원 화면만 넘긴다 — 공유 링크는 없다 */
+  tips?: Tips;
+};
 
 const ROTATION = "rotation";
 
@@ -31,7 +38,7 @@ function QuarterPitch({ quarter }: { quarter: SavedQuarter }) {
   );
 }
 
-function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
+function RotationTable({ quarters, tips }: { quarters: readonly SavedQuarter[]; tips?: Tips }) {
   const rows = rotationTable(quarters);
   return (
     <div className="overflow-x-auto">
@@ -52,6 +59,7 @@ function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
           {rows.map((row) => (
             <tr key={row.memberId} className="border-b border-border odd:bg-bg-panel even:bg-bg-row">
               <td className="sticky left-0 bg-inherit py-2 pr-2 pl-2 text-left font-semibold">
+                {tips?.[row.memberId] && <span className="mr-1 inline-flex align-middle">{tips[row.memberId]}</span>}
                 {row.jerseyNumber !== null && <span className="text-xs font-normal text-text-tertiary">{row.jerseyNumber} </span>}
                 {row.name}
               </td>
@@ -79,7 +87,7 @@ function RotationTable({ quarters }: { quarters: readonly SavedQuarter[] }) {
  * 화면은 넓어도 자리가 좁을 수 있다. 28rem(@md) 부터 두 쿼터, 48rem(@3xl) 부터 세 쿼터다. 매치 화면
  * 오른쪽 칸(35rem 쯤)이 두 쿼터가 되게 잡았다 — 기준이 이보다 크면 경기장 하나가 칸 폭만큼 커진다.
  */
-export default function QuarterBoard({ quarters, schedule }: Props) {
+export default function QuarterBoard({ quarters, schedule, tips }: Props) {
   const wide = useMediaQuery(TABLET_UP);
   const [tab, setTab] = useState<number | typeof ROTATION>(0);
   const quarter = typeof tab === "number" ? quarters[tab] : null;
@@ -102,7 +110,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
         </div>
         <section>
           <h3 className="mb-2 text-xs font-bold tracking-wider text-text-secondary">출전표</h3>
-          <RotationTable quarters={quarters} />
+          <RotationTable quarters={quarters} tips={tips} />
         </section>
       </div>
     );
@@ -134,7 +142,7 @@ export default function QuarterBoard({ quarters, schedule }: Props) {
           <QuarterPitch quarter={quarter} />
         </>
       ) : (
-        <RotationTable quarters={quarters} />
+        <RotationTable quarters={quarters} tips={tips} />
       )}
     </div>
   );

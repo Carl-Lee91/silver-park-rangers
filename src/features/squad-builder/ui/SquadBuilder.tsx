@@ -2,11 +2,12 @@
 
 import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { Sparkles, TriangleAlert } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { attendanceTimeNote } from "@/entities/attendance";
 import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
+import type { RatingValues } from "@/entities/rating";
 import { autoAssign, evaluateSquad, isDedicatedKeeper, type AssignStyle } from "@/entities/squad";
 import { adminMemberPath, adminSquadPath } from "@/shared/config";
 import {
@@ -66,6 +67,10 @@ type Props = {
   windowAction?: Action;
   /** 선수 전력(관리자 전용 능력치, 멤버 id → 1~10). 자동 배치 스타일이 쓴다(PLAN.md §6) */
   strengths?: Record<string, number | null>;
+  /** 능력치(멤버 id → 항목별 값). 고른 선수 칸에 막대로 보인다. 매기지 않은 사람은 없다 */
+  ratings?: Readonly<Record<string, RatingValues>>;
+  /** 선수 표 이름 앞 ! 단추(선수 정보, 멤버 id → 단추). 화면(views)이 만들어 넘긴다 */
+  tips?: Readonly<Record<string, ReactNode>>;
 };
 
 /**
@@ -89,6 +94,8 @@ export default function SquadBuilder({
   noteAction,
   windowAction,
   strengths = {},
+  ratings,
+  tips,
 }: Props) {
   const [builder, setBuilder] = useState(initial);
   const [style, setStyle] = useState<AssignStyle>({ kind: "default" });
@@ -345,6 +352,7 @@ export default function SquadBuilder({
                 fit={selected.fit}
                 hint={selected.hint}
                 onRemove={"onRemove" in selected ? selected.onRemove : undefined}
+                ratings={ratings === undefined || selectedMember === null ? undefined : (ratings[selectedMember] ?? null)}
                 detail={
                   selectedMember !== null && (
                     <ConfirmLink
@@ -393,6 +401,7 @@ export default function SquadBuilder({
                   statOf={statOf}
                   notes={notes}
                   seasonAverages={seasonAverages}
+                  tips={tips}
                 />
               </div>
             </Panel>

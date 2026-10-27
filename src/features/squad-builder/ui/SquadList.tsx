@@ -18,6 +18,8 @@ type Props = {
   statOf: (player: BuilderPlayer) => string | null;
   notes: Record<string, string>;
   seasonAverages: Record<string, number | null>;
+  /** 이름 앞 ! 단추(선수 정보). 줄(고르기 단추) 밖 왼쪽에 둔다 — 단추 안에 단추를 넣을 수 없어서 */
+  tips?: Readonly<Record<string, ReactNode>>;
 };
 
 const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
@@ -28,7 +30,17 @@ const RESPONSE_BADGE = { maybe: "미정", no: "불참" } as const;
 */
 const ROW =
   "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-0.5 rounded-box px-2 py-1.5 text-left text-sm @xl:grid-cols-[2.25rem_minmax(0,1fr)_5.5rem_5rem_3.5rem_4.5rem_auto] @xl:gap-y-0";
-const PRESSABLE = "even:bg-bg-row aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary";
+const PRESSABLE = "min-w-0 flex-1 aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary";
+
+/** 줄 하나: 왼쪽에 ! 단추 칸(넘겨 받았을 때만, 빈자리는 칸만), 오른쪽에 고르기 단추. 줄무늬는 줄에 건다 */
+function Line({ tips, tip, children }: { tips: boolean; tip: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex items-center rounded-box even:bg-bg-row">
+      {tips && <span className="flex w-7 shrink-0 justify-center">{tip}</span>}
+      {children}
+    </div>
+  );
+}
 
 function PositionPill({ code, starter }: { code: Position | undefined; starter: boolean }) {
   return (
@@ -134,7 +146,7 @@ function SectionTitle({ title, count }: { title: string; count: string }) {
  * - 선발 줄을 누르면 그 자리를 고른다(경기장 자리를 누른 것과 같다).
  * - 자리를 고르면 벤치를 그 자리에 맞는 사람부터 놓고 몇 순위인지 보인다.
  */
-export default function SquadList({ builder, quarter, pool, selection, onTap, statOf, notes, seasonAverages }: Props) {
+export default function SquadList({ builder, quarter, pool, selection, onTap, statOf, notes, seasonAverages, tips }: Props) {
   const slots = builder[quarter].slots;
   const byId = new Map(pool.map((player) => [player.id, player]));
   const placed = placedIn(builder, quarter);
@@ -151,14 +163,17 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
 
   return (
     <div className="@container flex flex-col gap-4">
-      <div aria-hidden="true" className={`${ROW} hidden py-0 text-[11px] text-text-tertiary @xl:grid`}>
-        <span />
-        <span>이름</span>
-        <span>선호</span>
-        <span>시간</span>
-        <span>올해 평균</span>
-        <span className="text-right">출전/보장</span>
-        <span>쿼터별</span>
+      <div aria-hidden="true" className="hidden @xl:flex">
+        {tips && <span className="w-7 shrink-0" />}
+        <div className={`${ROW} py-0 text-[11px] text-text-tertiary`}>
+          <span />
+          <span>이름</span>
+          <span>선호</span>
+          <span>시간</span>
+          <span>올해 평균</span>
+          <span className="text-right">출전/보장</span>
+          <span>쿼터별</span>
+        </div>
       </div>
 
       <section>
@@ -168,8 +183,8 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
             const slot = slots[index];
             const player = slot.memberId === null ? undefined : byId.get(slot.memberId);
             return (
+              <Line key={index} tips={tips !== undefined} tip={player === undefined ? null : tips?.[player.id]}>
               <button
-                key={index}
                 type="button"
                 aria-pressed={selection?.kind === "slot" && selection.index === index}
                 onClick={() => onTap({ kind: "slot", index })}
@@ -196,6 +211,7 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
                   />
                 )}
               </button>
+              </Line>
             );
           })}
         </div>
@@ -206,8 +222,8 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
         <BenchDropZone role="group" aria-label="벤치" className="flex flex-col">
           {bench.length === 0 && <p className="px-2 text-sm text-text-tertiary">이 쿼터에 남은 사람이 없어요.</p>}
           {bench.map((player) => (
+            <Line key={player.id} tips={tips !== undefined} tip={tips?.[player.id]}>
             <BenchChip
-              key={player.id}
               memberId={player.id}
               aria-pressed={selection?.kind === "bench" && selection.memberId === player.id}
               onClick={() => onTap({ kind: "bench", memberId: player.id })}
@@ -225,6 +241,7 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
                 marks={dotsOf(player)}
               />
             </BenchChip>
+            </Line>
           ))}
         </BenchDropZone>
         <p className="mt-2 px-2 text-xs text-text-tertiary">눌러서 고르고 놓거나, 길게 눌러 끌어다 놓아요.</p>
@@ -236,6 +253,7 @@ export default function SquadList({ builder, quarter, pool, selection, onTap, st
           <div role="group" aria-label="못 옴" className="flex flex-col">
             {away.map((player) => (
               <p key={player.id} className="flex items-center gap-2 px-2 py-1 text-xs text-text-tertiary">
+                {tips && <span className="flex w-7 shrink-0 justify-center">{tips[player.id]}</span>}
                 <span className="w-9 shrink-0 text-center font-bold">{player.preferredPositions[0]}</span>
                 <span className="truncate">
                   {player.jerseyNumber !== null && `${player.jerseyNumber} `}

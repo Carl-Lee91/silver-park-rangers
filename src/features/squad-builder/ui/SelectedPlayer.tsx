@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { RatingSummary, type RatingValues } from "@/entities/rating";
 import type { Fit } from "../model/fit";
 import FitDot from "./FitDot";
 
@@ -14,12 +15,14 @@ type Props = {
   onRemove?: () => void;
   /** 선수 상세(능력치)로 가는 링크. 사람을 골랐을 때만 */
   detail?: ReactNode;
+  /** 고른 사람의 능력치(안 매겼으면 null). 자리만 골랐으면 넘기지 않는다 */
+  ratings?: RatingValues | null;
   /** 시간·메모 편집기 */
   children?: ReactNode;
 };
 
 /** 고른 선수(또는 자리). 풋볼매니저에서 선수를 누르면 뜨는 정보 칸처럼 선수 표 위에 놓인다. */
-export default function SelectedPlayer({ title, details, fit, hint, onRemove, detail, children }: Props) {
+export default function SelectedPlayer({ title, details, fit, hint, onRemove, detail, ratings, children }: Props) {
   return (
     <section aria-label="고른 선수" className="flex flex-col gap-3 rounded-box border border-primary/60 bg-bg-panel p-3 shadow-[inset_0_2px_0_var(--color-primary)] md:p-4">
       <div className="flex items-start justify-between gap-3">
@@ -44,6 +47,11 @@ export default function SelectedPlayer({ title, details, fit, hint, onRemove, de
           )}
         </div>
       </div>
+      {ratings !== undefined && (
+        <div className="border-t border-border pt-3">
+          <RatingSummary values={ratings} />
+        </div>
+      )}
       {children}
     </section>
   );

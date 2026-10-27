@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { shortTeams, splitTeams, TEAM_LABELS, teamAverage, teamSizes, type TeamCount } from "@/entities/futsal";
 import { playersPerSide, type MatchFormat } from "@/entities/match";
 import { adminMemberPath, adminTeamsPath } from "@/shared/config";
@@ -42,6 +42,8 @@ type Props = {
   publishAction: Action;
   /** 자동으로 나누기의 난수. 테스트에서 고정한다 */
   random?: () => number;
+  /** 이름 앞 ! 단추(선수 정보, 선수 id → 단추). 화면(views)이 만들어 넘긴다 */
+  tips?: Readonly<Record<string, ReactNode>>;
 };
 
 const TEAM_COUNTS: TeamCount[] = [2, 3];
@@ -72,6 +74,7 @@ export default function TeamBuilder({
   saveAction,
   publishAction,
   random = Math.random,
+  tips,
 }: Props) {
   const perSide = playersPerSide(format);
   const [teamCount, setTeamCount] = useState<TeamCount>(initialTeamCount);
@@ -127,12 +130,14 @@ export default function TeamBuilder({
   };
 
   const row = (player: TeamBuilderPlayer) => (
-    <li key={player.id} className="even:bg-bg-row">
+    <li key={player.id} className="flex items-center even:bg-bg-row">
+      {/* ! 단추는 고르기 단추 밖에 둔다 — 단추 안에 단추를 넣을 수 없어서 */}
+      {tips && <span className="flex w-9 shrink-0 justify-center pl-1">{tips[player.id]}</span>}
       <button
         type="button"
         aria-pressed={selected === player.id}
         onClick={() => setSelected((current) => (current === player.id ? null : player.id))}
-        className="flex min-h-11 w-full items-center gap-2 px-3 text-left text-sm aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary md:px-4"
+        className={`flex min-h-11 min-w-0 flex-1 items-center gap-2 text-left text-sm aria-pressed:bg-primary/15 aria-pressed:ring-1 aria-pressed:ring-primary ${tips ? "pr-3 md:pr-4" : "px-3 md:px-4"}`}
       >
         <span className="w-6 shrink-0 text-right text-xs text-text-tertiary tabular-nums">{player.jerseyNumber ?? ""}</span>
         <span className="truncate font-semibold">{player.realName}</span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   attendanceTimeNote,
   groupAttendance,
@@ -18,13 +19,16 @@ const HEADING_TONE: Record<AttendanceResponse, string> = {
 /**
  * 참석 · 미정 · 불참 명단. 늦게 오거나 일찍 가는 사람은 시간을 붙인다.
  * 패널 안(flush)에 응답마다 한 칸씩 쌓고, 이름은 칩으로 늘어놓는다 — 21명이 와도 몇 줄 안에 든다.
- * 관리 화면은 `hrefOf` 를 넘겨 이름을 누르면 선수 상세로 가게 한다.
+ * 이름 앞에는 ! 단추(`tips`, 선수 정보)와 등번호를 둔다. 관리 화면은 `hrefOf` 를 넘겨 이름을 누르면 선수 상세로
+ * 가게 한다 — ! 단추는 링크 밖에 둬서 누르면 툴팁만 뜬다.
  */
 export default function AttendanceList({
   attendance,
+  tips,
   hrefOf,
 }: {
   attendance: readonly Attendance[];
+  tips?: Readonly<Record<string, ReactNode>>;
   hrefOf?: (memberId: string) => string;
 }) {
   const groups = groupAttendance(attendance);
@@ -45,22 +49,25 @@ export default function AttendanceList({
                 const note = attendanceTimeNote(row);
                 const name = (
                   <>
+                    {row.jerseyNumber !== null && <span className="mr-1 text-xs text-text-tertiary tabular-nums">{row.jerseyNumber}</span>}
                     {row.realName}
                     {note && <span className="ml-1 text-xs text-text-secondary">{note}</span>}
                   </>
                 );
                 return hrefOf ? (
-                  <li key={row.memberId}>
-                    <Link
-                      href={hrefOf(row.memberId)}
-                      className="inline-flex min-h-11 items-center rounded-chip border border-border-strong bg-bg-subtle px-2.5 text-sm"
-                    >
+                  <li
+                    key={row.memberId}
+                    className="inline-flex items-center gap-1 rounded-chip border border-border-strong bg-bg-subtle px-2.5 text-sm"
+                  >
+                    {tips?.[row.memberId]}
+                    <Link href={hrefOf(row.memberId)} className="inline-flex min-h-11 items-center">
                       {name}
                     </Link>
                   </li>
                 ) : (
-                  <li key={row.memberId} className="rounded-chip bg-bg-subtle px-2 py-1 text-sm">
-                    {name}
+                  <li key={row.memberId} className="inline-flex items-center gap-1 rounded-chip bg-bg-subtle px-2 py-1 text-sm">
+                    {tips?.[row.memberId]}
+                    <span>{name}</span>
                   </li>
                 );
               })}

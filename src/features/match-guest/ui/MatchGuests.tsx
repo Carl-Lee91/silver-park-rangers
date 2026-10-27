@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { positionLabel } from "@/entities/position";
 import { adminMatchPath, adminMemberPath } from "@/shared/config";
 import { ActionButton } from "@/shared/ui";
@@ -10,7 +11,16 @@ import GuestForm, { type GuestValues } from "./GuestForm";
  * 관리자 매치 화면의 그날 용병(PLAN.md §4). 계정 없이 이 매치에만 들어가는 용병을 넣고·고치고·뺀다.
  * 넣은 사람은 참석으로 잡혀 스쿼드 빌더 벤치에 오른다. 이름을 누르면 선수 상세(능력치)로 간다.
  */
-export default function MatchGuests({ matchId, guests }: { matchId: string; guests: readonly GuestValues[] }) {
+export default function MatchGuests({
+  matchId,
+  guests,
+  tips,
+}: {
+  matchId: string;
+  guests: readonly GuestValues[];
+  /** 이름 앞 ! 단추(선수 정보). 링크 밖에 둔다 */
+  tips?: Readonly<Record<string, ReactNode>>;
+}) {
   return (
     <div className="flex flex-col gap-4">
       {guests.length === 0 ? (
@@ -20,6 +30,7 @@ export default function MatchGuests({ matchId, guests }: { matchId: string; gues
           {guests.map((guest) => (
             <li key={guest.id} className="rounded-box border border-border p-3">
               <div className="flex items-start justify-between gap-3">
+                {tips?.[guest.id] && <span className="flex h-11 shrink-0 items-center pl-1">{tips[guest.id]}</span>}
                 <Link href={adminMemberPath(guest.id, adminMatchPath(matchId))} className="-m-1 flex min-w-0 flex-1 items-center gap-2 rounded-box p-1">
                   <span className="min-w-0 flex-1">
                     <span className="block font-semibold">

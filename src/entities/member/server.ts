@@ -30,6 +30,18 @@ export const fetchMyGate = async (): Promise<Gate> => {
   return gateOf(true, result.access);
 };
 
+/**
+ * 선수 정보 ! 단추에 쓰는 프로필(등번호 · 선호 포지션 · 주발). 승인된 팀원은 승인된 사람 것만 읽는다(RLS) —
+ * 휴면 등으로 못 읽는 사람은 빠진다. 멤버/용병 구분은 다른 표라서 여기 없다.
+ */
+export const fetchMemberProfiles = async (ids: readonly string[]): Promise<Member[]> => {
+  if (ids.length === 0) return [];
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("members").select(MEMBER_COLUMNS).in("id", [...ids]);
+  if (error) throw new Error(`선수 정보를 읽지 못했습니다 — ${error.message}`);
+  return (data as unknown[]).map(toMember);
+};
+
 const emailRows = z.array(z.object({ member_id: z.string(), email: z.string().nullable() }));
 
 /**

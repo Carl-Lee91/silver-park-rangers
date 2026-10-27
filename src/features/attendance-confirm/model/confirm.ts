@@ -3,6 +3,7 @@ import type { Attendance, AttendanceResponse } from "@/entities/attendance";
 export type ConfirmRow = {
   memberId: string;
   realName: string;
+  jerseyNumber: number | null;
   response: AttendanceResponse | null;
   /** 저장된 스쿼드의 어느 쿼터든 뛰었는지(키퍼 포함) */
   inSquad: boolean;
@@ -10,7 +11,7 @@ export type ConfirmRow = {
   attended: boolean | null;
 };
 
-type NamedMember = { id: string; realName: string };
+type NamedMember = { id: string; realName: string; jerseyNumber: number | null };
 
 /**
  * 매치 후 실제 출석을 정할 명단(PLAN.md §9 match_attendance.attended).
@@ -36,6 +37,7 @@ export const confirmRows = (
       return {
         memberId: member.id,
         realName: member.realName,
+        jerseyNumber: member.jerseyNumber,
         response: row?.response ?? null,
         inSquad: squadMemberIds.has(member.id),
         attended: row?.attended ?? null,
@@ -49,7 +51,7 @@ export const squadDefaults = (rows: readonly ConfirmRow[]) =>
   rows.map((row) => ({ memberId: row.memberId, attended: row.inSquad }));
 
 /** 투표 없이 온 사람을 더할 때 고를 수 있는 사람: 명단에 아직 없는 승인 멤버 */
-export const addableMembers = <T extends NamedMember>(members: readonly T[], rows: readonly ConfirmRow[]) => {
+export const addableMembers = <T extends { id: string }>(members: readonly T[], rows: readonly ConfirmRow[]) => {
   const listed = new Set(rows.map((row) => row.memberId));
   return members.filter((member) => !listed.has(member.id));
 };

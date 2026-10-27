@@ -3,8 +3,11 @@ import type { MatchFormat } from "@/entities/match";
 
 type FutsalFormat = Exclude<MatchFormat, "football">;
 
-/** 팀원 · 공유 링크에 보이는 사람: 이름 · 등번호만(능력치 · 용병 구분 없음) */
-export type TeamMember = { name: string; jerseyNumber: number | null };
+/**
+ * 팀원 · 공유 링크에 보이는 사람: 이름 · 등번호만(능력치 · 용병 구분 없음). 선수 id 는 팀원 화면의 ! 단추에 쓰고,
+ * 공유 링크는 멤버 id 를 주지 않아서 null 이다.
+ */
+export type TeamMember = { id: string | null; name: string; jerseyNumber: number | null };
 
 const byNumberThenName = (a: TeamMember, b: TeamMember) =>
   (a.jerseyNumber ?? Number.MAX_SAFE_INTEGER) - (b.jerseyNumber ?? Number.MAX_SAFE_INTEGER) || a.name.localeCompare(b.name, "ko");
@@ -23,10 +26,13 @@ const person = z.object({ real_name: z.string(), jersey_number: z.number().int()
 /** 팀원 화면: 팀마다 이름 · 등번호(등번호 순, 없으면 뒤에 이름순) */
 export const toTeamLists = (rows: unknown, teamCount: number): TeamMember[][] => {
   const teams: TeamMember[][] = Array.from({ length: teamCount }, () => []);
-  for (const row of z.array(z.object({ team_number: z.number().int(), members: z.union([person, z.array(person)]) })).parse(rows)) {
+  const schema = z.array(
+    z.object({ member_id: z.string(), team_number: z.number().int(), members: z.union([person, z.array(person)]) }),
+  );
+  for (const row of schema.parse(rows)) {
     const member = Array.isArray(row.members) ? row.members[0] : row.members;
     if (member && row.team_number >= 1 && row.team_number <= teamCount) {
-      teams[row.team_number - 1].push({ name: member.real_name, jerseyNumber: member.jersey_number });
+      teams[row.team_number - 1].push({ id: row.member_id, name: member.real_name, jerseyNumber: member.jersey_number });
     }
   }
   return teams.map((team) => team.sort(byNumberThenName));
@@ -61,7 +67,7 @@ export const toSharedTeams = (json: unknown): SharedTeams | null => {
   const teams: TeamMember[][] = Array.from({ length: parsed.team_count }, () => []);
   for (const member of parsed.members) {
     if (member.team_number >= 1 && member.team_number <= parsed.team_count) {
-      teams[member.team_number - 1].push({ name: member.name, jerseyNumber: member.jersey_number });
+      teams[member.team_number - 1].push({ id: null, name: member.name, jerseyNumber: member.jersey_number });
     }
   }
   return {
