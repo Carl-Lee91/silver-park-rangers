@@ -26,8 +26,11 @@ export const adminSquadPath = (id: string) => `/admin/matches/${id}/squad`;
 /** 풋살 팀 나누기(PLAN.md §6 "풋살"). 풋살 매치는 스쿼드 빌더 대신 여기로 간다 */
 export const adminTeamsPath = (id: string) => `/admin/matches/${id}/teams`;
 
-/** 관리자 전용 선수 상세(PLAN.md §7 관리자) */
-export const adminMemberPath = (id: string) => `/admin/members/${id}`;
+/**
+ * 관리자 전용 선수 상세(PLAN.md §7 관리자). `from` 은 온 화면(스쿼드 · 매치 관리 등)이고, 상세의 뒤로 가기가 그리로 간다
+ */
+export const adminMemberPath = (id: string, from?: string) =>
+  from === undefined ? `/admin/members/${id}` : `/admin/members/${id}?from=${encodeURIComponent(from)}`;
 
 /**
  * `pathname` 이 `base` 이거나 그 아래 주소인지. `/admin` 은 `/admin/members` 를 품지만

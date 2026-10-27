@@ -8,6 +8,7 @@ export { fieldClass, textareaClass } from "./field";
 export { default as Select } from "./Select";
 export { default as MissingHint } from "./MissingHint";
 export { default as BackLink } from "./BackLink";
+export { default as ConfirmLink, LEAVE_UNSAVED } from "./ConfirmLink";
 export { useConfirm, useConfirmBeforeSubmit, type ConfirmOptions } from "./useConfirm";
 export { TOAST_MS, useToast } from "./useToast";
 export { default as Panel } from "./Panel";
