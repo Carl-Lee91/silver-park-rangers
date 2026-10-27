@@ -27,9 +27,8 @@ run_sql() {
 }
 
 run_sql -f "$ROOT/supabase/verify/00_supabase_stub.sql"
-for migration in "$ROOT"/supabase/migrations/*.sql; do
-  run_sql -f "$migration"
-done
+# 새 프로젝트의 SQL Editor 에 붙이는 한 묶음(supabase/bundle.sh)을 그대로 깐다 — 붙일 SQL 이 곧 검사한 SQL 이다.
+bash "$ROOT/supabase/bundle.sh" | run_sql -f -
 run_sql -o /dev/null -f "$ROOT/supabase/verify/rls_scenarios.sql" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  //'
 
 echo "✓ 마이그레이션 적용 + RLS 시나리오 통과"
