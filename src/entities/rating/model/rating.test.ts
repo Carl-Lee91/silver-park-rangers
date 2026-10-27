@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fieldStrength, RATING_ATTRIBUTES, ratingTone, toRatings } from "./rating";
+import { fieldStrength, RATING_ATTRIBUTES, ratingTone, toRatings, toRatingsByMember } from "./rating";
 
 describe("능력치 항목 (PLAN.md §5 능력치)", () => {
   it("일곱 가지를 이 순서로 둔다 — 피파 카드 여섯 가지 + 골키퍼", () => {
@@ -69,5 +69,25 @@ describe("선수 전력 (PLAN.md §6 자동 배치 스타일)", () => {
   it("하나도 매기지 않았으면 전력을 모른다(null) — 골키퍼만 매겨도 마찬가지다", () => {
     expect(fieldStrength(none)).toBeNull();
     expect(fieldStrength({ ...none, goalkeeping: 9 })).toBeNull();
+  });
+});
+
+describe("여러 선수 능력치 읽기", () => {
+  it("선수마다 항목별 값으로 묶는다", () => {
+    const row = (member_id: string, pace: number | null) => ({
+      member_id,
+      pace,
+      shooting: null,
+      passing: null,
+      dribbling: null,
+      defending: null,
+      physical: null,
+      goalkeeping: null,
+      updated_at: "2026-10-27T01:00:00Z",
+    });
+    const byMember = toRatingsByMember([row("a", 8), row("b", null)]);
+    expect(byMember.a.pace).toBe(8);
+    expect(byMember.b.pace).toBeNull();
+    expect(Object.keys(byMember)).toEqual(["a", "b"]);
   });
 });
