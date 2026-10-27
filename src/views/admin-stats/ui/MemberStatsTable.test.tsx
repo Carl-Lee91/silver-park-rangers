@@ -88,4 +88,9 @@ describe("멤버별 표 (풋볼매니저 선수 표)", () => {
     render(<MemberStatsTable stats={list} />);
     expect(screen.getByRole("rowheader", { name: "가멤버" })).toHaveClass("sticky");
   });
+
+  it("이름을 누르면 선수 상세(능력치)로 간다", () => {
+    render(<MemberStatsTable stats={list} />);
+    expect(screen.getByRole("link", { name: "나멤버" })).toHaveAttribute("href", "/admin/members/나멤버");
+  });
 });

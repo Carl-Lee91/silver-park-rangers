@@ -14,6 +14,8 @@ const match: Match = {
   voteDeadline: null,
   squadPublishedAt: null,
   shareToken: "t",
+  format: "football",
+  teamCount: 2,
 };
 
 describe("매치 줄 (풋볼매니저 일정표)", () => {
@@ -35,5 +37,10 @@ describe("매치 줄 (풋볼매니저 일정표)", () => {
   it("오른쪽에 내 투표 같은 표시를 둔다", () => {
     render(<MatchCard match={match} href="/matches/m1" aside={<span>참석</span>} />);
     expect(screen.getByRole("link")).toHaveTextContent(/참석$/);
+  });
+
+  it("풋살 매치는 쿼터 수 대신 종류(풋살 5:5)를 쓴다", () => {
+    render(<MatchCard match={{ ...match, format: "futsal5" }} href="/matches/m1" />);
+    expect(screen.getByRole("link")).toHaveTextContent("10:00~13:00 · 풋살 5:5 · 실버파크 구장");
   });
 });

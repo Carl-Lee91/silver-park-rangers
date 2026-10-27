@@ -9,12 +9,14 @@ type Props = {
   rows: ConfirmRow[];
   members: { id: string; realName: string }[];
   hasSquad: boolean;
+  /** 한꺼번에 확정할 기준의 이름: 축구는 "스쿼드", 풋살은 "팀 명단" */
+  squadLabel?: string;
 };
 
 const STATE = { true: "출석", false: "불참", null: "미확정" } as const;
 
 /** 매치 후 실제 출석을 정한다. 참석률·노쇼율 통계가 이 값을 쓴다(PLAN.md §10 2차). */
-export default function AttendanceConfirm({ matchId, rows, members, hasSquad }: Props) {
+export default function AttendanceConfirm({ matchId, rows, members, hasSquad, squadLabel = "스쿼드" }: Props) {
   const confirmed = rows.filter((row) => row.attended !== null).length;
 
   return (
@@ -26,9 +28,9 @@ export default function AttendanceConfirm({ matchId, rows, members, hasSquad }: 
         <ActionButton
           action={confirmFromSquad}
           fields={{ matchId, rows: JSON.stringify(squadDefaults(rows)) }}
-          label="스쿼드대로 확정"
+          label={`${squadLabel}대로 확정`}
           tone="primary"
-          confirmMessage="스쿼드에 든 사람은 출석, 아닌 사람은 불참으로 정할까요? 하나씩 다시 고칠 수 있어요."
+          confirmMessage={`${squadLabel}에 든 사람은 출석, 아닌 사람은 불참으로 정할까요? 하나씩 다시 고칠 수 있어요.`}
         />
       )}
       <ul className="flex flex-col gap-2">

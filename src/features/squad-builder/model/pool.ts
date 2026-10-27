@@ -64,7 +64,12 @@ const placedAnywhere = (builder: Builder) =>
  * 자동 배치·점검에 넘길 선수. 참석한 사람과, 미정이어도 관리자가 직접 넣은 사람이다.
  * 자동 배치는 미정인 사람을 스스로 넣지 않는다.
  */
-export const squadPlayersFor = (pool: readonly BuilderPlayer[], builder: Builder): SquadPlayer[] => {
+export const squadPlayersFor = (
+  pool: readonly BuilderPlayer[],
+  builder: Builder,
+  /** 선수 전력(관리자 전용 능력치). 없는 사람은 null — 자동 배치 스타일이 평균으로 본다 */
+  strengths: Readonly<Record<string, number | null>> = {},
+): SquadPlayer[] => {
   const placed = placedAnywhere(builder);
   return pool
     .filter((player) => player.response === "yes" || placed.has(player.id))
@@ -72,6 +77,7 @@ export const squadPlayersFor = (pool: readonly BuilderPlayer[], builder: Builder
       id,
       preferredPositions,
       availableQuarters: quarters,
+      strength: strengths[id] ?? null,
     }));
 };
 

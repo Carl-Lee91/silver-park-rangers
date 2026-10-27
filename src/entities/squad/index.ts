@@ -1,4 +1,5 @@
-export { autoAssign, type AutoAssignOptions } from "./model/autoAssign";
+export { autoAssign, type AssignStyle, type AutoAssignOptions } from "./model/autoAssign";
+export { isFocusStyle } from "./model/style";
 export { evaluateSquad, type SquadReport } from "./model/evaluateSquad";
 export { guaranteedQuarters } from "./model/guarantees";
 export { isDedicatedKeeper, preferenceScore } from "./model/rules";

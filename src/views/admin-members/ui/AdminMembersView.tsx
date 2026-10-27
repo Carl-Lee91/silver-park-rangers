@@ -1,3 +1,5 @@
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   canChangeRole,
@@ -16,6 +18,7 @@ import {
   setMemberType,
   TemporaryPasswordButton,
 } from "@/features/member-management";
+import { adminMemberPath } from "@/shared/config";
 import { ActionButton, Panel, Screen } from "@/shared/ui";
 import MemberSummary from "./MemberSummary";
 
@@ -62,7 +65,13 @@ function MemberCard({ member, viewer }: { member: AdminMember; viewer: Gate }) {
 
   return (
     <article className="bg-bg-panel p-3 md:p-4">
-      <MemberSummary member={member} />
+      {/* 누르면 선수 상세(능력치 · 올해 기록)로 간다 */}
+      <Link href={adminMemberPath(member.id)} className="-m-1 flex items-center gap-2 rounded-box p-1">
+        <span className="min-w-0 flex-1">
+          <MemberSummary member={member} />
+        </span>
+        <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-text-tertiary" />
+      </Link>
       <details className="mt-3">
         <summary className="cursor-pointer text-sm text-text-secondary">관리</summary>
         <div className="mt-3 grid grid-cols-2 gap-2">

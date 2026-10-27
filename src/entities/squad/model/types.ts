@@ -7,6 +7,11 @@ export type SquadPlayer = {
   preferredPositions: readonly Position[];
   /** 뛸 수 있는 쿼터 번호(0부터). 도착·떠나는 시간으로 계산한다(`entities/match`). */
   availableQuarters: readonly number[];
+  /**
+   * 선수 전력(필드 능력치 평균, 1~10). 관리자 화면에서만 채운다. 없으면(미평가) 자동 배치 스타일이
+   * 이번 배치 대상의 평균으로 본다(PLAN.md §6 "자동 배치 스타일").
+   */
+  strength?: number | null;
 };
 
 export type SquadQuarter = {

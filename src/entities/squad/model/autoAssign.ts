@@ -3,7 +3,10 @@ import { canMeetBounds } from "./feasibility";
 import { guaranteedQuarters } from "./guarantees";
 import { canPlayField, isDedicatedKeeper, preferenceScore } from "./rules";
 import { seatByPreference } from "./seating";
+import { fillStrengths, improveByStyle, type AssignStyle } from "./style";
 import type { QuarterLineup, SquadInput, SquadPlayer } from "./types";
+
+export type { AssignStyle } from "./style";
 
 export type AutoAssignOptions = {
   /** 쿼터별로 이미 정해 둔 키퍼. 그대로 둔다. 비어 있는 쿼터만 전담 키퍼로 채운다. */
@@ -17,6 +20,8 @@ export type AutoAssignOptions = {
   startQuarter?: number;
   /** 지금 배치. `startQuarter` 앞 쿼터를 여기서 가져온다 */
   current?: readonly QuarterLineup[];
+  /** 자동 배치 스타일(PLAN.md §6). 기본은 능력치를 보지 않는다 */
+  style?: AssignStyle;
 };
 
 /**
@@ -74,11 +79,19 @@ const takeOpenSlot = (player: SquadPlayer, openSlots: Position[]) => {
  * 3. 뽑을 때마다 "이대로 가도 모두 보장 수와 상한을 지키며 남은 쿼터를 다 채울 수 있나"를
  *    최대 유량으로 확인한다(`canMeetBounds`). 안 되면 그 사람을 건너뛴다. 그래서 보장 수와
  *    상한은 순서 규칙과 상관없이 지켜진다.
- * 4. 뽑힌 사람을 선호 점수 합이 가장 크게 슬롯에 놓는다.
+ * 4. 스타일이 있으면(균등 · 초반 · 후반 · 쿼터 지정) 쿼터끼리 두 사람을 맞바꿔 스타일 목표를 좋게 한다
+ *    (`improveByStyle`). 각자 뛰는 쿼터 수는 그대로라 1~3번 규칙이 그대로 지켜진다.
+ * 5. 뽑힌 사람을 선호 점수 합이 가장 크게 슬롯에 놓는다.
  */
 export const autoAssign = (
   input: SquadInput,
-  { keepers: givenKeepers = [], random = Math.random, startQuarter = 0, current = [] }: AutoAssignOptions = {},
+  {
+    keepers: givenKeepers = [],
+    random = Math.random,
+    startQuarter = 0,
+    current = [],
+    style = { kind: "default" },
+  }: AutoAssignOptions = {},
 ): QuarterLineup[] => {
   const start = Math.max(0, Math.min(startQuarter, input.quarters.length));
   const fixedKeepers = input.quarters.map((_, quarter) =>
@@ -183,6 +196,19 @@ export const autoAssign = (
       takeOpenSlot(pick, openSlots);
     }
   });
+
+  const strengths = fillStrengths(field);
+  if (strengths !== null) {
+    improveByStyle({
+      style,
+      chosen,
+      slots: input.quarters.map((quarter) => quarter.fieldSlots),
+      start,
+      players: byId,
+      strengths,
+      canPlay: canPlayById,
+    });
+  }
 
   return input.quarters.map((quarter, index) =>
     index < start

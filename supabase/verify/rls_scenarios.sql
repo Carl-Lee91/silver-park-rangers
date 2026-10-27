@@ -745,6 +745,89 @@ select verify.ok(not exists (select 1 from public.members where id = current_set
   '매치를 지우면 그 매치의 그날 용병도 지워진다');
 reset role;
 
+-- ── 선수 능력치 (20261027000000) ─────────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.member_ratings (member_id, pace, shooting, passing, dribbling, defending, physical, updated_by)
+values ('00000000-0000-0000-0000-000000000002', 7, 6, 8, 5, 4, 7, '00000000-0000-0000-0000-000000000001');
+select verify.ok((select passing from public.member_ratings where member_id = '00000000-0000-0000-0000-000000000002') = 8, '관리자는 능력치를 매기고 본다');
+select verify.ok((select goalkeeping from public.member_ratings where member_id = '00000000-0000-0000-0000-000000000002') is null,
+  '매기지 않은 칸은 비어 있다(0 이 아니다)');
+select verify.fails($$update public.member_ratings set pace = 11 where member_id = '00000000-0000-0000-0000-000000000002'$$, '능력치는 10 을 넘지 않는다');
+select verify.fails($$update public.member_ratings set pace = 0 where member_id = '00000000-0000-0000-0000-000000000002'$$, '능력치는 1 보다 작지 않다');
+
+select verify.login('00000000-0000-0000-0000-000000000007');
+update public.member_ratings set goalkeeping = 3 where member_id = '00000000-0000-0000-0000-000000000002';
+select verify.ok((select goalkeeping from public.member_ratings where member_id = '00000000-0000-0000-0000-000000000002') = 3, '어드민도 능력치를 고친다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.member_ratings) = 0, '일반 멤버는 자기 능력치도 못 본다');
+select verify.fails($$insert into public.member_ratings (member_id, pace) values ('00000000-0000-0000-0000-000000000005', 10)$$,
+  '일반 멤버는 능력치를 못 매긴다');
+update public.member_ratings set pace = 10 where member_id = '00000000-0000-0000-0000-000000000002';
+reset role;
+select verify.ok((select pace from public.member_ratings where member_id = '00000000-0000-0000-0000-000000000002') = 7, '일반 멤버는 능력치를 못 고친다');
+
+set role anon;
+select verify.ok((select count(*) from public.member_ratings) = 0, '로그인 안 하면 능력치를 못 본다');
+select verify.ok(public.shared_squad(current_setting('verify.token')::uuid)::text not like '%pace%',
+  '공유 링크에는 능력치가 없다');
+reset role;
+
+-- ── 풋살 팀 나누기 (20261027010000) ───────────────────────────────────
+select verify.ok((select format from public.matches where id = '10000000-0000-0000-0000-000000000011') = 'football',
+  '매치 종류는 기본이 축구다');
+insert into public.matches (id, match_date, format) values ('10000000-0000-0000-0000-000000000031', current_date + 10, 'futsal5');
+select verify.fails($$update public.matches set team_count = 4 where id = '10000000-0000-0000-0000-000000000031'$$, '풋살 팀은 2 · 3팀뿐이다');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 3, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000001', 'team_number', 1),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000002', 'team_number', 2),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000005', 'team_number', 3)));
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 3, '관리자는 팀을 저장한다');
+select verify.ok((select team_count from public.matches where id = '10000000-0000-0000-0000-000000000031') = 3, '팀 수도 같이 저장한다');
+select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000001', 'team_number', 1),
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000002', 'team_number', 2)));
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2,
+  '다시 저장하면 명단을 통째로 바꾼다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, jsonb_build_array(
+  jsonb_build_object('member_id', '00000000-0000-0000-0000-000000000005', 'team_number', 3)))$$, '팀 수보다 큰 팀 번호는 저장하지 않는다');
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2,
+  '저장에 실패하면 전의 팀이 그대로 남는다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000011', 2, '[]'::jsonb)$$,
+  '축구 매치에는 풋살 팀을 저장하지 않는다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.futsal_team_members) = 0, '공개 전에는 팀원이 팀을 못 본다');
+select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, '[]'::jsonb)$$, '일반 멤버는 팀을 저장하지 못한다');
+reset role;
+
+-- 공유 토큰은 미리 읽어 둔다(로그인 안 한 사람은 매치 표를 못 읽는다)
+select set_config('verify.futsal_token', (select share_token::text from public.matches where id = '10000000-0000-0000-0000-000000000031'), false);
+set role anon;
+select verify.ok(public.shared_teams(current_setting('verify.futsal_token')::uuid) is null,
+  '공개 전에는 공유 링크로 팀을 못 본다');
+reset role;
+
+update public.matches set squad_published_at = now() where id = '10000000-0000-0000-0000-000000000031';
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.futsal_team_members where match_id = '10000000-0000-0000-0000-000000000031') = 2, '공개하면 팀원이 팀을 본다');
+reset role;
+
+set role anon;
+select set_config('verify.futsal', public.shared_teams(current_setting('verify.futsal_token')::uuid)::text, false);
+select verify.ok((current_setting('verify.futsal')::jsonb ->> 'format') = 'futsal5', '공유 링크는 풋살 종류를 준다');
+select verify.ok((current_setting('verify.futsal')::jsonb ->> 'match_id') = '10000000-0000-0000-0000-000000000031',
+  '공유 링크는 투표하러 갈 매치 id 를 준다');
+select verify.ok(jsonb_array_length(current_setting('verify.futsal')::jsonb -> 'members') = 2, '공유 링크는 팀 명단을 준다');
+select verify.ok(current_setting('verify.futsal') not like '%member_id%' and current_setting('verify.futsal') not like '%guest%',
+  '공유 링크에는 멤버 id · 용병 구분이 없다');
+reset role;
+
 delete from auth.users where id = '00000000-0000-0000-0000-000000000009';
 select verify.ok(not exists (select 1 from public.members where id = '00000000-0000-0000-0000-000000000009'),
   '계정을 지우면 멤버 행도 지운다');

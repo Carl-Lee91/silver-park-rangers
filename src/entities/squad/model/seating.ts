@@ -2,6 +2,18 @@ import type { Position } from "@/entities/position";
 import { bestAssignment } from "../lib/bestAssignment";
 import { preferenceScore } from "./rules";
 
+/** 가장 잘 앉혔을 때의 선호 점수 합. 자동 배치 스타일이 맞바꿈으로 자리 맞춤이 얼마나 바뀌는지 볼 때 쓴다 */
+export const seatingScore = (
+  players: readonly { id: string; preferredPositions: readonly Position[] }[],
+  positions: readonly Position[],
+) => {
+  const byId = new Map(players.map((player) => [player.id, player]));
+  return seatByPreference(players, positions).reduce(
+    (sum, id, seat) => sum + (id === null ? 0 : preferenceScore(byId.get(id)!, positions[seat])),
+    0,
+  );
+};
+
 /**
  * 사람들을 자리(포지션 목록)에 앉힌다. 선호 1순위 3점, 2순위 2점, 3순위 1점으로 계산해서
  * 합이 가장 큰 배치를 고른다(PLAN.md §6). 돌려주는 값은 자리마다 앉은 사람 id(비면 null)다.

@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { fetchMatchAttendance } from "@/entities/attendance/server";
 import { fetchFormations } from "@/entities/formation/server";
-import { formatMatchDate, matchTitle, quarterSchedule, seoulToday } from "@/entities/match";
+import { formatMatchDate, isFutsal, matchTitle, quarterSchedule, seoulToday } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchMatchNotes } from "@/entities/match-note/server";
+import { fieldStrength } from "@/entities/rating";
+import { fetchAllRatings } from "@/entities/rating/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { squadForImage } from "@/entities/squad";
 import { fetchSquad } from "@/entities/squad/server";
@@ -14,7 +16,7 @@ import { setAttendanceWindow } from "@/features/attendance-adjust";
 import { saveMatchNote } from "@/features/match-note";
 import { buildPool, initialBuilder, publishSquad, saveSquad, SquadBuilder } from "@/features/squad-builder";
 import { ShareActions, SquadImageViewer } from "@/features/squad-share";
-import { adminMatchPath, getServerEnv, ROUTES } from "@/shared/config";
+import { adminMatchPath, adminTeamsPath, getServerEnv, ROUTES } from "@/shared/config";
 import { adminSquadImagePath, squadImageVersion } from "@/widgets/squad-image";
 import { chipClass, Panel, Screen } from "@/shared/ui";
 
@@ -24,15 +26,20 @@ const DEFAULT_FORMATION = "4-3-3";
 export default async function AdminSquadView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
   if (match === null) notFound();
+  // 풋살은 쿼터 · 스쿼드 대신 팀 나누기다(PLAN.md §6 "풋살")
+  if (isFutsal(match)) redirect(adminTeamsPath(match.id));
 
-  const [attendance, members, formations, saved, season, notes] = await Promise.all([
+  const [attendance, members, formations, saved, season, notes, ratings] = await Promise.all([
     fetchMatchAttendance(match.id),
     fetchAdminMembers(),
     fetchFormations(),
     fetchSquad(match.id),
     fetchStatsSource(periodRange("season", seoulToday())),
     fetchMatchNotes(match.id),
+    fetchAllRatings(),
   ]);
+  // 자동 배치 스타일이 쓰는 선수 전력(관리자 전용 능력치, PLAN.md §6). 매기지 않은 사람은 없다(평균으로 본다)
+  const strengths = Object.fromEntries(Object.entries(ratings).map(([id, values]) => [id, fieldStrength(values)]));
   const seasonAverages = Object.fromEntries(
     computeMemberStats(season).map((row) => [row.memberId, row.avgFieldQuarters]),
   );
@@ -84,6 +91,7 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         notes={notes}
         noteAction={saveMatchNote}
         windowAction={setAttendanceWindow}
+        strengths={strengths}
       />
       {current.length > 0 &&
         (match.squadPublishedAt !== null ? (

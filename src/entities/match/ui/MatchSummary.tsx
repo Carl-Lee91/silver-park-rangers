@@ -1,8 +1,9 @@
 import { Emblem } from "@/shared/ui";
-import { matchTitle, opponentInitial, type Match } from "../model/match";
+import { FORMAT_LABELS, matchTitle, opponentInitial, type Match, type MatchFormat } from "../model/match";
 
-/** 매치 미리보기에 쓰는 값 */
-type MatchInfo = Pick<Match, "date" | "startsAt" | "endsAt" | "quarterCount" | "venue" | "opponent">;
+/** 매치 미리보기에 쓰는 값. 종류가 없으면 축구(스쿼드 공유 링크)고, 풋살은 쿼터 수를 안 쓴다(팀 공유 링크) */
+type MatchInfo = Pick<Match, "date" | "startsAt" | "endsAt" | "venue" | "opponent"> &
+  ({ format?: "football"; quarterCount: number } | { format: Exclude<MatchFormat, "football">; quarterCount?: number });
 
 /**
  * 매치 미리보기(풋볼매니저 경기 전 화면): 우리 팀 엠블럼 · 킥오프 · 상대, 아래 줄에 구장 · 시간 · 쿼터.
@@ -36,7 +37,9 @@ export default function MatchSummary({ match, framed = true }: { match: MatchInf
         {[
           ["구장", match.venue ?? "–"],
           ["시간", `${match.startsAt}~${match.endsAt}`],
-          ["쿼터", `${match.quarterCount}쿼터`],
+          match.format === undefined || match.format === "football"
+            ? ["쿼터", `${match.quarterCount}쿼터`]
+            : ["종류", FORMAT_LABELS[match.format]],
         ].map(([term, detail]) => (
           <div key={term} className="min-w-0 px-3 py-2.5">
             <dt className="text-xs font-semibold text-text-tertiary">{term}</dt>

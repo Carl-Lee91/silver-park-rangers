@@ -8,7 +8,8 @@ type Props = {
   /** 절대 주소(https://…/s/[token]). 카톡에 붙이면 미리보기 카드가 뜬다 */
   shareUrl: string;
   title: string;
-  imageUrls: { quarters: string; rotation: string };
+  /** 쿼터별 · 출전표 이미지(축구). 없으면(풋살) 공유 링크만 둔다 */
+  imageUrls?: { quarters: string; rotation: string };
 };
 
 type Result = "idle" | "copied" | "manual";
@@ -61,7 +62,7 @@ export default function ShareActions({ shareUrl, title, imageUrls }: Props) {
           />
         </div>
       )}
-      <SquadImageViewer urls={imageUrls} fileName={title} />
+      {imageUrls && <SquadImageViewer urls={imageUrls} fileName={title} />}
     </div>
   );
 }
