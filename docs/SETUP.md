@@ -42,6 +42,7 @@
 | `20261020000000_jersey_numbers.sql` | 2026-10-27 |
 | `20261021000000_email_signup.sql` | 2026-10-27 |
 | `20261021010000_match_guests.sql` | 2026-10-27 |
+| `20261027000000_member_ratings.sql` | |
 
 ## 2. Supabase — 이메일 가입 설정
 
