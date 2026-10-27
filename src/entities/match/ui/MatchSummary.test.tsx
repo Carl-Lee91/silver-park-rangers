@@ -38,4 +38,10 @@ describe("매치 미리보기 (풋볼매니저 경기 전 화면)", () => {
     expect(screen.getAllByRole("term").map((term) => term.textContent)).toEqual(["구장", "시간", "종류"]);
     expect(screen.getAllByRole("definition")[2]).toHaveTextContent("풋살 6:6");
   });
+
+  it("풋살 매치는 쿼터 수 없이도 그린다(공유 링크)", () => {
+    const { date, startsAt, endsAt, venue, opponent } = match;
+    render(<MatchSummary match={{ date, startsAt, endsAt, venue, opponent, format: "futsal5" }} />);
+    expect(screen.getAllByRole("definition")[2]).toHaveTextContent("풋살 5:5");
+  });
 });

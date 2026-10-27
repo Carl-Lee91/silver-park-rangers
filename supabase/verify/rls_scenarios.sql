@@ -821,6 +821,8 @@ reset role;
 set role anon;
 select set_config('verify.futsal', public.shared_teams(current_setting('verify.futsal_token')::uuid)::text, false);
 select verify.ok((current_setting('verify.futsal')::jsonb ->> 'format') = 'futsal5', '공유 링크는 풋살 종류를 준다');
+select verify.ok((current_setting('verify.futsal')::jsonb ->> 'match_id') = '10000000-0000-0000-0000-000000000031',
+  '공유 링크는 투표하러 갈 매치 id 를 준다');
 select verify.ok(jsonb_array_length(current_setting('verify.futsal')::jsonb -> 'members') = 2, '공유 링크는 팀 명단을 준다');
 select verify.ok(current_setting('verify.futsal') not like '%member_id%' and current_setting('verify.futsal') not like '%guest%',
   '공유 링크에는 멤버 id · 용병 구분이 없다');

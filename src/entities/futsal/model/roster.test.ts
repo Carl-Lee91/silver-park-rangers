@@ -28,6 +28,7 @@ describe("풋살 팀 명단 읽기", () => {
   it("공유 링크: 매치 정보와 팀 명단. 공개 전이면 null", () => {
     expect(toSharedTeams(null)).toBeNull();
     const shared = toSharedTeams({
+      match_id: "m1",
       match_date: "2026-11-01",
       starts_at: "10:00:00",
       ends_at: "12:00:00",
@@ -41,6 +42,7 @@ describe("풋살 팀 명단 읽기", () => {
       ],
     });
     expect(shared).toEqual({
+      matchId: "m1",
       match: { date: "2026-11-01", startsAt: "10:00", endsAt: "12:00", venue: null, opponent: null, format: "futsal6" },
       teams: [[{ name: "가", jerseyNumber: 1 }], [], [{ name: "다", jerseyNumber: null }]],
     });
