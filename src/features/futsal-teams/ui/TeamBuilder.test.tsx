@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 import type { ActionState } from "@/shared/ui";
 import TeamBuilder, { type TeamBuilderPlayer } from "./TeamBuilder";
 
+const router = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 const ok: Action = async () => ({});
 
@@ -66,6 +69,22 @@ describe("풋살 팀 나누기 화면 (PLAN.md §6 풋살)", () => {
     await user.click(screen.getByRole("button", { name: "B팀으로" }));
     expect(names(team("B팀"))).toEqual(expect.arrayContaining([expect.stringContaining("가선수")]));
     expect(names(team("A팀"))).toHaveLength(0);
+  });
+
+  it("사람을 누르면 선수 상세로 가는 링크가 있다 — 뒤로 가면 팀 나누기로 온다", async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(within(team("팀 없음")).getByRole("button", { name: /카선수/ }));
+    expect(screen.getByRole("link", { name: "선수 상세" })).toHaveAttribute("href", "/admin/members/p11?from=%2Fadmin%2Fmatches%2Fm1%2Fteams");
+  });
+
+  it("저장하지 않은 변경이 있으면 선수 상세로 가기 전에 묻는다", async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(screen.getByRole("button", { name: "자동으로 나누기" }));
+    await user.click(within(team("A팀")).getAllByRole("button")[0]);
+    await user.click(screen.getByRole("button", { name: "선수 상세" }));
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("저장하지 않은 변경");
   });
 
   it("그날 용병은 관리자 화면에서 용병으로 보인다", () => {
