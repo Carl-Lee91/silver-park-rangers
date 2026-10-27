@@ -78,5 +78,16 @@ describe("참석 투표 폼", () => {
     renderForm();
     expect(screen.getByRole("status")).toHaveTextContent("남은 것: 참석 여부");
   });
-});
 
+  it("시간을 묻지 않는 매치(풋살)는 참석을 골라도 도착 · 떠나는 시간을 묻지 않는다", async () => {
+    const user = userEvent.setup();
+    const action = vi.fn<Action>(noop);
+    renderForm({ askTime: false, action });
+    await user.click(screen.getByRole("button", { name: "참석" }));
+    expect(screen.queryByLabelText("도착")).not.toBeInTheDocument();
+    expect(screen.queryByText(/뛸 수 있어요/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "투표하기" }));
+    await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
+    expect(action.mock.calls[0][1].get("arriveAt")).toBeNull();
+  });
+});
