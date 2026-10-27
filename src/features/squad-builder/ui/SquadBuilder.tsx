@@ -65,9 +65,10 @@ type Props = {
   noteAction?: Action;
   /** 당일 도착·떠나는 시간 저장(features/attendance-adjust). 없으면 띄우지 않는다 */
   windowAction?: Action;
-  /** 선수 전력(관리자 전용 능력치, 멤버 id → 1~10). 자동 배치 스타일이 쓴다(PLAN.md §6) */
-  strengths?: Record<string, number | null>;
-  /** 능력치(멤버 id → 항목별 값). 고른 선수 칸에 막대로 보인다. 매기지 않은 사람은 없다 */
+  /**
+   * 능력치(관리자 전용, 멤버 id → 항목별 값. 매기지 않은 사람은 없다). 자동 배치가 선수 전력 · 포지션 점수로 쓰고
+   * (PLAN.md §6), 고른 선수 칸에 막대로 보인다
+   */
   ratings?: Readonly<Record<string, RatingValues>>;
   /** 선수 표 이름 앞 ! 단추(선수 정보, 멤버 id → 단추). 화면(views)이 만들어 넘긴다 */
   tips?: Readonly<Record<string, ReactNode>>;
@@ -93,7 +94,6 @@ export default function SquadBuilder({
   notes = {},
   noteAction,
   windowAction,
-  strengths = {},
   ratings,
   tips,
 }: Props) {
@@ -119,7 +119,7 @@ export default function SquadBuilder({
     const number = byId.get(memberId)?.jerseyNumber;
     return number == null ? nameOf(memberId) : `${number} ${nameOf(memberId)}`;
   };
-  const input = { players: squadPlayersFor(pool, builder, strengths), quarters: toSquadQuarters(builder) };
+  const input = { players: squadPlayersFor(pool, builder, ratings), quarters: toSquadQuarters(builder) };
   const rated = input.players.some((player) => player.strength != null);
   const inSquad = new Set(input.players.map((player) => player.id));
   const report = evaluateSquad(input, toLineup(builder));

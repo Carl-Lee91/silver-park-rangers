@@ -24,7 +24,7 @@ describe("가입 신청 폼 (PLAN.md §4·§5)", () => {
 
     await fillAccount(user);
     await user.click(position(/^센터백/));
-    await user.click(position(/^미드필더/));
+    await user.click(position(/^중앙 미드필더/));
     expect(submit).toBeDisabled();
 
     await user.click(position(/^윙백/));
@@ -105,7 +105,7 @@ describe("가입 신청 폼 (PLAN.md §4·§5)", () => {
     await user.click(position(/^센터백/));
     expect(screen.getByRole("status")).toHaveTextContent("남은 것: 선호 포지션 2개 더");
 
-    await user.click(position(/^미드필더/));
+    await user.click(position(/^중앙 미드필더/));
     await user.click(position(/^윙백/));
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
   });

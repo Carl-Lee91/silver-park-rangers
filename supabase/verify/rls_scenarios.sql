@@ -159,10 +159,10 @@ select verify.fails($$select public.approve_member('00000000-0000-0000-0000-0000
 select verify.login('00000000-0000-0000-0000-000000000002');
 select verify.ok((select count(*) from public.members) = 3, '승인된 사람은 승인된 멤버만 본다');
 select verify.ok((select count(*) from public.member_admin_info) = 0, '멤버/용병 구분은 관리자만 본다');
-select verify.ok((select count(*) from public.formations where is_preset) = 2, '기본 포메이션 두 개를 본다');
+select verify.ok((select count(*) from public.formations where is_preset) = 13, '기본 전술 13개를 본다');
 select verify.fails($$insert into public.matches (match_date) values ('2026-10-25')$$,
   '일반 멤버는 매치를 못 만든다');
-select verify.fails($$insert into public.formations (name, slots) values ('3-5-2', '[{"position":"GK","x":50,"y":92}]')$$,
+select verify.fails($$insert into public.formations (name, slots) values ('테스트 전술', '[{"position":"GK","x":50,"y":92}]')$$,
   '일반 멤버는 포메이션을 못 만든다');
 select verify.fails($$select public.approve_member('00000000-0000-0000-0000-000000000003', 'member')$$,
   '일반 멤버는 승인할 수 없다');
@@ -245,8 +245,8 @@ select verify.fails($$insert into public.quarter_slots (quarter_id, slot_index, 
 
 -- ── 포메이션 ─────────────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000001');
-insert into public.formations (name, slots) values ('3-5-2', '[{"position": "GK", "x": 50, "y": 92}]');
-select verify.ok((select count(*) from public.formations) = 3, '관리자는 커스텀 포메이션을 저장한다');
+insert into public.formations (name, slots) values ('테스트 전술', '[{"position": "GK", "x": 50, "y": 92}]');
+select verify.ok((select count(*) from public.formations) = 14, '관리자는 커스텀 포메이션을 저장한다');
 update public.formations set name = '4-3-3 수정' where name = '4-3-3';
 select verify.ok(exists (select 1 from public.formations where name = '4-3-3'),
   '기본 포메이션은 관리자도 못 고친다');
@@ -255,6 +255,22 @@ select verify.ok(exists (select 1 from public.formations where name = '4-4-2'),
   '기본 포메이션은 관리자도 못 지운다');
 select verify.fails($$insert into public.formations (name, is_preset, slots) values ('가짜기본', true, '[{"position":"GK","x":50,"y":92}]')$$,
   '기본 포메이션을 새로 만들 수 없다');
+
+-- 기본 전술(20261027020000): FM 기본 전술처럼 여러 개. 모두 11자리에 키퍼 하나, 아는 포지션만 쓴다.
+select verify.ok(not exists (
+  select 1 from public.formations f
+   where f.is_preset
+     and (jsonb_array_length(f.slots) <> 11
+       or (select count(*) from jsonb_array_elements(f.slots) s where s ->> 'position' = 'GK') <> 1
+       or exists (select 1 from jsonb_array_elements(f.slots) s
+                   where s ->> 'position' not in (select unnest(enum_range(null::public.player_position))::text)))
+), '기본 전술은 모두 11자리 · 키퍼 하나 · 아는 포지션이다');
+select verify.ok((select count(*) from public.formations, jsonb_array_elements(slots) s
+                   where name = '4-3-3' and s ->> 'position' = 'FB') = 2, '4-3-3 의 측면 수비는 풀백이다');
+select verify.ok((select count(*) from public.formations, jsonb_array_elements(slots) s
+                   where name = '4-4-2' and s ->> 'position' = 'WM') = 2, '4-4-2 의 측면 미드는 와이드 미드다');
+select verify.ok((select count(*) from public.formations, jsonb_array_elements(slots) s
+                   where name = '4-3-3 DM' and s ->> 'position' = 'DM') = 1, '4-3-3 DM 은 수비형 미드 하나를 둔다');
 
 -- ── 거절 · 휴면 ──────────────────────────────────────────────────────
 select verify.login('00000000-0000-0000-0000-000000000006');
@@ -601,6 +617,9 @@ select verify.ok((select (status, role) = ('pending', 'user') from public.member
 select verify.ok((select (preferred_positions, jersey_number) = ('{CB,WB,MF}', 23)
   from public.members where id = '00000000-0000-0000-0000-000000000008'),
   '선호 포지션(보낸 순서)과 등번호도 같이 넣는다');
+update public.members set preferred_positions = '{FB,DM,WM}' where id = '00000000-0000-0000-0000-000000000008';
+select verify.ok((select preferred_positions = '{FB,DM,WM}' from public.members where id = '00000000-0000-0000-0000-000000000008'),
+  '새 포지션(풀백 · 수비형 미드 · 와이드 미드)도 선호 포지션으로 쓴다');
 select verify.fails($$insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-000000000009', 'bad@example.com',
    '{"real_name": "두개만", "feet": ["left"], "preferred_positions": ["CB", "WB"]}')$$,

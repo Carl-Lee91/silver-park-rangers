@@ -27,7 +27,7 @@
 | 그날 용병 | `match_guests` (`guestMatchId`) | 계정 없이 관리자가 매치에 넣는 용병. 멤버 행은 있고 auth 계정은 없다 |
 | 어드민 | `owner` (`owners` 테이블) | 선수가 아닌 운영용 전용 계정. 관리자를 지정한다 |
 | 관리자 · 일반 | `admin` / `user` (`role`) | 멤버의 권한 |
-| 포지션 | `FW` `AM` `WG` `MF` `WB` `CB` `GK` | PLAN.md §5 |
+| 포지션 | `FW` · `AM` `WG` · `MF` `WM` · `DM` `WB` · `CB` `FB` · `GK` | 1선 ~ 5선(줄마다 중앙 · 측면) + 골키퍼. PLAN.md §5 |
 
 ## 🔴 비용은 0원이다
 

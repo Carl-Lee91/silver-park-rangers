@@ -5,7 +5,7 @@ import { POSITION_CODES } from "@/entities/position";
 export const MAX_FIELD = 10;
 
 /** 새 포메이션은 4-3-3 인원수로 시작한다. */
-export const DEFAULT_COUNTS: PositionCounts = { GK: 1, CB: 2, WB: 2, MF: 3, AM: 0, WG: 2, FW: 1 };
+export const DEFAULT_COUNTS: PositionCounts = { FW: 1, AM: 0, WG: 2, MF: 3, WM: 0, DM: 0, WB: 0, CB: 2, FB: 2, GK: 1 };
 
 export type FormationDraft = { name: string; counts: PositionCounts };
 

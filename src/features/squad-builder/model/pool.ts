@@ -1,7 +1,8 @@
 import type { Attendance, AttendanceResponse } from "@/entities/attendance";
 import { availableQuarters, type QuarterTime } from "@/entities/match";
 import type { AdminMember, Foot, MemberType } from "@/entities/member";
-import type { Position } from "@/entities/position";
+import { POSITION_CODES, type Position } from "@/entities/position";
+import { playerStrength, positionScore, type RatingValues } from "@/entities/rating";
 import { preferenceScore, type SquadPlayer } from "@/entities/squad";
 import type { Builder } from "./builder";
 
@@ -67,18 +68,32 @@ const placedAnywhere = (builder: Builder) =>
 export const squadPlayersFor = (
   pool: readonly BuilderPlayer[],
   builder: Builder,
-  /** 선수 전력(관리자 전용 능력치). 없는 사람은 null — 자동 배치 스타일이 평균으로 본다 */
-  strengths: Readonly<Record<string, number | null>> = {},
+  /**
+   * 능력치(관리자 전용, 선수 id → 항목별 값). 선수 전력(1순위 포지션 점수)과 포지션마다 점수를 여기서 낸다
+   * (PLAN.md §6). 없는 사람은 전력 null — 자동 배치 스타일이 평균으로 보고, 자리는 선호로만 정한다.
+   */
+  ratings: Readonly<Record<string, RatingValues>> = {},
 ): SquadPlayer[] => {
   const placed = placedAnywhere(builder);
   return pool
     .filter((player) => player.response === "yes" || placed.has(player.id))
-    .map(({ id, preferredPositions, availableQuarters: quarters }) => ({
-      id,
-      preferredPositions,
-      availableQuarters: quarters,
-      strength: strengths[id] ?? null,
-    }));
+    .map(({ id, preferredPositions, availableQuarters: quarters }) => {
+      const values = ratings[id];
+      if (values === undefined) return { id, preferredPositions, availableQuarters: quarters, strength: null };
+      const positionScores = Object.fromEntries(
+        POSITION_CODES.flatMap((code) => {
+          const score = positionScore(values, code);
+          return score === null ? [] : [[code, score]];
+        }),
+      ) as Partial<Record<Position, number>>;
+      return {
+        id,
+        preferredPositions,
+        availableQuarters: quarters,
+        strength: playerStrength(values, preferredPositions),
+        positionScores,
+      };
+    });
 };
 
 /**

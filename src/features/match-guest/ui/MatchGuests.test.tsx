@@ -18,7 +18,7 @@ describe("그날 용병 목록", () => {
     );
     const item = screen.getByRole("listitem");
     expect(item).toHaveTextContent("7오늘용병");
-    expect(item).toHaveTextContent("센터백 · 미드필더 · 윙백");
+    expect(item).toHaveTextContent("센터백 · 중앙 미드필더 · 윙백");
     expect(within(item).getByRole("button", { name: "빼기" })).toBeInTheDocument();
     expect(within(item).getByText("고치기")).toBeInTheDocument();
   });

@@ -10,8 +10,8 @@ type Props = {
   action: (state: FormationDraftState, formData: FormData) => Promise<FormationDraftState>;
 };
 
-/** 수비 → 공격 순. 키퍼는 항상 1명이라 고르지 않는다. */
-const EDITABLE: Position[] = ["CB", "WB", "MF", "AM", "WG", "FW"];
+/** 수비(5선) → 공격(1선) 순, 줄마다 중앙 · 측면. 키퍼는 항상 1명이라 고르지 않는다. */
+const EDITABLE: Position[] = ["CB", "FB", "DM", "WB", "MF", "WM", "AM", "WG", "FW"];
 
 /** 포지션별 인원수를 + / − 로 고르면 자리가 저절로 잡힌다(entities/formation layoutFormation). */
 export default function FormationEditor({ action }: Props) {

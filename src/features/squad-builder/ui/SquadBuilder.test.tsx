@@ -329,7 +329,10 @@ describe("자동 배치 스타일 (PLAN.md §6)", () => {
         published={false}
         saveAction={noop}
         publishAction={noop}
-        strengths={{ s: 9, w: 3 }}
+        ratings={{
+          s: { pace: 9, shooting: 9, passing: 9, dribbling: 9, defending: 9, physical: 9, goalkeeping: null },
+          w: { pace: 3, shooting: 3, passing: 3, dribbling: 3, defending: 3, physical: 3, goalkeeping: null },
+        }}
       />,
     );
     await user.click(screen.getByRole("button", { name: style }));

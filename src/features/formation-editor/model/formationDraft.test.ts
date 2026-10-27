@@ -5,7 +5,7 @@ const existing = ["4-3-3", "4-4-2", "3-5-2"];
 
 describe("커스텀 포메이션 입력", () => {
   it("처음 인원수는 4-3-3 이다", () => {
-    expect(DEFAULT_COUNTS).toEqual({ GK: 1, CB: 2, WB: 2, MF: 3, AM: 0, WG: 2, FW: 1 });
+    expect(DEFAULT_COUNTS).toEqual({ FW: 1, AM: 0, WG: 2, MF: 3, WM: 0, DM: 0, WB: 0, CB: 2, FB: 2, GK: 1 });
   });
 
   it("올바르면 자리까지 잡아서 돌려준다", () => {
@@ -35,17 +35,20 @@ describe("커스텀 포메이션 입력", () => {
       ok: false,
       errors: { counts: "필드는 10명까지예요. 지금 11명이에요." },
     });
-    const none = { GK: 1, CB: 0, WB: 0, MF: 0, AM: 0, WG: 0, FW: 0 };
+    const none = { FW: 0, AM: 0, WG: 0, MF: 0, WM: 0, DM: 0, WB: 0, CB: 0, FB: 0, GK: 1 };
     expect(validateFormationDraft({ name: "x", counts: none }).ok).toBe(false);
   });
 
   it("폼 데이터를 읽는다 — 키퍼는 항상 1명이다", () => {
     const data = new FormData();
     data.append("name", "3-5-2");
-    for (const [position, count] of Object.entries({ CB: 3, WB: 2, MF: 3, AM: 0, WG: 0, FW: 2 })) {
+    for (const [position, count] of Object.entries({ CB: 3, DM: 1, WB: 2, MF: 2, FW: 2 })) {
       data.append(position, String(count));
     }
     data.append("GK", "0");
-    expect(readFormationForm(data)).toEqual({ name: "3-5-2", counts: { GK: 1, CB: 3, WB: 2, MF: 3, AM: 0, WG: 0, FW: 2 } });
+    expect(readFormationForm(data)).toEqual({
+      name: "3-5-2",
+      counts: { FW: 2, AM: 0, WG: 0, MF: 2, WM: 0, DM: 1, WB: 2, CB: 3, FB: 0, GK: 1 },
+    });
   });
 });

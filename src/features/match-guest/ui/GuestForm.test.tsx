@@ -27,7 +27,7 @@ describe("그날 용병 넣기 폼", () => {
 
     await user.type(screen.getByLabelText("이름"), "오늘용병");
     await user.click(screen.getByRole("button", { name: "왼발" }));
-    for (const label of [/^센터백/, /^미드필더/, /^윙백/]) await user.click(screen.getByRole("button", { name: label }));
+    for (const label of [/^센터백/, /^중앙 미드필더/, /^윙백/]) await user.click(screen.getByRole("button", { name: label }));
     await user.selectOptions(screen.getByLabelText(/^등번호/), "7");
     await user.click(screen.getByRole("button", { name: "용병 넣기" }));
 
