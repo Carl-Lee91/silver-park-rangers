@@ -805,8 +805,10 @@ select verify.ok((select count(*) from public.futsal_team_members) = 0, '공개 
 select verify.fails($$select public.save_futsal_teams('10000000-0000-0000-0000-000000000031', 2, '[]'::jsonb)$$, '일반 멤버는 팀을 저장하지 못한다');
 reset role;
 
+-- 공유 토큰은 미리 읽어 둔다(로그인 안 한 사람은 매치 표를 못 읽는다)
+select set_config('verify.futsal_token', (select share_token::text from public.matches where id = '10000000-0000-0000-0000-000000000031'), false);
 set role anon;
-select verify.ok(public.shared_teams((select share_token from public.matches where id = '10000000-0000-0000-0000-000000000031')) is null,
+select verify.ok(public.shared_teams(current_setting('verify.futsal_token')::uuid) is null,
   '공개 전에는 공유 링크로 팀을 못 본다');
 reset role;
 
@@ -817,7 +819,7 @@ select verify.ok((select count(*) from public.futsal_team_members where match_id
 reset role;
 
 set role anon;
-select set_config('verify.futsal', public.shared_teams((select share_token from public.matches where id = '10000000-0000-0000-0000-000000000031'))::text, false);
+select set_config('verify.futsal', public.shared_teams(current_setting('verify.futsal_token')::uuid)::text, false);
 select verify.ok((current_setting('verify.futsal')::jsonb ->> 'format') = 'futsal5', '공유 링크는 풋살 종류를 준다');
 select verify.ok(jsonb_array_length(current_setting('verify.futsal')::jsonb -> 'members') = 2, '공유 링크는 팀 명단을 준다');
 select verify.ok(current_setting('verify.futsal') not like '%member_id%' and current_setting('verify.futsal') not like '%guest%',
