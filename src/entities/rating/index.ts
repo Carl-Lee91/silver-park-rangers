@@ -12,3 +12,5 @@ export {
   type RatingTone,
   type RatingValues,
 } from "./model/rating";
+export { default as RatingBars } from "./ui/RatingBars";
+export { default as RatingSummary } from "./ui/RatingSummary";
