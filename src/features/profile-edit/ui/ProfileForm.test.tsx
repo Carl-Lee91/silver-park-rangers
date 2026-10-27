@@ -27,7 +27,7 @@ describe("내 정보 수정 폼", () => {
     const action = vi.fn<Action>(async () => ({}));
     render(<ProfileForm action={action} feet={["left"]} preferredPositions={["CB", "FW", "WG"]} jerseyNumber={null} takenNumbers={[]} />);
     await user.click(screen.getByRole("button", { name: /^공격수/ }));
-    await user.click(screen.getByRole("button", { name: /^미드필더/ }));
+    await user.click(screen.getByRole("button", { name: /^중앙 미드필더/ }));
     await user.click(screen.getByRole("button", { name: "저장" }));
 
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));

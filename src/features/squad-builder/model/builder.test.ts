@@ -204,25 +204,29 @@ describe("자동 배치와 저장", () => {
 });
 
 describe("선수 표(풋볼매니저 전술 화면의 선발 명단)", () => {
-  it("선발은 키퍼부터 수비 · 미드필드 · 공격 순이고, 같은 줄은 왼쪽부터다", () => {
+  it("선발은 키퍼부터 5선 → 1선 순이고, 같은 줄(중앙 · 측면)은 왼쪽부터다", () => {
     const slots = [
       { position: "FW", x: 50, y: 18 },
-      { position: "WB", x: 88, y: 72 },
-      { position: "MF", x: 50, y: 58 },
+      { position: "FB", x: 90, y: 74 },
+      { position: "DM", x: 50, y: 66 },
       { position: "GK", x: 50, y: 92 },
-      { position: "WG", x: 15, y: 25 },
-      { position: "CB", x: 37, y: 78 },
-      { position: "AM", x: 30, y: 40 },
-      { position: "WB", x: 12, y: 72 },
+      { position: "WG", x: 15, y: 27 },
+      { position: "CB", x: 39, y: 79 },
+      { position: "AM", x: 50, y: 38 },
+      { position: "FB", x: 10, y: 74 },
+      { position: "WM", x: 12, y: 50 },
+      { position: "MF", x: 40, y: 52 },
     ] as const;
     expect(lineupOrder(slots).map((index) => slots[index].position + slots[index].x)).toEqual([
       "GK50",
-      "WB12",
-      "CB37",
-      "WB88",
-      "AM30",
-      "MF50",
+      "FB10",
+      "CB39",
+      "FB90",
+      "DM50",
+      "WM12",
+      "MF40",
       "WG15",
+      "AM50",
       "FW50",
     ]);
   });

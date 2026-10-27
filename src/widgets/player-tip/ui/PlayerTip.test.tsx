@@ -27,7 +27,7 @@ describe("선수 정보 ! 단추", () => {
     await user.click(screen.getByRole("button", { name: "김철수 선수 정보" }));
     const tip = screen.getByRole("tooltip");
     expect(tip).toHaveTextContent("7김철수");
-    expect(tip).toHaveTextContent("1 센터백 · 2 미드필더 · 3 윙백");
+    expect(tip).toHaveTextContent("1 센터백 · 2 중앙 미드필더 · 3 윙백");
     expect(tip).toHaveTextContent("오른발");
   });
 

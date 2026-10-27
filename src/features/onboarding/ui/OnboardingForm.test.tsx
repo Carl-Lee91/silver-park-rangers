@@ -16,13 +16,13 @@ describe("온보딩 폼", () => {
     await user.click(positionButton(/^센터백/));
     await user.click(positionButton(/^공격수/));
     await user.click(positionButton(/^윙$|^윙 /));
-    await user.click(positionButton(/^미드필더/));
+    await user.click(positionButton(/^중앙 미드필더/));
 
     expect(positionButton(/^센터백/)).toHaveTextContent("1순위");
     expect(positionButton(/^공격수/)).toHaveTextContent("2순위");
     expect(positionButton(/^윙$|^윙 /)).toHaveTextContent("3순위");
-    expect(positionButton(/^미드필더/)).toHaveAttribute("aria-pressed", "false");
-    expect(positionButton(/^미드필더/)).toBeDisabled();
+    expect(positionButton(/^중앙 미드필더/)).toHaveAttribute("aria-pressed", "false");
+    expect(positionButton(/^중앙 미드필더/)).toBeDisabled();
   });
 
   it("고른 포지션을 다시 누르면 빠지고 뒤 순위가 당겨진다", async () => {
@@ -49,7 +49,7 @@ describe("온보딩 폼", () => {
     expect(submit).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "오른발" }));
     expect(submit).toBeDisabled();
-    await user.click(positionButton(/^미드필더/));
+    await user.click(positionButton(/^중앙 미드필더/));
     await user.click(positionButton(/^센터백/));
     expect(submit).toBeDisabled();
     await user.click(positionButton(/^윙백/));
