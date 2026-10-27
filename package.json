@@ -10,7 +10,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:verify": "bash supabase/verify/run.sh"
+    "db:verify": "bash supabase/verify/run.sh",
+    "db:bundle": "bash supabase/bundle.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
