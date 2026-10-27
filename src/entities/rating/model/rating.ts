@@ -62,3 +62,15 @@ export const toRatings = (row: unknown): MemberRatings => {
     updatedAt: parsed.updated_at,
   };
 };
+
+/** 선수 전력에 넣는 능력치: 필드 여섯 가지. 골키퍼는 뺀다(풋살은 키퍼도 돌아가며 보고, 축구는 키퍼를 따로 앉힌다) */
+const FIELD_KEYS: readonly RatingKey[] = ["pace", "shooting", "passing", "dribbling", "defending", "physical"];
+
+/**
+ * 선수 전력(PLAN.md §6 "자동 배치 스타일"): 필드 능력치 6개의 평균. 미평가 항목은 빼고 평균하고,
+ * 하나도 매기지 않았으면 null(모른다)이다 — 그 사람을 어떻게 볼지는 쓰는 쪽(자동 배치 · 팀 나누기)이 정한다.
+ */
+export const fieldStrength = (values: RatingValues): number | null => {
+  const rated = FIELD_KEYS.flatMap((key) => (values[key] === null ? [] : [values[key]]));
+  return rated.length === 0 ? null : rated.reduce((sum, value) => sum + value, 0) / rated.length;
+};

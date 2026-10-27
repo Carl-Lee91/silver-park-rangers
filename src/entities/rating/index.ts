@@ -1,4 +1,5 @@
 export {
+  fieldStrength,
   RATING_ATTRIBUTES,
   RATING_KEYS,
   RATING_MAX,
