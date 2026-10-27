@@ -45,6 +45,7 @@ describe("매치 폼", () => {
         action={noop}
         submitLabel="저장"
         initial={{
+          format: "football",
           date: "2026-10-25",
           startsAt: "09:00",
           endsAt: "12:00",
