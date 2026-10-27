@@ -12,12 +12,14 @@ type Props = {
   hint: string;
   /** 자리에서 고른 사람만 뺄 수 있다 */
   onRemove?: () => void;
+  /** 선수 상세(능력치)로 가는 링크. 사람을 골랐을 때만 */
+  detail?: ReactNode;
   /** 시간·메모 편집기 */
   children?: ReactNode;
 };
 
 /** 고른 선수(또는 자리). 풋볼매니저에서 선수를 누르면 뜨는 정보 칸처럼 선수 표 위에 놓인다. */
-export default function SelectedPlayer({ title, details, fit, hint, onRemove, children }: Props) {
+export default function SelectedPlayer({ title, details, fit, hint, onRemove, detail, children }: Props) {
   return (
     <section aria-label="고른 선수" className="flex flex-col gap-3 rounded-box border border-primary/60 bg-bg-panel p-3 shadow-[inset_0_2px_0_var(--color-primary)] md:p-4">
       <div className="flex items-start justify-between gap-3">
@@ -29,15 +31,18 @@ export default function SelectedPlayer({ title, details, fit, hint, onRemove, ch
           {details && <p className="mt-0.5 text-xs text-text-secondary">{details}</p>}
           <p className="mt-1 text-xs text-text-tertiary">{hint}</p>
         </div>
-        {onRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="h-11 shrink-0 rounded-box border border-danger/60 px-4 text-sm font-semibold text-danger"
-          >
-            빼기
-          </button>
-        )}
+        <div className="flex shrink-0 gap-1.5">
+          {detail}
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="h-11 shrink-0 rounded-box border border-danger/60 px-4 text-sm font-semibold text-danger"
+            >
+              빼기
+            </button>
+          )}
+        </div>
       </div>
       {children}
     </section>

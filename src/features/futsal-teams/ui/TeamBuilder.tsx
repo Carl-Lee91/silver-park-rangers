@@ -4,7 +4,18 @@ import { Sparkles } from "lucide-react";
 import { useActionState, useState } from "react";
 import { shortTeams, splitTeams, TEAM_LABELS, teamAverage, teamSizes, type TeamCount } from "@/entities/futsal";
 import { playersPerSide, type MatchFormat } from "@/entities/match";
-import { ActionButton, chipClass, Panel, SubmitButton, useConfirm, useToast, type ActionState } from "@/shared/ui";
+import { adminMemberPath, adminTeamsPath } from "@/shared/config";
+import {
+  ActionButton,
+  chipClass,
+  ConfirmLink,
+  LEAVE_UNSAVED,
+  Panel,
+  SubmitButton,
+  useConfirm,
+  useToast,
+  type ActionState,
+} from "@/shared/ui";
 
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 
@@ -49,7 +60,7 @@ const payloadOf = (players: readonly TeamBuilderPlayer[], teamCount: number, ass
 
 /**
  * 풋살 팀 나누기(PLAN.md §6 "풋살"). 2 · 3팀을 고르고 "자동으로 나누기"로 팀 평균 전력이 비슷하게 나눈 뒤,
- * 사람을 누르고 → 옮길 팀을 눌러 고친다. 고친 것은 "저장"할 때 한 번에 저장되고, 공개하면 팀원이 본다.
+ * 사람을 누르고 → 옮길 팀을 눌러 고친다(선수 상세로도 갈 수 있다). 고친 것은 "저장"할 때 한 번에 저장되고, 공개하면 팀원이 본다.
  */
 export default function TeamBuilder({
   matchId,
@@ -193,6 +204,13 @@ export default function TeamBuilder({
               팀 빼기
             </button>
           )}
+          <ConfirmLink
+            href={adminMemberPath(selectedPlayer.id, adminTeamsPath(matchId))}
+            confirm={dirty ? LEAVE_UNSAVED : null}
+            className="inline-flex h-11 items-center rounded-box border border-border-strong bg-bg-subtle px-4 text-sm font-medium"
+          >
+            선수 상세
+          </ConfirmLink>
           <button type="button" onClick={() => setSelected(null)} className="h-11 px-3 text-sm text-text-tertiary">
             취소
           </button>

@@ -13,7 +13,7 @@ import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
 import { MatchGuests } from "@/features/match-guest";
 import { ResultEditor } from "@/features/result-record";
-import { adminMatchEditPath, adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
+import { adminMatchEditPath, adminMatchPath, adminMemberPath, adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
 import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
@@ -85,7 +85,8 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
         <div className="flex flex-col gap-4 lg:gap-6">
           <Panel title="참석 투표" aside={`참석 ${groups.yes.length} · 미정 ${groups.maybe.length} · 불참 ${groups.no.length}`} flush>
-            <AttendanceList attendance={attendance} />
+            {/* 이름을 누르면 선수 상세(능력치)로 가고, 뒤로 가면 이 화면으로 온다 */}
+            <AttendanceList attendance={attendance} hrefOf={(id) => adminMemberPath(id, adminMatchPath(match.id))} />
             <div className="border-t border-border px-3 py-3 md:px-4">
               <h3 className="flex items-baseline gap-1.5 text-xs font-bold">
                 <span className="text-danger">아직 투표 안 함</span>

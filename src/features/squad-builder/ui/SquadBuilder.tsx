@@ -8,7 +8,17 @@ import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/fo
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
 import { autoAssign, evaluateSquad, isDedicatedKeeper, type AssignStyle } from "@/entities/squad";
-import { ActionButton, Panel, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
+import { adminMemberPath, adminSquadPath } from "@/shared/config";
+import {
+  ActionButton,
+  ConfirmLink,
+  LEAVE_UNSAVED,
+  Panel,
+  Select,
+  SubmitButton,
+  useConfirm,
+  type ActionState,
+} from "@/shared/ui";
 import {
   applyFormation,
   applyLineup,
@@ -335,6 +345,17 @@ export default function SquadBuilder({
                 fit={selected.fit}
                 hint={selected.hint}
                 onRemove={"onRemove" in selected ? selected.onRemove : undefined}
+                detail={
+                  selectedMember !== null && (
+                    <ConfirmLink
+                      href={adminMemberPath(selectedMember, adminSquadPath(matchId))}
+                      confirm={dirty ? LEAVE_UNSAVED : null}
+                      className="inline-flex h-11 shrink-0 items-center rounded-box border border-border-strong bg-bg-subtle px-3 text-sm font-semibold"
+                    >
+                      선수 상세
+                    </ConfirmLink>
+                  )
+                }
               >
                 {windowAction && selectedPlayer && (
                   <TimeWindowEditor
