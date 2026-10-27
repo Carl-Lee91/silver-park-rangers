@@ -8,10 +8,10 @@ const shared: SharedTeams = {
   match: { date: "2026-11-01", startsAt: "10:00", endsAt: "12:00", venue: "실버파크 풋살장", opponent: null, format: "futsal5" },
   teams: [
     [
-      { name: "가", jerseyNumber: 1 },
-      { name: "나", jerseyNumber: 2 },
+      { id: null, name: "가", jerseyNumber: 1 },
+      { id: null, name: "나", jerseyNumber: 2 },
     ],
-    [{ name: "다", jerseyNumber: null }],
+    [{ id: null, name: "다", jerseyNumber: null }],
   ],
 };
 

@@ -5,6 +5,7 @@ import { addableMembers, confirmRows, squadDefaults } from "./confirm";
 const vote = (memberId: string, response: Attendance["response"], attended: boolean | null = null): Attendance => ({
   memberId,
   realName: memberId,
+  jerseyNumber: null,
   response,
   arriveAt: null,
   leaveAt: null,
@@ -12,11 +13,11 @@ const vote = (memberId: string, response: Attendance["response"], attended: bool
 });
 
 const members = [
-  { id: "a", realName: "가" },
-  { id: "b", realName: "나" },
-  { id: "c", realName: "다" },
-  { id: "d", realName: "라" },
-  { id: "e", realName: "마" },
+  { id: "a", realName: "가", jerseyNumber: 1 },
+  { id: "b", realName: "나", jerseyNumber: null },
+  { id: "c", realName: "다", jerseyNumber: 3 },
+  { id: "d", realName: "라", jerseyNumber: null },
+  { id: "e", realName: "마", jerseyNumber: 5 },
 ];
 
 describe("실제 출석 확정 명단", () => {
@@ -28,6 +29,11 @@ describe("실제 출석 확정 명단", () => {
     );
     expect(rows.map((row) => row.memberId)).toEqual(["a", "b", "d", "e"]);
     expect(rows.find((row) => row.memberId === "e")).toMatchObject({ inSquad: true, response: null, attended: null });
+  });
+
+  it("줄마다 등번호를 싣는다(! 단추 · 등번호 · 이름)", () => {
+    const rows = confirmRows([vote("a", "yes"), vote("b", "yes")], new Set(), members);
+    expect(rows.map((row) => row.jerseyNumber)).toEqual([1, null]);
   });
 
   it("불참 투표자도 출석이 기록돼 있으면 남긴다(투표와 달리 왔다)", () => {

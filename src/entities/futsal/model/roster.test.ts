@@ -10,18 +10,18 @@ describe("풋살 팀 명단 읽기", () => {
     expect(
       toTeamLists(
         [
-          { team_number: 2, members: { real_name: "다", jersey_number: null } },
-          { team_number: 1, members: { real_name: "나", jersey_number: 7 } },
-          { team_number: 1, members: [{ real_name: "가", jersey_number: 3 }] },
+          { member_id: "c", team_number: 2, members: { real_name: "다", jersey_number: null } },
+          { member_id: "b", team_number: 1, members: { real_name: "나", jersey_number: 7 } },
+          { member_id: "a", team_number: 1, members: [{ real_name: "가", jersey_number: 3 }] },
         ],
         2,
       ),
     ).toEqual([
       [
-        { name: "가", jerseyNumber: 3 },
-        { name: "나", jerseyNumber: 7 },
+        { id: "a", name: "가", jerseyNumber: 3 },
+        { id: "b", name: "나", jerseyNumber: 7 },
       ],
-      [{ name: "다", jerseyNumber: null }],
+      [{ id: "c", name: "다", jerseyNumber: null }],
     ]);
   });
 
@@ -44,7 +44,7 @@ describe("풋살 팀 명단 읽기", () => {
     expect(shared).toEqual({
       matchId: "m1",
       match: { date: "2026-11-01", startsAt: "10:00", endsAt: "12:00", venue: null, opponent: null, format: "futsal6" },
-      teams: [[{ name: "가", jerseyNumber: 1 }], [], [{ name: "다", jerseyNumber: null }]],
+      teams: [[{ id: null, name: "가", jerseyNumber: 1 }], [], [{ id: null, name: "다", jerseyNumber: null }]],
     });
   });
 });

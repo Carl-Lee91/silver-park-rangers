@@ -23,6 +23,17 @@ describe("그날 용병 목록", () => {
     expect(within(item).getByText("고치기")).toBeInTheDocument();
   });
 
+  it("이름 앞에 ! 단추를 둔다 — 링크 밖에", () => {
+    render(
+      <MatchGuests
+        matchId="m1"
+        guests={[{ id: "g1", realName: "오늘용병", feet: ["right"], preferredPositions: ["CB", "MF", "WB"], jerseyNumber: 7 }]}
+        tips={{ g1: <button type="button">오늘용병 정보</button> }}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "오늘용병 정보" }).closest("a")).toBeNull();
+  });
+
   it("이름을 누르면 선수 상세(능력치)로 가고, 뒤로 가면 이 매치로 온다", () => {
     render(
       <MatchGuests

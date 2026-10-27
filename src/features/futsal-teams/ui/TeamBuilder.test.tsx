@@ -87,6 +87,12 @@ describe("풋살 팀 나누기 화면 (PLAN.md §6 풋살)", () => {
     expect(screen.getByRole("alertdialog")).toHaveTextContent("저장하지 않은 변경");
   });
 
+  it("사람마다 ! 단추가 있고, 고르기 단추 밖에 있다", () => {
+    renderBuilder({ tips: { p1: <button type="button">가 정보</button> } });
+    const tip = within(team("팀 없음")).getByRole("button", { name: "가 정보" });
+    expect(tip.parentElement?.closest("button")).toBeNull();
+  });
+
   it("그날 용병은 관리자 화면에서 용병으로 보인다", () => {
     renderBuilder();
     expect(within(team("팀 없음")).getByRole("button", { name: /카선수/ })).toHaveTextContent("용병");

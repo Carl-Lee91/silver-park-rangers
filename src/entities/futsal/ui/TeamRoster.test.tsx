@@ -4,13 +4,13 @@ import TeamRoster from "./TeamRoster";
 
 const teams = [
   [
-    { name: "가", jerseyNumber: 3 },
-    { name: "나", jerseyNumber: null },
-    { name: "다", jerseyNumber: 9 },
+    { id: "a", name: "가", jerseyNumber: 3 },
+    { id: "b", name: "나", jerseyNumber: null },
+    { id: "c", name: "다", jerseyNumber: 9 },
   ],
   [
-    { name: "라", jerseyNumber: 1 },
-    { name: "마", jerseyNumber: 2 },
+    { id: null, name: "라", jerseyNumber: 1 },
+    { id: null, name: "마", jerseyNumber: 2 },
   ],
 ];
 
@@ -26,5 +26,12 @@ describe("풋살 팀 명단 보기(팀원 · 공유 링크)", () => {
     render(<TeamRoster teams={teams} perSide={2} />);
     expect(screen.getByRole("region", { name: "A팀" })).toHaveTextContent("3명 · 교체 1");
     expect(screen.getByRole("region", { name: "B팀" })).toHaveTextContent("2명");
+  });
+
+  it("팀원 화면은 이름 앞에 ! 단추를 둔다(공유 링크는 선수 id 가 없어서 없다)", () => {
+    render(<TeamRoster teams={teams} perSide={2} tips={{ a: <button type="button">가 정보</button> }} />);
+    const a = screen.getByRole("region", { name: "A팀" });
+    expect(within(a).getAllByRole("listitem")[0]).toHaveTextContent("가 정보3가");
+    expect(within(screen.getByRole("region", { name: "B팀" })).queryByRole("button")).not.toBeInTheDocument();
   });
 });
