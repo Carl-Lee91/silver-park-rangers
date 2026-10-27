@@ -5,7 +5,6 @@ import { fetchFormations } from "@/entities/formation/server";
 import { formatMatchDate, isFutsal, matchTitle, quarterSchedule, seoulToday } from "@/entities/match";
 import { fetchMatch } from "@/entities/match/server";
 import { fetchMatchNotes } from "@/entities/match-note/server";
-import { fieldStrength } from "@/entities/rating";
 import { fetchAllRatings } from "@/entities/rating/server";
 import { fetchAdminMembers } from "@/entities/member/server";
 import { squadForImage } from "@/entities/squad";
@@ -39,8 +38,6 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
     fetchMatchNotes(match.id),
     fetchAllRatings(),
   ]);
-  // 자동 배치 스타일이 쓰는 선수 전력(관리자 전용 능력치, PLAN.md §6). 매기지 않은 사람은 없다(평균으로 본다)
-  const strengths = Object.fromEntries(Object.entries(ratings).map(([id, values]) => [id, fieldStrength(values)]));
   const seasonAverages = Object.fromEntries(
     computeMemberStats(season).map((row) => [row.memberId, row.avgFieldQuarters]),
   );
@@ -93,7 +90,6 @@ export default async function AdminSquadView({ matchId }: { matchId: string }) {
         notes={notes}
         noteAction={saveMatchNote}
         windowAction={setAttendanceWindow}
-        strengths={strengths}
         ratings={ratings}
         tips={playerTips(pool, ratings)}
       />

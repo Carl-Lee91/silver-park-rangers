@@ -14,3 +14,4 @@ export {
 } from "./model/rating";
 export { default as RatingBars } from "./ui/RatingBars";
 export { default as RatingSummary } from "./ui/RatingSummary";
+export { playerStrength, POSITION_WEIGHTS, positionScore } from "./model/positionScore";
