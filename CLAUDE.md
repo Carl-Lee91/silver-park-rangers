@@ -325,6 +325,7 @@ pnpm db:verify   # 마이그레이션 + RLS 시나리오 (로컬 Postgres)
   - 드롭다운은 **`Select`**(꺾쇠를 안쪽에 그린다), 입력칸은 **`fieldClass()`**·**`textareaClass()`** 모양을 쓴다.
     글자는 16px 이상이다 — 작으면 아이폰(카톡 포함)이 누를 때 화면을 확대한다. `formControls.test.ts` 가 검사한다.
   - 확인은 **`useConfirm`**·**`useConfirmBeforeSubmit`** 확인 창으로 묻는다. `window.confirm` 을 쓰지 않는다.
+    편집 중인 화면(빌더)에서 다른 화면으로 가는 링크는 **`ConfirmLink`** 로, 저장하지 않은 변경이 있으면 `LEAVE_UNSAVED` 를 묻는다.
   - 항목이 무엇을 뜻하는지는 이름 옆 **`HelpTip`**(? 단추)으로 알려 준다. 휴대폰은 누르면, 데스크톱은 마우스를 올리면 뜬다(능력치 항목).
   - 저장 결과는 **`useToast`** 로 화면 아래에 띄운다. 뒤로 가기는 **`BackLink`**, 막힌 제출 단추 아래에는
     **`MissingHint`**(남은 항목)를 둔다.

@@ -8,6 +8,9 @@ import { initialBuilder } from "../model/builder";
 import type { BuilderPlayer } from "../model/pool";
 import SquadBuilder from "./SquadBuilder";
 
+const router = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
+
 type Action = (state: ActionState, formData: FormData) => Promise<ActionState>;
 const noop: Action = async () => ({});
 
@@ -120,6 +123,24 @@ describe("스쿼드 빌더", () => {
     const payload = JSON.parse(String(formData.get("quarters")));
     expect(payload).toHaveLength(2);
     expect(payload[0].slots[0]).toMatchObject({ position: "GK", member_id: "k" });
+  });
+
+  it("선수를 고르면 선수 상세로 가는 링크가 있다 — 뒤로 가면 이 스쿼드로 온다", async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(within(bench()).getByRole("button", { name: /이수비/ }));
+    expect(screen.getByRole("link", { name: "선수 상세" })).toHaveAttribute("href", "/admin/members/c?from=%2Fadmin%2Fmatches%2Fm1%2Fsquad");
+  });
+
+  it("저장하지 않은 변경이 있으면 선수 상세로 가기 전에 묻는다", async () => {
+    const user = userEvent.setup();
+    renderBuilder();
+    await user.click(screen.getByRole("button", { name: "자동 배치" }));
+    await user.click(within(pitch()).getByRole("button", { name: /CB 이수비/ }));
+    await user.click(screen.getByRole("button", { name: "선수 상세" }));
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("저장하지 않은 변경");
+    await user.click(screen.getByRole("button", { name: "나가기" }));
+    expect(router.push).toHaveBeenCalledWith("/admin/members/c?from=%2Fadmin%2Fmatches%2Fm1%2Fsquad");
   });
 
   it("저장하지 않은 변경이 있으면 공개할 수 없다", async () => {

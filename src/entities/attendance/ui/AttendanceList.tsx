@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   attendanceTimeNote,
   groupAttendance,
@@ -17,8 +18,15 @@ const HEADING_TONE: Record<AttendanceResponse, string> = {
 /**
  * 참석 · 미정 · 불참 명단. 늦게 오거나 일찍 가는 사람은 시간을 붙인다.
  * 패널 안(flush)에 응답마다 한 칸씩 쌓고, 이름은 칩으로 늘어놓는다 — 21명이 와도 몇 줄 안에 든다.
+ * 관리 화면은 `hrefOf` 를 넘겨 이름을 누르면 선수 상세로 가게 한다.
  */
-export default function AttendanceList({ attendance }: { attendance: readonly Attendance[] }) {
+export default function AttendanceList({
+  attendance,
+  hrefOf,
+}: {
+  attendance: readonly Attendance[];
+  hrefOf?: (memberId: string) => string;
+}) {
   const groups = groupAttendance(attendance);
 
   return (
@@ -35,10 +43,24 @@ export default function AttendanceList({ attendance }: { attendance: readonly At
             <ul className="mt-2 flex flex-wrap gap-1.5">
               {groups[response].map((row) => {
                 const note = attendanceTimeNote(row);
-                return (
-                  <li key={row.memberId} className="rounded-chip bg-bg-subtle px-2 py-1 text-sm">
+                const name = (
+                  <>
                     {row.realName}
                     {note && <span className="ml-1 text-xs text-text-secondary">{note}</span>}
+                  </>
+                );
+                return hrefOf ? (
+                  <li key={row.memberId}>
+                    <Link
+                      href={hrefOf(row.memberId)}
+                      className="inline-flex min-h-11 items-center rounded-chip border border-border-strong bg-bg-subtle px-2.5 text-sm"
+                    >
+                      {name}
+                    </Link>
+                  </li>
+                ) : (
+                  <li key={row.memberId} className="rounded-chip bg-bg-subtle px-2 py-1 text-sm">
+                    {name}
                   </li>
                 );
               })}
