@@ -7,7 +7,7 @@ import { attendanceTimeNote } from "@/entities/attendance";
 import { keeperSlotIndex, Pitch, PitchSpot, type Formation } from "@/entities/formation";
 import type { QuarterTime } from "@/entities/match";
 import { footLabel } from "@/entities/member";
-import { autoAssign, evaluateSquad, isDedicatedKeeper } from "@/entities/squad";
+import { autoAssign, evaluateSquad, isDedicatedKeeper, type AssignStyle } from "@/entities/squad";
 import { ActionButton, Panel, Select, SubmitButton, useConfirm, type ActionState } from "@/shared/ui";
 import {
   applyFormation,
@@ -26,6 +26,7 @@ import {
 import { fitOf } from "../model/fit";
 import { placementIssues, squadPlayersFor, type BuilderPlayer } from "../model/pool";
 import { groupWarnings } from "../model/warnings";
+import AssignStylePicker from "./AssignStylePicker";
 import { SlotButton } from "./dnd";
 import FitLegend from "./FitLegend";
 import NoteEditor from "./NoteEditor";
@@ -53,6 +54,8 @@ type Props = {
   noteAction?: Action;
   /** 당일 도착·떠나는 시간 저장(features/attendance-adjust). 없으면 띄우지 않는다 */
   windowAction?: Action;
+  /** 선수 전력(관리자 전용 능력치, 멤버 id → 1~10). 자동 배치 스타일이 쓴다(PLAN.md §6) */
+  strengths?: Record<string, number | null>;
 };
 
 /**
@@ -75,8 +78,10 @@ export default function SquadBuilder({
   notes = {},
   noteAction,
   windowAction,
+  strengths = {},
 }: Props) {
   const [builder, setBuilder] = useState(initial);
+  const [style, setStyle] = useState<AssignStyle>({ kind: "default" });
   const { confirm, dialog } = useConfirm();
   const [quarter, setQuarter] = useState(0);
   const [selection, setSelection] = useState<Selection>(null);
@@ -97,7 +102,8 @@ export default function SquadBuilder({
     const number = byId.get(memberId)?.jerseyNumber;
     return number == null ? nameOf(memberId) : `${number} ${nameOf(memberId)}`;
   };
-  const input = { players: squadPlayersFor(pool, builder), quarters: toSquadQuarters(builder) };
+  const input = { players: squadPlayersFor(pool, builder, strengths), quarters: toSquadQuarters(builder) };
+  const rated = input.players.some((player) => player.strength != null);
   const inSquad = new Set(input.players.map((player) => player.id));
   const report = evaluateSquad(input, toLineup(builder));
   const warningGroups = groupWarnings(report.warnings, nameOf, placementIssues(pool, builder));
@@ -147,7 +153,7 @@ export default function SquadBuilder({
     change(
       applyLineup(
         builder,
-        autoAssign(input, { startQuarter: quarter, current: lineup, keepers: lineup.map((row) => row.keeperId) }),
+        autoAssign(input, { style, startQuarter: quarter, current: lineup, keepers: lineup.map((row) => row.keeperId) }),
       ),
     );
   };
@@ -158,7 +164,7 @@ export default function SquadBuilder({
     if (hasField && !(await confirm({ message: "필드 배치를 새로 짤까요? 키퍼 자리는 그대로 둬요.", confirmLabel: "새로 짜기" }))) {
       return;
     }
-    change(applyLineup(builder, autoAssign(input, { keepers: lineup.map((row) => row.keeperId) })));
+    change(applyLineup(builder, autoAssign(input, { style, keepers: lineup.map((row) => row.keeperId) })));
   };
 
   const changeFormation = (name: string) => {
@@ -253,36 +259,39 @@ export default function SquadBuilder({
             태블릿 이상: 첫 줄은 왼쪽 포메이션 · 오른쪽 저장 줄, 둘째 줄은 왼쪽 경기장(스크롤해도 붙어 있다) ·
             오른쪽 고른 선수와 선수 표(풋볼매니저 24). */}
         <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start md:gap-x-6 lg:grid-cols-5 lg:gap-x-8">
-          <div className="flex items-end gap-2 md:col-start-1 md:row-start-1 lg:col-span-2">
-            <div className="flex-1">
-              <label htmlFor="formation" className="text-xs font-semibold text-text-secondary">
-                포메이션
-              </label>
-              <Select
-                id="formation"
-                value={current.formationName}
-                onChange={(event) => changeFormation(event.target.value)}
-                fieldSize="md"
-                className="mt-1"
-              >
-                {formations.map((formation) => (
-                  <option key={formation.id} value={formation.name}>
-                    {formation.name}
-                  </option>
-                ))}
-              </Select>
+          <div className="flex flex-col gap-3 md:col-start-1 md:row-start-1 lg:col-span-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label htmlFor="formation" className="text-xs font-semibold text-text-secondary">
+                  포메이션
+                </label>
+                <Select
+                  id="formation"
+                  value={current.formationName}
+                  onChange={(event) => changeFormation(event.target.value)}
+                  fieldSize="md"
+                  className="mt-1"
+                >
+                  {formations.map((formation) => (
+                    <option key={formation.id} value={formation.name}>
+                      {formation.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              {quarter > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
+                  }
+                  className="h-11 rounded-box border border-border-strong bg-bg-subtle px-3 text-sm font-medium"
+                >
+                  이전 쿼터 복사
+                </button>
+              )}
             </div>
-            {quarter > 0 && (
-              <button
-                type="button"
-                onClick={() =>
-                  change(copyQuarter(builder, quarter - 1, quarter, (id, q) => byId.get(id)?.availableQuarters.includes(q) ?? false))
-                }
-                className="h-11 rounded-box border border-border-strong bg-bg-subtle px-3 text-sm font-medium"
-              >
-                이전 쿼터 복사
-              </button>
-            )}
+            <AssignStylePicker value={style} quarterCount={builder.length} rated={rated} onChange={setStyle} />
           </div>
 
           <div className="order-1 flex flex-col gap-2 md:sticky md:top-20 md:order-none md:col-start-1 md:row-start-2 lg:col-span-2">
