@@ -19,3 +19,4 @@ export { default as Screen } from "./Screen";
 export { default as MyPageLink } from "./MyPageLink";
 export { ACCOUNT_ITEM } from "./account";
 export { default as HelpTip } from "./HelpTip";
+export { default as CopyButton } from "./CopyButton";

@@ -9,8 +9,13 @@ export type AdminMember = Member & {
   memberType: MemberType | null;
   /** 그날 용병(PLAN.md §4)이면 그 매치 id. 가입한 사람은 null */
   guestMatchId: string | null;
-  /** 로그인 이메일. 따로 읽어 붙인다(`member_emails`). 그날 용병은 계정이 없어 null */
+  /** 로그인 이메일. 따로 읽어 붙인다(`member_emails`). 계정이 없거나(그날 용병 · 등록만 한 선수) 링크 계정이면 null */
   email: string | null;
+  /**
+   * 어떻게 들어오는지(PLAN.md §4): 이메일 · 비밀번호(`email`), 개인 링크(`link`), 아직 계정 없음(null —
+   * 관리자가 등록만 했다). 따로 읽어 붙인다(`attachLogins`).
+   */
+  login: "email" | "link" | null;
   createdAt: string;
 };
 
@@ -36,9 +41,41 @@ export const toAdminMember = (row: unknown): AdminMember => {
     memberType: single(extra.member_admin_info)?.member_type ?? null,
     guestMatchId: single(extra.match_guests)?.match_id ?? null,
     email: null,
+    login: null,
     createdAt: extra.created_at,
   };
 };
+
+/** `member_emails` 의 한 줄. 링크 계정의 이메일 칸은 DB 가 비워서 준다 */
+export type LoginRow = { member_id: string; email: string | null; via_link: boolean };
+
+/** 로그인 방법과 이메일을 붙인다. 줄이 없으면 아직 계정이 없다 */
+export const attachLogins = (members: readonly AdminMember[], rows: readonly LoginRow[]): AdminMember[] => {
+  const byId = new Map(rows.map((row) => [row.member_id, row]));
+  return members.map((member) => {
+    const row = byId.get(member.id);
+    if (row === undefined) return { ...member, email: null, login: null };
+    return row.via_link ? { ...member, email: null, login: "link" } : { ...member, email: row.email, login: "email" };
+  });
+};
+
+/** 멤버 목록에서 이 사람이 어떻게 들어오는지 한 줄로(PLAN.md §4). 아직 안 들어왔으면 링크를 보내라고 한다 */
+export const loginNote = (member: Pick<AdminMember, "email" | "login">) => {
+  if (member.login === "link") return "개인 링크로 들어옴";
+  if (member.login === "email") return member.email ?? "이메일 없음";
+  return "아직 안 들어옴 · 개인 링크를 보내 주세요";
+};
+
+/**
+ * 선수 등록 · 고치기에서 고를 수 없는 등번호(PLAN.md §5). 그날 용병의 번호는 겹쳐도 되므로 뺀다. 고칠 때는
+ * 그 사람 번호도 뺀다. 관리자는 모두를 보므로 여기서 센다 — `taken_jersey_numbers` 는 부른 사람 번호를 뺀다.
+ */
+export const takenJerseyNumbers = (members: readonly AdminMember[], except?: string): number[] =>
+  members
+    .flatMap((member) =>
+      member.jerseyNumber === null || member.guestMatchId !== null || member.id === except ? [] : [member.jerseyNumber],
+    )
+    .sort((a, b) => a - b);
 
 /**
  * 매치 하나에서 볼 사람: 승인된 멤버와 **그 매치의** 그날 용병. 미투표자, "투표 없이 온 사람"

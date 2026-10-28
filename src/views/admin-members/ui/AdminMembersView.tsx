@@ -6,6 +6,7 @@ import {
   canChangeStatus,
   canResetPassword,
   groupForAdmin,
+  takenJerseyNumbers,
   type AdminMember,
   type Gate,
 } from "@/entities/member";
@@ -18,6 +19,7 @@ import {
   setMemberType,
   TemporaryPasswordButton,
 } from "@/features/member-management";
+import { MemberProfileForm, registerMember } from "@/features/member-register";
 import { adminMemberPath } from "@/shared/config";
 import { ActionButton, Panel, Screen } from "@/shared/ui";
 import MemberSummary from "./MemberSummary";
@@ -110,7 +112,7 @@ function MemberCard({ member, viewer }: { member: AdminMember; viewer: Gate }) {
                 confirmMessage={`${member.realName}님을 관리자로 지정할까요? 가입 승인과 멤버 관리를 할 수 있게 돼요.`}
               />
             ))}
-          {canResetPassword(viewer, member) && member.email !== null && (
+          {canResetPassword(viewer, member) && member.login === "email" && (
             <TemporaryPasswordButton action={resetPassword} memberId={member.id} memberName={member.realName} />
           )}
         </div>
@@ -125,6 +127,19 @@ export default async function AdminMembersView() {
 
   return (
     <Screen title="멤버 관리" overline="스쿼드 명단" width="wide">
+      {/* 가입이 어려운 팀원은 관리자가 명단에 넣고 개인 링크를 보낸다(PLAN.md §4 관리자 등록) */}
+      <Panel title="선수 등록" aside="가입 없이">
+        <details>
+          <summary className="cursor-pointer text-sm font-semibold">선수 등록하기</summary>
+          <p className="mt-2 text-xs leading-5 text-text-tertiary">
+            가입하기 어려운 팀원을 명단에 바로 넣어요. 등록한 뒤 선수 상세에서 개인 링크를 카톡으로 보내면, 링크 하나로
+            들어와 투표해요.
+          </p>
+          <div className="mt-4 md:max-w-narrow">
+            <MemberProfileForm action={registerMember} takenNumbers={takenJerseyNumbers(members)} />
+          </div>
+        </details>
+      </Panel>
 
       <Section title="가입 신청" count={groups.pending.length}>
         {groups.pending.length === 0 ? (

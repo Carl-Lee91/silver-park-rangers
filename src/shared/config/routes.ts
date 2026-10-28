@@ -32,6 +32,9 @@ export const adminTeamsPath = (id: string) => `/admin/matches/${id}/teams`;
 export const adminMemberPath = (id: string, from?: string) =>
   from === undefined ? `/admin/members/${id}` : `/admin/members/${id}?from=${encodeURIComponent(from)}`;
 
+/** 개인 링크(PLAN.md §4). 누르면 그 사람으로 들어간다. 로그인 전에도 열린다(게이트 예외) */
+export const linkLoginPath = (token: string) => `/j/${token}`;
+
 /**
  * `pathname` 이 `base` 이거나 그 아래 주소인지. `/admin` 은 `/admin/members` 를 품지만
  * `/administrator` 는 품지 않는다.

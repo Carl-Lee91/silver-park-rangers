@@ -1,4 +1,6 @@
 import { getEnv } from "@/shared/config";
+import { isLinkAccount, LINK_ACCOUNT_METADATA, linkAccountEmail } from "./linkAccount";
+import { createSupabaseAdminClient } from "./supabaseAdmin";
 import { createSupabaseServerClient } from "./supabaseServer";
 
 /**
@@ -11,6 +13,57 @@ export const getAuthUserId = async () => {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getClaims();
   return typeof data?.claims?.sub === "string" ? data.claims.sub : null;
+};
+
+/**
+ * 지금 로그인한 계정이 개인 링크로 만든 계정인지(PLAN.md §4). 링크 계정은 비밀번호로 들어오지 않아서
+ * 내 정보에 비밀번호 바꾸기를 두지 않는다. 로그인하지 않았으면 false.
+ */
+export const isSignedInByLink = async () => {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getClaims();
+  return isLinkAccount(data?.claims?.app_metadata);
+};
+
+export type LinkSignInResult = { ok: true } | { ok: false; reason: "no-key" | "failed"; detail?: string };
+
+/**
+ * 개인 링크로 그 멤버가 되어 들어간다(PLAN.md §4). 링크가 맞는지는 부르는 쪽이 먼저 본다(`link_member`).
+ *
+ * 1. 로그인 계정이 없으면 멤버 id 그대로 만든다 — RLS 의 "id = auth.uid()" 가 그대로 맞는다.
+ *    이메일 칸은 메일이 가지 않는 표시용 주소이고, 링크 계정 표시를 남긴다.
+ * 2. 로그인 링크의 토큰을 만들어(메일은 보내지 않는다) 이 요청의 세션으로 바꾼다 — 세션은 쿠키에 남는다.
+ *
+ * 이메일로 가입한 사람도 같은 길로 들어간다(비밀번호는 그대로).
+ */
+export const signInAsMember = async (memberId: string): Promise<LinkSignInResult> => {
+  const admin = createSupabaseAdminClient();
+  if (admin === null) return { ok: false, reason: "no-key" };
+
+  const found = await admin.auth.admin.getUserById(memberId);
+  let email = found.data.user?.email ?? null;
+  if (found.data.user === null) {
+    if (found.error && found.error.status !== 404) return { ok: false, reason: "failed", detail: found.error.message };
+    const created = await admin.auth.admin.createUser({
+      id: memberId,
+      email: linkAccountEmail(memberId),
+      email_confirm: true,
+      app_metadata: LINK_ACCOUNT_METADATA,
+    });
+    if (created.error) return { ok: false, reason: "failed", detail: created.error.message };
+    email = created.data.user.email ?? null;
+  }
+  if (email === null) return { ok: false, reason: "failed", detail: "계정에 이메일이 없어요" };
+
+  const link = await admin.auth.admin.generateLink({ type: "magiclink", email });
+  if (link.error) return { ok: false, reason: "failed", detail: link.error.message };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: link.data.properties.hashed_token,
+    type: link.data.properties.verification_type,
+  });
+  return error === null ? { ok: true } : { ok: false, reason: "failed", detail: error.message };
 };
 
 /** 이메일·비밀번호 로그인. 팀원도 어드민 계정도 이것 하나만 쓴다(PLAN.md §2). */

@@ -1,7 +1,17 @@
 import { parseEnv, parseServerEnv, type Env, type ServerEnv } from "./env";
 
 export type { Env, ServerEnv } from "./env";
-export { adminMatchEditPath, adminMatchPath, adminMemberPath, adminSquadPath, adminTeamsPath, isUnder, matchPath, ROUTES } from "./routes";
+export {
+  adminMatchEditPath,
+  adminMatchPath,
+  adminMemberPath,
+  adminSquadPath,
+  adminTeamsPath,
+  isUnder,
+  linkLoginPath,
+  matchPath,
+  ROUTES,
+} from "./routes";
 
 let cachedPublic: Env | null = null;
 let cachedServer: ServerEnv | null = null;
@@ -25,4 +35,8 @@ export const getEnv = (): Env =>
 
 /** 서버에서만 부른다. 브라우저에서 부르면 값이 없어 터진다 — 그게 맞다. */
 export const getServerEnv = (): ServerEnv =>
-  (cachedServer ??= parseServerEnv({ SITE_URL: process.env.SITE_URL, CRON_SECRET: process.env.CRON_SECRET }));
+  (cachedServer ??= parseServerEnv({
+    SITE_URL: process.env.SITE_URL,
+    CRON_SECRET: process.env.CRON_SECRET,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  }));

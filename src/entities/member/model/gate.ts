@@ -33,10 +33,11 @@ export const gateOf = (signedIn: boolean, { member, isOwner }: GateAccess): Gate
 };
 
 /**
- * 게이트가 막지 않는 주소: 카톡 공유 링크(PLAN.md §8), Vercel Cron.
+ * 게이트가 막지 않는 주소: 카톡 공유 링크(PLAN.md §8), 개인 링크(§4), Vercel Cron.
+ * 개인 링크는 로그인 전에 열고, 다른 사람으로 들어가 있어도 링크 주인으로 바꿔 들어간다.
  * Cron 은 로그인하지 않은 Vercel 이 부른다. 대신 CRON_SECRET 으로 확인한다.
  */
-const PUBLIC_PREFIXES = ["/s", "/api/cron"];
+const PUBLIC_PREFIXES = ["/s", "/j", "/api/cron"];
 
 export const isPublicPath = (pathname: string) =>
   PUBLIC_PREFIXES.some((prefix) => isUnder(pathname, prefix));

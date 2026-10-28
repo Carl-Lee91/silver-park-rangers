@@ -1,12 +1,15 @@
 import { notFound } from "next/navigation";
 import { formatDeadline, seoulToday } from "@/entities/match";
-import { footLabel } from "@/entities/member";
-import { fetchAdminMembers } from "@/entities/member/server";
+import { canIssueLink, footLabel, takenJerseyNumbers } from "@/entities/member";
+import { fetchAdminMembers, fetchMemberLinkToken, fetchMyGate } from "@/entities/member/server";
 import { positionLabel } from "@/entities/position";
 import { fetchMemberRatings } from "@/entities/rating/server";
 import { computeMemberStats, periodRange } from "@/entities/stats";
 import { fetchStatsSource } from "@/entities/stats/server";
+import { issueMemberLink, MemberLinkCard } from "@/features/member-link";
+import { MemberProfileForm, updateMemberProfile } from "@/features/member-register";
 import { RatingForm, saveRatings } from "@/features/rating-edit";
+import { getServerEnv, linkLoginPath } from "@/shared/config";
 import { isUuid } from "@/shared/lib";
 import { chipClass, Panel, Screen } from "@/shared/ui";
 import { memberBack } from "../lib/back";
@@ -24,7 +27,7 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
 }
 
 /**
- * 선수 상세(PLAN.md §7 관리자, 관리자 전용): 프로필 · 능력치(매기기) · 올해 기록.
+ * 선수 상세(PLAN.md §7 관리자, 관리자 전용): 프로필(고치기) · 개인 링크 · 능력치(매기기) · 올해 기록.
  * 멤버 목록 · 통계의 멤버별 표 · 매치 관리(참석 명단 · 그날 용병) · 스쿼드 빌더 · 팀 나누기에서 선수를 누르면 온다.
  * 그날 용병도 연다(능력치를 매겨 자동 배치 · 팀 나누기에 쓴다). 능력치는 관리자만 읽고 쓴다(RLS).
  * 뒤로 가기는 온 화면(`from`)으로 간다.
@@ -36,10 +39,14 @@ export default async function AdminMemberDetailView({ memberId, from }: { member
   if (member === undefined) notFound();
   const guest = member.guestMatchId !== null;
 
-  const [ratings, season] = await Promise.all([
+  const [viewer, ratings, season] = await Promise.all([
+    fetchMyGate(),
     fetchMemberRatings(member.id),
     fetchStatsSource(periodRange("season", seoulToday())),
   ]);
+  // 개인 링크(PLAN.md §4): 승인된 사람에게만, 관리자의 링크는 어드민만. 그날 용병은 없다.
+  const linkable = canIssueLink(viewer, member);
+  const token = linkable ? await fetchMemberLinkToken(member.id) : null;
   const stats = computeMemberStats(season).find((row) => row.memberId === member.id) ?? null;
 
   return (
@@ -68,7 +75,7 @@ export default async function AdminMemberDetailView({ memberId, from }: { member
                 ["선호 포지션", member.preferredPositions.map((code, index) => `${index + 1}. ${positionLabel(code)}`).join(" · ")],
                 ["주발", member.feet.map(footLabel).join(" · ")],
                 // 그날 용병은 계정이 없다
-                ...(guest ? [] : [["이메일", member.email ?? "없음"]]),
+                ...(guest ? [] : [["로그인", member.login === "link" ? "개인 링크" : (member.email ?? "아직 안 들어옴")]]),
               ].map(([term, detail]) => (
                 <div key={term} className="flex items-baseline justify-between gap-4 px-3 py-2.5 md:px-4">
                   <dt className="shrink-0 text-text-secondary">{term}</dt>
@@ -76,7 +83,37 @@ export default async function AdminMemberDetailView({ memberId, from }: { member
                 </div>
               ))}
             </dl>
+            {/* 계정이 없거나 링크로만 들어오는 사람은 스스로 고치기 어렵다. 그날 용병은 매치 관리에서 고친다 */}
+            {!guest && (
+              <details className="border-t border-border px-3 py-3 md:px-4">
+                <summary className="cursor-pointer text-sm text-text-secondary">프로필 고치기</summary>
+                <div className="mt-4">
+                  <MemberProfileForm
+                    action={updateMemberProfile}
+                    takenNumbers={takenJerseyNumbers(members, member.id)}
+                    member={{
+                      id: member.id,
+                      realName: member.realName,
+                      feet: member.feet,
+                      preferredPositions: member.preferredPositions,
+                      jerseyNumber: member.jerseyNumber,
+                    }}
+                  />
+                </div>
+              </details>
+            )}
           </Panel>
+
+          {linkable && (
+            <Panel title="개인 링크" aside="가입 없이 들어오기">
+              <MemberLinkCard
+                action={issueMemberLink}
+                memberId={member.id}
+                memberName={member.realName}
+                url={token === null ? null : `${getServerEnv().SITE_URL}${linkLoginPath(token)}`}
+              />
+            </Panel>
+          )}
 
           <Panel title="올해 기록" aside="지난 매치만">
             {stats === null ? (
