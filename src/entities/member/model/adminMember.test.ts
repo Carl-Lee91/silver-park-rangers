@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attachLogins, groupForAdmin, regularMembers, toAdminMember, type AdminMember } from "./adminMember";
+import { attachLogins, groupForAdmin, loginNote, regularMembers, takenJerseyNumbers, toAdminMember, type AdminMember } from "./adminMember";
 
 const row = {
   id: "00000000-0000-0000-0000-000000000001",
@@ -126,5 +126,32 @@ describe("로그인 방법 (PLAN.md §4 개인 링크)", () => {
   it("아직 계정이 없으면(관리자가 등록만 했다) 둘 다 없다", () => {
     const [result] = attachLogins([member], []);
     expect(result).toMatchObject({ email: null, login: null });
+  });
+});
+
+describe("멤버 목록의 로그인 줄", () => {
+  const member = toAdminMember(row);
+
+  it("이메일 · 개인 링크 · 아직 안 들어옴을 알려 준다", () => {
+    expect(loginNote({ ...member, email: "kim@example.com", login: "email" })).toBe("kim@example.com");
+    expect(loginNote({ ...member, login: "link" })).toBe("개인 링크로 들어옴");
+    expect(loginNote({ ...member, login: null })).toBe("아직 안 들어옴 · 개인 링크를 보내 주세요");
+  });
+});
+
+describe("등록 · 고치기에서 고를 수 없는 등번호", () => {
+  const people = [
+    { ...toAdminMember(row), id: "a", jerseyNumber: 7 },
+    { ...toAdminMember(row), id: "b", jerseyNumber: 10 },
+    { ...toAdminMember(row), id: "c", jerseyNumber: null },
+    { ...toAdminMember(row), id: "g", jerseyNumber: 9, guestMatchId: "m1" },
+  ];
+
+  it("누가 쓰는 번호다 — 그날 용병 번호는 겹쳐도 돼서 뺀다", () => {
+    expect(takenJerseyNumbers(people)).toEqual([7, 10]);
+  });
+
+  it("고칠 때는 그 사람 번호를 뺀다", () => {
+    expect(takenJerseyNumbers(people, "a")).toEqual([10]);
   });
 });
