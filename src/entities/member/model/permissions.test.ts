@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canChangeRole, canChangeStatus, canManageMembers, canResetPassword } from "./permissions";
+import { canChangeRole, canChangeStatus, canIssueLink, canManageMembers, canResetPassword } from "./permissions";
 
 describe("멤버 관리 권한 (PLAN.md §3) — DB 의 RPC 검사와 같다", () => {
   it("어드민과 관리자는 가입 승인·멤버 관리를 한다", () => {
@@ -26,5 +26,15 @@ describe("멤버 관리 권한 (PLAN.md §3) — DB 의 RPC 검사와 같다", (
     expect(canResetPassword("admin", { role: "admin" })).toBe(false);
     expect(canResetPassword("owner", { role: "admin" })).toBe(true);
     expect(canResetPassword("approved", { role: "user" })).toBe(false);
+  });
+
+  it("개인 링크: 승인된 사람에게만, 관리자의 링크는 어드민만, 그날 용병은 없다 (issue_member_link)", () => {
+    const member = { role: "user" as const, status: "approved" as const, guestMatchId: null };
+    expect(canIssueLink("admin", member)).toBe(true);
+    expect(canIssueLink("admin", { ...member, role: "admin" })).toBe(false);
+    expect(canIssueLink("owner", { ...member, role: "admin" })).toBe(true);
+    expect(canIssueLink("admin", { ...member, status: "inactive" })).toBe(false);
+    expect(canIssueLink("admin", { ...member, guestMatchId: "m1" })).toBe(false);
+    expect(canIssueLink("approved", member)).toBe(false);
   });
 });
