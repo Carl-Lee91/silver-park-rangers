@@ -115,12 +115,12 @@ describe("경기비 · 벌금 받을 사람", () => {
     { matchId: "m1", memberId: "h", realName: "미확정용병", jerseyNumber: null, response: "yes" as const, attended: null },
   ];
 
-  it("용병 중 온 사람(출석을 안 정했으면 참석 투표)은 경기비, 참석 투표하고 안 온 사람은 벌금이다", () => {
+  it("용병 중 온 사람(출석을 안 정했으면 참석 투표)은 경기비, 참석 투표하고 안 온 사람은 벌금이다 — 경기비 먼저, 이름순", () => {
     const list = matchChecklist(rows, new Set(["g", "h"]), []);
-    expect(list.map((row) => [row.category, row.member.id])).toEqual([
-      ["match_fee", "g"],
-      ["match_fee", "h"],
-      ["fine", "a"],
+    expect(list.map((row) => [row.category, row.member.realName])).toEqual([
+      ["match_fee", "미확정용병"],
+      ["match_fee", "용병"],
+      ["fine", "홍길동"],
     ]);
   });
 
