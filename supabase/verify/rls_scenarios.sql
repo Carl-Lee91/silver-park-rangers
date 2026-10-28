@@ -966,3 +966,60 @@ on conflict (match_id, member_id) do update set response = excluded.response;
 select verify.ok((select response from public.match_attendance where match_id = '10000000-0000-0000-0000-000000000002'
   and member_id = current_setting('verify.registered')::uuid) = 'no', '관리자는 마감 뒤에도 대신 투표한다');
 reset role;
+
+-- ── 회비 · 벌금 장부 (20261028010000) ────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.dues_settings) = 0, '일반 멤버는 금액 설정을 못 본다');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '일반 멤버는 받음을 남기지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '금액을 정하지 않은(0) 항목은 받지 않는다');
+update public.dues_settings set monthly_fee = 20000, match_fee = 10000, no_show_fine = 5000;
+select set_config('verify.dues',
+  public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-17')::text, false);
+select verify.ok((select (category, amount, payer_name, dues_month) = ('dues', 20000, '이멤버', '2026-10-01')
+  from public.ledger_entries where id = current_setting('verify.dues')::uuid),
+  '월회비를 받으면 설정 금액 · 이름 · 그 달(1일)이 장부에 들어간다');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '같은 달 회비를 두 번 받지 않는다');
+select verify.fails($$select public.record_payment('fine', '00000000-0000-0000-0000-000000000002', null, null)$$,
+  '벌금은 어느 매치인지 있어야 한다');
+select public.record_payment('fine', '00000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', null);
+select public.record_payment('match_fee', '00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', null);
+select verify.fails($$select public.record_payment('match_fee', '00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', null)$$,
+  '같은 매치 경기비를 두 번 받지 않는다');
+insert into public.ledger_entries (category, amount, memo) values ('field', 120000, '10월 구장');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('dues', 1)$$,
+  '월회비 줄에는 회비 달이 있어야 한다');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('field', 0)$$, '금액은 0 보다 크다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.ledger_entries where member_id = '00000000-0000-0000-0000-000000000002') = 2,
+  '팀원은 내 납부 기록을 본다');
+select verify.ok(not exists (select 1 from public.ledger_entries where member_id = '00000000-0000-0000-0000-000000000005'),
+  '다른 사람의 납부(경기비 등)는 못 본다 — 멤버/용병 구분이 드러나지 않게');
+select verify.ok(exists (select 1 from public.ledger_entries where category = 'field'), '지출은 모두 본다');
+select verify.ok((select (income, expense, balance) = (35000::bigint, 120000::bigint, -85000::bigint) from public.team_ledger_summary()),
+  '팀 수입 · 지출 · 잔액은 모두의 것을 더해 준다');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('field', 1000)$$, '팀원은 장부에 적지 못한다');
+reset role;
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.fails($$select * from public.team_ledger_summary()$$, '로그인 안 하면 잔액을 못 본다');
+select verify.ok((select count(*) from public.ledger_entries) = 0, '로그인 안 하면 장부를 못 본다');
+reset role;
+
+-- 매치를 지우면 그날 용병 행이 지워진다. 받은 돈은 장부에 이름과 같이 남는다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.paidguest',
+  public.add_match_guest('10000000-0000-0000-0000-000000000041', '경기비용병', '{left}', '{GK}', null)::text, false);
+select public.record_payment('match_fee', current_setting('verify.paidguest')::uuid, '10000000-0000-0000-0000-000000000041', null);
+delete from public.matches where id = '10000000-0000-0000-0000-000000000041';
+select verify.ok((select (member_id is null and match_id is null and amount = 10000) from public.ledger_entries where payer_name = '경기비용병'),
+  '매치 · 사람을 지워도 받은 돈은 장부에 이름과 남는다');
+reset role;
