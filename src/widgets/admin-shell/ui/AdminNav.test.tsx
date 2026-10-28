@@ -19,6 +19,6 @@ describe("관리 메뉴 줄", () => {
     for (const link of screen.getAllByRole("link")) {
       expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
     }
-    expect(screen.getAllByRole("link").map((link) => link.textContent)).toEqual(["매치", "스쿼드", "멤버", "통계"]);
+    expect(screen.getAllByRole("link").map((link) => link.textContent)).toEqual(["매치", "스쿼드", "멤버", "회비", "통계"]);
   });
 });

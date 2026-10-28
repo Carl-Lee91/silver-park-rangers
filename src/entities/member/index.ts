@@ -1,12 +1,17 @@
 export { selectGateAccess, type NewMember } from "./api/queries";
 export {
+  attachLogins,
   groupForAdmin,
+  loginNote,
   regularMembers,
+  takenJerseyNumbers,
   toAdminMember,
   type AdminMember,
   type AdminMemberGroups,
+  type LoginRow,
   type MemberType,
 } from "./model/adminMember";
+export { toLinkMember, type LinkMember } from "./model/linkMember";
 export {
   gateOf,
   gateRedirect,
@@ -26,7 +31,7 @@ export {
   type MemberRole,
   type MemberStatus,
 } from "./model/member";
-export { canChangeRole, canChangeStatus, canManageMembers, canResetPassword } from "./model/permissions";
+export { canChangeRole, canChangeStatus, canIssueLink, canManageMembers, canResetPassword } from "./model/permissions";
 export {
   isPositionChoiceComplete,
   isPositionLocked,

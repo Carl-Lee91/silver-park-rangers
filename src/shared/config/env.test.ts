@@ -33,11 +33,19 @@ describe("서버 전용 환경변수", () => {
     expect(parseServerEnv({ SITE_URL: "http://localhost:3000/" })).toEqual({
       SITE_URL: "http://localhost:3000",
       CRON_SECRET: "",
+      SUPABASE_SERVICE_ROLE_KEY: "",
     });
   });
 
   it("Cron 비밀값은 없어도 된다", () => {
     expect(parseServerEnv({ SITE_URL: "http://localhost:3000", CRON_SECRET: "s3cret" }).CRON_SECRET).toBe("s3cret");
+  });
+
+  it("서버 전용 키는 없어도 된다 — 개인 링크 화면이 무엇이 빠졌는지 보여 준다", () => {
+    expect(parseServerEnv({ SITE_URL: "http://localhost:3000" }).SUPABASE_SERVICE_ROLE_KEY).toBe("");
+    expect(
+      parseServerEnv({ SITE_URL: "http://localhost:3000", SUPABASE_SERVICE_ROLE_KEY: "service-key" }).SUPABASE_SERVICE_ROLE_KEY,
+    ).toBe("service-key");
   });
 
   it("절대 주소가 아니면 거부한다 — 로그인 후 돌아올 주소다", () => {

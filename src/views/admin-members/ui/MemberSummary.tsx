@@ -1,4 +1,4 @@
-import { footLabel, type AdminMember } from "@/entities/member";
+import { footLabel, loginNote, type AdminMember } from "@/entities/member";
 import { positionLabel } from "@/entities/position";
 import { chipClass } from "@/shared/ui";
 
@@ -12,7 +12,7 @@ function Badge({ children, tone }: { children: string; tone: "primary" | "neutra
   return <span className={chipClass(tone === "primary" ? "accent" : "muted")}>{children}</span>;
 }
 
-/** 누구인지 확인하는 데 필요한 것: 실명, 로그인 이메일, 선호 포지션·주발 */
+/** 누구인지 확인하는 데 필요한 것: 실명, 어떻게 들어오는지(이메일 · 개인 링크), 선호 포지션·주발 */
 export default function MemberSummary({ member, showApplied = false }: { member: AdminMember; showApplied?: boolean }) {
   return (
     <div className="flex items-start gap-3">
@@ -29,7 +29,7 @@ export default function MemberSummary({ member, showApplied = false }: { member:
           {member.memberType === "guest" && <Badge tone="neutral">용병</Badge>}
         </p>
         <p className="mt-0.5 truncate text-xs text-text-secondary">
-          {member.email ?? "이메일 없음"}
+          {loginNote(member)}
           {showApplied && ` · ${appliedAt.format(new Date(member.createdAt))} 신청`}
         </p>
         <p className="mt-1 text-xs text-text-tertiary">

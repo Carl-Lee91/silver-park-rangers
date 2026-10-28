@@ -32,5 +32,6 @@ export {
   type QuarterTime,
   type TimeOption,
 } from "./model/quarterSchedule";
+export { liveQuarter, seoulClock, type LiveQuarter } from "./model/liveClock";
 export { default as MatchCard } from "./ui/MatchCard";
 export { default as MatchSummary } from "./ui/MatchSummary";

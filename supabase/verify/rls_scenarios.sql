@@ -850,3 +850,243 @@ reset role;
 delete from auth.users where id = '00000000-0000-0000-0000-000000000009';
 select verify.ok(not exists (select 1 from public.members where id = '00000000-0000-0000-0000-000000000009'),
   '계정을 지우면 멤버 행도 지운다');
+
+-- ── 가입 없는 참여: 선수 등록 · 개인 링크 · 대신 투표 (20261028000000) ──
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.fails($$select public.register_member('등록시도', '{right}', '{CB,FB,DM}', null, 'member')$$,
+  '일반 멤버는 선수를 등록하지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.registered',
+  public.register_member(' 홍등록 ', '{right}', '{CB,FB,DM}', 44, 'member')::text, false);
+select verify.ok((select (real_name, status, role) = ('홍등록', 'approved', 'user')
+  from public.members where id = current_setting('verify.registered')::uuid),
+  '관리자가 등록한 선수는 계정 없이 바로 승인된 멤버다');
+select verify.ok((select approved_by from public.members where id = current_setting('verify.registered')::uuid)
+  = '00000000-0000-0000-0000-000000000001', '누가 등록했는지 남긴다');
+select verify.ok((select member_type from public.member_admin_info where member_id = current_setting('verify.registered')::uuid) = 'member',
+  '등록할 때 고른 구분이 관리자 표에 남는다');
+select verify.ok(not exists (select 1 from public.match_guests where member_id = current_setting('verify.registered')::uuid),
+  '등록한 선수는 그날 용병이 아니다 — 모든 매치에 나온다');
+select verify.ok(44 = any(public.taken_jersey_numbers()), '등록한 선수의 번호는 사용 중이다');
+select verify.fails($$select public.register_member('번호겹침', '{left}', '{GK}', 44, 'guest')$$,
+  '등록도 등번호가 겹치면 막는다');
+select verify.fails($$select public.register_member('두개만', '{left}', '{FW,WG}', null, 'member')$$,
+  '등록도 선호 포지션 규칙이 같다');
+select verify.fails($$select public.register_member('구분없음', '{left}', '{GK}', null, 'owner')$$,
+  '구분은 멤버 · 용병 둘 중 하나다');
+
+-- 개인 링크
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.fails($$select public.issue_member_link(current_setting('verify.registered')::uuid)$$,
+  '일반 멤버는 개인 링크를 만들지 못한다');
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.link', public.issue_member_link(current_setting('verify.registered')::uuid)::text, false);
+select verify.ok((select token::text from public.member_links where member_id = current_setting('verify.registered')::uuid)
+  = current_setting('verify.link'), '관리자는 개인 링크를 다시 읽어 복사한다');
+select verify.fails($$select public.issue_member_link('00000000-0000-0000-0000-000000000003')$$,
+  '승인 전인 사람에게는 개인 링크를 만들지 않는다');
+
+insert into public.matches (id, match_date, vote_deadline)
+values ('10000000-0000-0000-0000-000000000041', '2026-11-08', now() + interval '1 day');
+select set_config('verify.dayguest',
+  public.add_match_guest('10000000-0000-0000-0000-000000000041', '하루용병', '{right}', '{GK}', null)::text, false);
+select verify.fails($$select public.issue_member_link(current_setting('verify.dayguest')::uuid)$$,
+  '그날 용병은 개인 링크가 없다 — 공유 링크로 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'admin');
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.fails($$select public.issue_member_link('00000000-0000-0000-0000-000000000002')$$,
+  '관리자는 다른 관리자의 개인 링크를 만들지 못한다');
+select verify.ok(public.issue_member_link('00000000-0000-0000-0000-000000000001') is not null,
+  '관리자는 자기 링크는 만든다');
+select verify.login('00000000-0000-0000-0000-000000000007');
+select verify.ok(public.issue_member_link('00000000-0000-0000-0000-000000000002') is not null,
+  '어드민은 관리자의 개인 링크도 만든다');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'user');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.member_links) = 0, '일반 멤버는 개인 링크를 못 읽는다');
+reset role;
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.ok((select real_name from public.link_member(current_setting('verify.link')::uuid)) = '홍등록',
+  '로그인 전에도 링크 주인의 이름을 본다');
+select verify.ok(not exists (select 1 from public.link_member(gen_random_uuid())), '틀린 링크는 아무도 아니다');
+select verify.ok((select count(*) from public.member_links) = 0, '로그인 안 하면 링크 표를 못 읽는다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.newlink', public.issue_member_link(current_setting('verify.registered')::uuid)::text, false);
+select verify.ok(current_setting('verify.newlink') <> current_setting('verify.link'), '새 링크는 다른 값이다');
+select verify.ok(not exists (select 1 from public.link_member(current_setting('verify.link')::uuid)),
+  '새 링크를 만들면 예전 링크는 열리지 않는다');
+select public.set_member_status(current_setting('verify.registered')::uuid, 'inactive');
+select verify.ok(not exists (select 1 from public.link_member(current_setting('verify.newlink')::uuid)),
+  '휴면인 사람의 링크는 열리지 않는다');
+select public.set_member_status(current_setting('verify.registered')::uuid, 'approved');
+select verify.ok(exists (select 1 from public.link_member(current_setting('verify.newlink')::uuid)),
+  '복귀하면 같은 링크가 다시 열린다');
+reset role;
+
+-- 링크로 처음 들어오면 로그인 서버가 멤버 id 그대로 계정을 만든다(서버 전용 키). 그 모습을 흉내 낸다.
+insert into auth.users (id, email, raw_app_meta_data)
+values (current_setting('verify.registered')::uuid, current_setting('verify.registered') || '@link.invalid', '{"provider": "email", "link_login": true}');
+select verify.ok((select count(*) from public.members where id = current_setting('verify.registered')::uuid) = 1,
+  '링크 계정이 생겨도 멤버 행은 그대로 하나다');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.ok((select (email is null and via_link) from public.member_emails() where member_id = current_setting('verify.registered')::uuid),
+  '링크 계정은 이메일 대신 링크로 보인다 — 표시용 주소는 보이지 않는다');
+select verify.ok((select (email, via_link) = ('member@example.com', false) from public.member_emails()
+  where member_id = '00000000-0000-0000-0000-000000000002'), '이메일 계정은 그대로 이메일이다');
+select verify.fails($$select public.reset_member_password(current_setting('verify.registered')::uuid)$$,
+  '링크 계정은 임시 비밀번호가 없다 — 새 링크를 보낸다');
+
+-- 링크로 들어온 사람은 다른 팀원과 똑같다(id = 계정 id)
+select verify.login(current_setting('verify.registered')::uuid);
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000041', current_setting('verify.registered')::uuid, 'yes');
+select verify.ok((select response from public.match_attendance where match_id = '10000000-0000-0000-0000-000000000041'
+  and member_id = current_setting('verify.registered')::uuid) = 'yes', '링크로 들어온 사람은 자기 투표를 한다');
+
+-- 대신 투표: 관리자는 마감 뒤에도 남의 투표를 남긴다. 일반 멤버는 못 한다.
+select verify.fails($$insert into public.match_attendance (match_id, member_id, response)
+  values ('10000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000005', 'yes')$$,
+  '일반 멤버는 남의 투표를 남기지 못한다');
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid, 'no')
+on conflict (match_id, member_id) do update set response = excluded.response;
+select verify.ok((select response from public.match_attendance where match_id = '10000000-0000-0000-0000-000000000002'
+  and member_id = current_setting('verify.registered')::uuid) = 'no', '관리자는 마감 뒤에도 대신 투표한다');
+reset role;
+
+-- ── 회비 · 벌금 장부 (20261028010000) ────────────────────────────────
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.dues_settings) = 0, '일반 멤버는 금액 설정을 못 본다');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '일반 멤버는 받음을 남기지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '금액을 정하지 않은(0) 항목은 받지 않는다');
+update public.dues_settings set monthly_fee = 20000, match_fee = 10000, no_show_fine = 5000;
+select set_config('verify.dues',
+  public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-17')::text, false);
+select verify.ok((select (category, amount, payer_name, dues_month) = ('dues', 20000, '이멤버', '2026-10-01')
+  from public.ledger_entries where id = current_setting('verify.dues')::uuid),
+  '월회비를 받으면 설정 금액 · 이름 · 그 달(1일)이 장부에 들어간다');
+select verify.fails($$select public.record_payment('dues', '00000000-0000-0000-0000-000000000002', null, '2026-10-01')$$,
+  '같은 달 회비를 두 번 받지 않는다');
+select verify.fails($$select public.record_payment('fine', '00000000-0000-0000-0000-000000000002', null, null)$$,
+  '벌금은 어느 매치인지 있어야 한다');
+select public.record_payment('fine', '00000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', null);
+select public.record_payment('match_fee', '00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', null);
+select verify.fails($$select public.record_payment('match_fee', '00000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000002', null)$$,
+  '같은 매치 경기비를 두 번 받지 않는다');
+insert into public.ledger_entries (category, amount, memo) values ('field', 120000, '10월 구장');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('dues', 1)$$,
+  '월회비 줄에는 회비 달이 있어야 한다');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('field', 0)$$, '금액은 0 보다 크다');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.ledger_entries where member_id = '00000000-0000-0000-0000-000000000002') = 2,
+  '팀원은 내 납부 기록을 본다');
+select verify.ok(not exists (select 1 from public.ledger_entries where member_id = '00000000-0000-0000-0000-000000000005'),
+  '다른 사람의 납부(경기비 등)는 못 본다 — 멤버/용병 구분이 드러나지 않게');
+select verify.ok(exists (select 1 from public.ledger_entries where category = 'field'), '지출은 모두 본다');
+select verify.ok((select (income, expense, balance) = (35000::bigint, 120000::bigint, -85000::bigint) from public.team_ledger_summary()),
+  '팀 수입 · 지출 · 잔액은 모두의 것을 더해 준다');
+select verify.fails($$insert into public.ledger_entries (category, amount) values ('field', 1000)$$, '팀원은 장부에 적지 못한다');
+reset role;
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.fails($$select * from public.team_ledger_summary()$$, '로그인 안 하면 잔액을 못 본다');
+select verify.ok((select count(*) from public.ledger_entries) = 0, '로그인 안 하면 장부를 못 본다');
+reset role;
+
+-- 매치를 지우면 그날 용병 행이 지워진다. 받은 돈은 장부에 이름과 같이 남는다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.paidguest',
+  public.add_match_guest('10000000-0000-0000-0000-000000000041', '경기비용병', '{left}', '{GK}', null)::text, false);
+select public.record_payment('match_fee', current_setting('verify.paidguest')::uuid, '10000000-0000-0000-0000-000000000041', null);
+delete from public.matches where id = '10000000-0000-0000-0000-000000000041';
+select verify.ok((select (member_id is null and match_id is null and amount = 10000) from public.ledger_entries where payer_name = '경기비용병'),
+  '매치 · 사람을 지워도 받은 돈은 장부에 이름과 남는다');
+reset role;
+
+-- ── MVP 투표 (20261028020000) ────────────────────────────────────────
+-- 어제 매치(끝나고 이틀 동안 열림)와 내일 매치(아직 안 끝남). 날짜는 한국 시각 기준이다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.matches (id, match_date) values
+  ('10000000-0000-0000-0000-000000000051', (now() at time zone 'Asia/Seoul')::date - 1),
+  ('10000000-0000-0000-0000-000000000052', (now() at time zone 'Asia/Seoul')::date + 1);
+insert into public.match_attendance (match_id, member_id, response, attended) values
+  ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', 'yes', true),
+  ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, 'yes', null),
+  ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000005', 'no', null),
+  ('10000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000002', 'yes', null),
+  ('10000000-0000-0000-0000-000000000052', current_setting('verify.registered')::uuid, 'yes', null);
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+insert into public.mvp_votes (match_id, voter_id, candidate_id)
+values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid);
+select verify.ok((select count(*) from public.mvp_votes) = 1, '뛴 사람은 끝난 매치의 MVP 를 뽑는다');
+update public.mvp_votes set candidate_id = current_setting('verify.registered')::uuid
+ where match_id = '10000000-0000-0000-0000-000000000051' and voter_id = '00000000-0000-0000-0000-000000000002';
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002')
+  on conflict (match_id, voter_id) do update set candidate_id = excluded.candidate_id$$, '자기 자신은 뽑지 못한다');
+select verify.fails($$update public.mvp_votes set candidate_id = '00000000-0000-0000-0000-000000000005'
+  where voter_id = '00000000-0000-0000-0000-000000000002'$$, '안 뛴 사람은 뽑지 못한다');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid)$$,
+  '끝나기 전에는 뽑지 못한다');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002')$$,
+  '남의 이름으로 뽑지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000005');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000002')$$,
+  '안 뛴 사람은 투표하지 못한다');
+
+select verify.login(current_setting('verify.registered')::uuid);
+insert into public.mvp_votes (match_id, voter_id, candidate_id)
+values ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.mvp_votes) = 1, '남이 누구를 뽑았는지는 못 본다 — 내 표만 본다');
+select verify.ok(public.mvp_voter_count('10000000-0000-0000-0000-000000000051') = 2, '몇 명이 투표했는지는 본다');
+select verify.ok(not exists (select 1 from public.mvp_results('10000000-0000-0000-0000-000000000051')),
+  '마감 전에는 결과를 보이지 않는다 — 쏠리지 않게');
+reset role;
+
+-- 마감한 매치(2026-10-18)의 표는 운영 DB 에서 넣는다(앱으로는 이미 못 넣는다)
+insert into public.mvp_votes (match_id, voter_id, candidate_id) values
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', current_setting('verify.registered')::uuid),
+  ('10000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002');
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select (real_name, votes) = ('홍등록', 2) from public.mvp_results('10000000-0000-0000-0000-000000000002') limit 1),
+  '마감하면 결과를 많이 받은 순으로 본다');
+-- RLS USING 에 걸린 DELETE 는 오류 없이 0행이다. 지워 보고 표가 남았는지 본다.
+delete from public.mvp_votes where match_id = '10000000-0000-0000-0000-000000000002'
+  and voter_id = '00000000-0000-0000-0000-000000000002';
+reset role;
+select verify.ok((select count(*) from public.mvp_votes where match_id = '10000000-0000-0000-0000-000000000002') = 3,
+  '마감한 표는 지우지 못한다');
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.fails($$select * from public.mvp_results('10000000-0000-0000-0000-000000000002')$$, '로그인 안 하면 결과를 못 본다');
+reset role;

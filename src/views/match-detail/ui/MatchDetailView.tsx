@@ -22,14 +22,18 @@ import { ResultSummaryView, summarizeResult } from "@/entities/result";
 import { fetchMatchResult } from "@/entities/result/server";
 import { squadForImage } from "@/entities/squad";
 import { fetchSquad } from "@/entities/squad/server";
+import { mvpClosesAt, mvpPhase, mvpWinners } from "@/entities/mvp";
+import { fetchMvpResults, fetchMvpVoterCount, fetchMyMvpVote } from "@/entities/mvp/server";
 import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
+import { matchReportText } from "@/features/match-report";
+import { MvpVoteForm, submitMvpVote } from "@/features/mvp-vote";
 import { ShareActions } from "@/features/squad-share";
 import { getAuthUserId } from "@/shared/api";
-import { getServerEnv, ROUTES } from "@/shared/config";
+import { getServerEnv, matchPath, ROUTES } from "@/shared/config";
 import { QuarterBoard } from "@/widgets/quarter-board";
 import { playerTips } from "@/widgets/player-tip";
 import { squadImagePath, squadImageVersion } from "@/widgets/squad-image";
-import { chipClass, Panel, Screen } from "@/shared/ui";
+import { chipClass, CopyButton, Panel, Screen } from "@/shared/ui";
 
 export default async function MatchDetailView({ matchId }: { matchId: string }) {
   const match = await fetchMatch(matchId);
@@ -63,6 +67,25 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
   const image = squadForImage(match, squad);
   const version = image === null ? "" : squadImageVersion(image);
 
+  // MVP 투표(PLAN.md §10): 끝나고 이틀 동안, 뛴 사람끼리. 결과는 마감 뒤에만 온다.
+  const phase = mvpPhase(match);
+  const played = attendance.filter((row) => row.realName !== null && (row.attended === true || (row.attended === null && row.response === "yes")));
+  const [myMvp, mvpVoters, mvpTally] =
+    phase === "before"
+      ? [null, 0, []]
+      : await Promise.all([fetchMyMvpVote(match.id), fetchMvpVoterCount(match.id), phase === "closed" ? fetchMvpResults(match.id) : []]);
+  const mvp = mvpWinners(mvpTally);
+  const report =
+    summary.quarters.length === 0
+      ? null
+      : matchReportText({
+          title: `${formatMatchDate(match.date)} ${matchTitle(match)}`,
+          summary,
+          mvp,
+          attendedCount: attendance.filter((row) => row.attended === true).length,
+          url: `${getServerEnv().SITE_URL}${matchPath(match.id)}`,
+        });
+
   return (
     <Screen
       title={matchTitle(match)}
@@ -77,6 +100,48 @@ export default async function MatchDetailView({ matchId }: { matchId: string }) 
           {summary.quarters.length > 0 && (
             <Panel title="경기 결과" flush>
               <ResultSummaryView summary={summary} />
+              {report && (
+                <div className="border-t border-border p-3 md:p-4">
+                  <CopyButton text={report} label="경기 리포트 복사" done="복사했어요. 단톡방에 붙여 넣으세요." />
+                </div>
+              )}
+            </Panel>
+          )}
+
+          {phase !== "before" && (
+            <Panel
+              title="MVP"
+              aside={phase === "open" ? `${mvpVoters}명 투표 · ${formatDeadline(mvpClosesAt(match).toISOString())} 마감` : `${mvpVoters}명 투표`}
+            >
+              {phase === "closed" ? (
+                mvp.length === 0 ? (
+                  <p className="text-sm text-text-secondary">아무도 투표하지 않았어요.</p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xl font-extrabold">
+                      {mvp.map((row) => `${row.jerseyNumber === null ? "" : `${row.jerseyNumber} `}${row.realName}`).join(" · ")}
+                    </p>
+                    <p className="text-sm text-text-secondary">
+                      {mvpTally
+                        .slice(0, 5)
+                        .map((row) => `${row.realName} ${row.votes}표`)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                )
+              ) : played.some((row) => row.memberId === userId) ? (
+                <MvpVoteForm
+                  action={submitMvpVote}
+                  matchId={match.id}
+                  current={myMvp}
+                  candidates={played
+                    .filter((row) => row.memberId !== userId)
+                    .map((row) => ({ id: row.memberId, realName: row.realName!, jerseyNumber: row.jerseyNumber }))
+                    .sort((a, b) => a.realName.localeCompare(b.realName, "ko"))}
+                />
+              ) : (
+                <p className="text-sm text-text-secondary">이 매치에 뛴 사람만 투표해요. 결과는 마감 뒤에 나와요.</p>
+              )}
             </Panel>
           )}
 

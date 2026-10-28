@@ -16,12 +16,16 @@ export const ROUTES = {
   adminSquads: "/admin/squads",
   adminFormations: "/admin/formations",
   adminStats: "/admin/stats",
+  /** 회비 · 벌금 장부(PLAN.md §10) */
+  adminDues: "/admin/dues",
 } as const;
 
 export const matchPath = (id: string) => `/matches/${id}`;
 export const adminMatchPath = (id: string) => `/admin/matches/${id}`;
 export const adminMatchEditPath = (id: string) => `/admin/matches/${id}/edit`;
 export const adminSquadPath = (id: string) => `/admin/matches/${id}/squad`;
+/** 경기 당일 현장 모드(PLAN.md §10): 지금 쿼터 · 교체 안내 · 도착 체크 · 결과 기록 */
+export const adminLivePath = (id: string) => `/admin/matches/${id}/live`;
 
 /** 풋살 팀 나누기(PLAN.md §6 "풋살"). 풋살 매치는 스쿼드 빌더 대신 여기로 간다 */
 export const adminTeamsPath = (id: string) => `/admin/matches/${id}/teams`;
@@ -31,6 +35,9 @@ export const adminTeamsPath = (id: string) => `/admin/matches/${id}/teams`;
  */
 export const adminMemberPath = (id: string, from?: string) =>
   from === undefined ? `/admin/members/${id}` : `/admin/members/${id}?from=${encodeURIComponent(from)}`;
+
+/** 개인 링크(PLAN.md §4). 누르면 그 사람으로 들어간다. 로그인 전에도 열린다(게이트 예외) */
+export const linkLoginPath = (token: string) => `/j/${token}`;
 
 /**
  * `pathname` 이 `base` 이거나 그 아래 주소인지. `/admin` 은 `/admin/members` 를 품지만

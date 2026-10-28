@@ -2,13 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient, dbErrorMessage } from "@/shared/api";
-import { adminMatchPath, matchPath, ROUTES } from "@/shared/config";
+import { adminLivePath, adminMatchPath, matchPath, ROUTES } from "@/shared/config";
 import type { ActionState } from "@/shared/ui";
 import { readGoalForm, readScoreForm } from "../model/goalForm";
 
 /** 권한은 RLS 가 본다 — 결과는 관리자 이상만 쓴다. 쿼터 범위는 DB 트리거가 다시 본다. */
 const refresh = (matchId: string) => {
   revalidatePath(adminMatchPath(matchId));
+  // 현장 모드(PLAN.md §10)에서도 쿼터가 끝나면 바로 기록한다
+  revalidatePath(adminLivePath(matchId));
   revalidatePath(matchPath(matchId));
   revalidatePath(ROUTES.adminStats);
 };

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient, dbErrorMessage } from "@/shared/api";
-import { adminMatchPath } from "@/shared/config";
+import { adminLivePath, adminMatchPath } from "@/shared/config";
 import type { ActionState } from "@/shared/ui";
 
 /**
@@ -18,6 +18,8 @@ const upsert = async (matchId: string, rows: { memberId: string; attended: boole
   );
   if (error) return { error: dbErrorMessage(error.code) };
   revalidatePath(adminMatchPath(matchId));
+  // 현장 모드의 도착 체크도 실제 출석이다(PLAN.md §10)
+  revalidatePath(adminLivePath(matchId));
   return {};
 };
 

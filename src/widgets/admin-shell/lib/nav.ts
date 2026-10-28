@@ -7,6 +7,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { label: "매치", href: ROUTES.adminMatches },
   { label: "스쿼드", href: ROUTES.adminSquads },
   { label: "멤버", href: ROUTES.adminMembers },
+  { label: "회비", href: ROUTES.adminDues },
   { label: "통계", href: ROUTES.adminStats },
 ];
 

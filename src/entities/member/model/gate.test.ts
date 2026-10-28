@@ -104,9 +104,11 @@ describe("게이트에 따른 이동", () => {
   });
 
   it.each(["signed-out", "pending", "approved", "owner"] as const)(
-    "공유 링크·Cron 은 어떤 상태든 막지 않는다 (%s)",
+    "공유 링크·개인 링크·Cron 은 어떤 상태든 막지 않는다 (%s)",
     (gate) => {
       expect(gateRedirect(gate, "/s/abc")).toBeNull();
+      // 개인 링크(PLAN.md §4)는 로그인 전에 열고, 다른 사람으로 들어가 있어도 바꿔 들어간다
+      expect(gateRedirect(gate, "/j/abc")).toBeNull();
       expect(gateRedirect(gate, "/api/cron/keep-alive")).toBeNull();
     },
   );

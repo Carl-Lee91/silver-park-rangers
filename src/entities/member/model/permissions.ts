@@ -1,5 +1,5 @@
 import type { Gate } from "./gate";
-import type { MemberRole } from "./member";
+import type { MemberRole, MemberStatus } from "./member";
 
 /**
  * 멤버 관리 권한(PLAN.md §3). 화면에 단추를 보일지 정하는 데 쓴다.
@@ -19,3 +19,12 @@ export const canChangeStatus = (viewer: Gate, target: { role: MemberRole }) =>
  * 관리자끼리 서로의 계정에 들어가지 못하게 휴면과 같은 선을 긋는다.
  */
 export const canResetPassword = (viewer: Gate, target: { role: MemberRole }) => canChangeStatus(viewer, target);
+
+/**
+ * 개인 링크(PLAN.md §4) — 승인된 사람에게만, 관리자의 링크는 어드민만(임시 비밀번호와 같은 선), 그날 용병은 없다
+ * (`issue_member_link`).
+ */
+export const canIssueLink = (
+  viewer: Gate,
+  target: { role: MemberRole; status: MemberStatus; guestMatchId: string | null },
+) => canChangeStatus(viewer, target) && target.status === "approved" && target.guestMatchId === null;

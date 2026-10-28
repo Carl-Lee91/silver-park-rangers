@@ -32,6 +32,12 @@ const serverSchema = z.object({
    * Cron 요청에 실어 보낸다. 없어도 된다(그때는 누구나 핑을 보낼 수 있다).
    */
   CRON_SECRET: z.string().default(""),
+  /**
+   * Supabase 서버 전용 키(service role). 개인 링크(PLAN.md §4)로 들어올 때 로그인 계정을 만들고 세션을 여는 데만 쓴다.
+   * 🔴 RLS 를 건너뛰는 키다. `NEXT_PUBLIC_` 을 붙이지 않고, 이 일 말고는 쓰지 않는다.
+   * 없어도 된다 — 그때 링크 화면이 무엇이 빠졌는지 보여 준다.
+   */
+  SUPABASE_SERVICE_ROLE_KEY: z.string().default(""),
 });
 
 export type Env = z.infer<typeof publicSchema>;

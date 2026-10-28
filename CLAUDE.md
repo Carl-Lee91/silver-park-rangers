@@ -25,6 +25,7 @@
 | 쿼터 | `quarter` | 매치 안의 경기 하나(25~30분). 기본 6개 |
 | 멤버 · 용병 | `member` / `guest` (`member_type`) | 관리자만 보는 구분 |
 | 그날 용병 | `match_guests` (`guestMatchId`) | 계정 없이 관리자가 매치에 넣는 용병. 멤버 행은 있고 auth 계정은 없다 |
+| 선수 등록 · 개인 링크 | `register_member` · `member_links` (`/j/[token]`) | 관리자가 계정 없이 명단에 넣고, 그 사람 전용 로그인 링크를 보낸다. 링크로 들어오면 멤버 id 그대로 auth 계정이 생긴다(PLAN.md §4) |
 | 어드민 | `owner` (`owners` 테이블) | 선수가 아닌 운영용 전용 계정. 관리자를 지정한다 |
 | 관리자 · 일반 | `admin` / `user` (`role`) | 멤버의 권한 |
 | 포지션 | `FW` · `AM` `WG` · `MF` `WM` · `DM` `WB` · `CB` `FB` · `GK` | 1선 ~ 5선(줄마다 중앙 · 측면) + 골키퍼. PLAN.md §5 |
@@ -213,7 +214,8 @@ entities/match/
   §1 의 표에 적는다.
 - Supabase 대시보드·Vercel 설정은 [docs/SETUP.md](docs/SETUP.md) 에 있다.
 - DB 타입은 손으로 쓰지 않고 생성한다(Supabase 를 연결하면 `pnpm db:types`).
-- service role key 는 서버에서만, 꼭 필요할 때만 쓴다. RLS 를 건너뛰기 때문이다.
+- service role key 는 서버에서만, 꼭 필요할 때만 쓴다. RLS 를 건너뛰기 때문이다. 지금은 개인 링크 로그인 한 곳뿐이다
+  (`shared/api` 의 `signInAsMember`: 계정 만들기 · 세션 열기). 데이터를 읽고 쓰는 데는 쓰지 않는다.
 
 ## 환경변수
 
@@ -235,6 +237,8 @@ entities/match/
   `member_admin_info` 테이블에만 둔다. 일반 사용자에게 가는 응답·화면·공유 이미지에
   절대 섞지 않는다. 그날 용병 표시(`match_guests`)도 같다 — 그래서 그날 용병은
   `members` 에 일반 멤버와 같은 모양의 행으로 두고, 구분은 관리자 전용 표에만 남긴다.
+- 🔴 **링크 계정**(개인 링크로 만든 auth 계정)은 `app_metadata.link_login` 이 참이고, DB 의 `is_link_account()` 가 같은 값을 본다.
+  비밀번호가 없어서 임시 비밀번호(`reset_member_password`)를 막고, 관리 화면에는 이메일 대신 "개인 링크"로 보인다.
 - 그날 용병은 매치 하나에만 속한다. 관리 화면의 멤버 목록·미투표자·"투표 없이 온 사람" 후보에서는
   `guestMatchId` 로 걸러 낸다(`groupForAdmin`, `regularMembers`).
 

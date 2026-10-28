@@ -7,9 +7,11 @@ import {
   dDayLabel,
   formatDeadline,
   formatMatchDate,
+  isFutsal,
   isVotingOpen,
   MatchCard,
   MatchSummary,
+  quarterSchedule,
   seoulToday,
   votingClosesAt,
 } from "@/entities/match";
@@ -19,6 +21,7 @@ import { fetchMyMember } from "@/entities/member/server";
 import { FormStrip, recentResults, ResultRow, withQuarterResults } from "@/entities/result";
 import { fetchMatchResults } from "@/entities/result/server";
 import { InstallAppCard } from "@/features/app-install";
+import { AttendanceVoteForm, submitVote } from "@/features/attendance-vote";
 import { matchPath, ROUTES } from "@/shared/config";
 import { chipClass, Panel, Screen } from "@/shared/ui";
 
@@ -26,7 +29,8 @@ import { chipClass, Panel, Screen } from "@/shared/ui";
 const PAST_FOR_FORM = 10;
 
 /**
- * 홈(PLAN.md §7 일반): 다음 매치(미리보기 · 내 응답 · 참석 인원 · 투표 단추), 최근 폼, 그 뒤의 다가오는 매치.
+ * 홈(PLAN.md §7 일반): 다음 매치(미리보기 · 내 응답 · 참석 인원 · 바로 투표), 최근 폼, 그 뒤의 다가오는 매치.
+ * 개인 링크로 들어오면 여기에 닿는다 — 다음 매치 칸에서 화면을 옮기지 않고 바로 투표한다(PLAN.md §4).
  * 데스크톱은 왼쪽에 다음 매치, 오른쪽에 최근 폼과 일정을 둔다.
  */
 export default async function HomeView() {
@@ -45,6 +49,7 @@ export default async function HomeView() {
   ]);
   const form = recentResults(withQuarterResults(played, results));
   const groups = groupAttendance(nextAttendance);
+  const mine = nextAttendance.find((row) => row.memberId === me.id && row.response !== null);
 
   return (
     <Screen
@@ -83,16 +88,31 @@ export default async function HomeView() {
                 <AttendanceMeter
                   counts={{ yes: groups.yes.length, maybe: groups.maybe.length, no: groups.no.length }}
                 />
-                <Link
-                  href={matchPath(next.id)}
-                  className={
-                    isVotingOpen(next)
-                      ? "flex h-12 items-center justify-center rounded-box bg-primary text-base font-bold text-primary-contrast"
-                      : "flex h-12 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-base font-semibold"
-                  }
-                >
-                  {!isVotingOpen(next) ? "매치 보기" : responses[next.id] ? "투표 바꾸기" : "참석 투표하기"}
-                </Link>
+                {isVotingOpen(next) ? (
+                  <>
+                    <AttendanceVoteForm
+                      action={submitVote}
+                      matchId={next.id}
+                      schedule={quarterSchedule(next)}
+                      current={mine ? { response: mine.response!, arriveAt: mine.arriveAt, leaveAt: mine.leaveAt } : null}
+                      open
+                      askTime={!isFutsal(next)}
+                    />
+                    <Link
+                      href={matchPath(next.id)}
+                      className="flex h-11 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-sm font-semibold"
+                    >
+                      매치 자세히 보기
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href={matchPath(next.id)}
+                    className="flex h-12 items-center justify-center rounded-box border border-border-strong bg-bg-subtle text-base font-semibold"
+                  >
+                    매치 보기
+                  </Link>
+                )}
               </div>
             </>
           ) : (
