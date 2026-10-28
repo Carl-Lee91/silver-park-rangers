@@ -16,6 +16,8 @@ export const ROUTES = {
   adminSquads: "/admin/squads",
   adminFormations: "/admin/formations",
   adminStats: "/admin/stats",
+  /** 회비 · 벌금 장부(PLAN.md §10) */
+  adminDues: "/admin/dues",
 } as const;
 
 export const matchPath = (id: string) => `/matches/${id}`;

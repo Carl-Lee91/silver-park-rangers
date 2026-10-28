@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ChartColumn, Shirt, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, ChartColumn, Shirt, Users, Wallet, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/shared/config";
@@ -11,6 +11,7 @@ const ICONS: Record<string, LucideIcon> = {
   [ROUTES.adminMatches]: CalendarDays,
   [ROUTES.adminSquads]: Shirt,
   [ROUTES.adminMembers]: Users,
+  [ROUTES.adminDues]: Wallet,
   [ROUTES.adminStats]: ChartColumn,
 };
 
