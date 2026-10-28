@@ -18,6 +18,7 @@ const member = (id: string, realName: string, extra: Partial<AdminMember> = {}):
   jerseyNumber: null,
   guestMatchId: null,
   email: null,
+  login: null,
   createdAt: "2026-10-19T00:00:00Z",
   ...extra,
 });

@@ -56,6 +56,7 @@ describe("관리 화면 묶음", () => {
     jerseyNumber: null,
     guestMatchId: null,
     email: null,
+    login: null,
     createdAt: "2026-10-19T00:00:00Z",
     ...overrides,
   });
