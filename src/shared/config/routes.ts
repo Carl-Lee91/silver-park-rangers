@@ -24,6 +24,8 @@ export const matchPath = (id: string) => `/matches/${id}`;
 export const adminMatchPath = (id: string) => `/admin/matches/${id}`;
 export const adminMatchEditPath = (id: string) => `/admin/matches/${id}/edit`;
 export const adminSquadPath = (id: string) => `/admin/matches/${id}/squad`;
+/** 경기 당일 현장 모드(PLAN.md §10): 지금 쿼터 · 교체 안내 · 도착 체크 · 결과 기록 */
+export const adminLivePath = (id: string) => `/admin/matches/${id}/live`;
 
 /** 풋살 팀 나누기(PLAN.md §6 "풋살"). 풋살 매치는 스쿼드 빌더 대신 여기로 간다 */
 export const adminTeamsPath = (id: string) => `/admin/matches/${id}/teams`;

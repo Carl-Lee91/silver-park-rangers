@@ -1,4 +1,5 @@
 export { autoAssign, type AssignStyle, type AutoAssignOptions } from "./model/autoAssign";
+export { quarterChanges, type QuarterChange } from "./model/changes";
 export { isFocusStyle } from "./model/style";
 export { evaluateSquad, type SquadReport } from "./model/evaluateSquad";
 export { guaranteedQuarters } from "./model/guarantees";

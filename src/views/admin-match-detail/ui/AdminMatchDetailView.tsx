@@ -17,6 +17,7 @@ import { proxyVoteChoices, ProxyVoteForm, submitProxyVote } from "@/features/pro
 import { ResultEditor } from "@/features/result-record";
 import { reminderText } from "@/features/vote-reminder";
 import {
+  adminLivePath,
   adminMatchEditPath,
   adminMatchPath,
   adminMemberPath,
@@ -69,12 +70,21 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
       back={{ href: ROUTES.adminMatches, label: "매치" }}
       width="wide"
       actions={
-        <Link
-          href={futsal ? adminTeamsPath(match.id) : adminSquadPath(match.id)}
-          className="inline-flex h-11 items-center rounded-box bg-kit-label px-4 text-sm font-bold text-kit"
-        >
-          {futsal ? "팀 나누기" : "스쿼드 짜기"}
-        </Link>
+        <div className="flex gap-2">
+          {/* 경기 당일 구장에서 쓰는 화면(PLAN.md §10 현장 모드) */}
+          <Link
+            href={adminLivePath(match.id)}
+            className="inline-flex h-11 items-center rounded-box border border-kit-label px-3 text-sm font-bold text-kit-label"
+          >
+            현장
+          </Link>
+          <Link
+            href={futsal ? adminTeamsPath(match.id) : adminSquadPath(match.id)}
+            className="inline-flex h-11 items-center rounded-box bg-kit-label px-4 text-sm font-bold text-kit"
+          >
+            {futsal ? "팀 나누기" : "스쿼드 짜기"}
+          </Link>
+        </div>
       }
     >
       <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-end lg:gap-6">

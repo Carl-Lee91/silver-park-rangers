@@ -2,6 +2,7 @@ import { parseEnv, parseServerEnv, type Env, type ServerEnv } from "./env";
 
 export type { Env, ServerEnv } from "./env";
 export {
+  adminLivePath,
   adminMatchEditPath,
   adminMatchPath,
   adminMemberPath,
