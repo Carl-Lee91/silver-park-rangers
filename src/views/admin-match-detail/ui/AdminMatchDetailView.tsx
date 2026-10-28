@@ -13,9 +13,20 @@ import { fetchSquad } from "@/entities/squad/server";
 import { AttendanceConfirm, confirmRows } from "@/features/attendance-confirm";
 import { deleteMatch } from "@/features/match-form";
 import { MatchGuests } from "@/features/match-guest";
+import { proxyVoteChoices, ProxyVoteForm, submitProxyVote } from "@/features/proxy-vote";
 import { ResultEditor } from "@/features/result-record";
-import { adminMatchEditPath, adminMatchPath, adminMemberPath, adminSquadPath, adminTeamsPath, ROUTES } from "@/shared/config";
-import { ActionButton, chipClass, Panel, Screen } from "@/shared/ui";
+import { reminderText } from "@/features/vote-reminder";
+import {
+  adminMatchEditPath,
+  adminMatchPath,
+  adminMemberPath,
+  adminSquadPath,
+  adminTeamsPath,
+  getServerEnv,
+  matchPath,
+  ROUTES,
+} from "@/shared/config";
+import { ActionButton, chipClass, CopyButton, Panel, Screen } from "@/shared/ui";
 import { playerTips } from "@/widgets/player-tip";
 
 export default async function AdminMatchDetailView({ matchId }: { matchId: string }) {
@@ -43,6 +54,13 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
     : new Set(squad.flatMap((quarter) => quarter.slots.flatMap((slot) => (slot.memberId ? [slot.memberId] : []))));
   const open = isVotingOpen(match);
   const groups = groupAttendance(attendance);
+  // 단톡방에 붙일 독촉 문구(PLAN.md §4). 마감이 지났으면 마감 줄을 뺀다 — 그때는 관리자가 대신 받는다.
+  const reminder = reminderText({
+    match: `${formatMatchDate(match.date)} ${matchTitle(match)}`,
+    names: waiting.map((member) => member.realName),
+    deadline: open ? formatDeadline(votingClosesAt(match).toISOString()) : null,
+    url: `${getServerEnv().SITE_URL}${matchPath(match.id)}`,
+  });
 
   return (
     <Screen
@@ -100,21 +118,36 @@ export default async function AdminMatchDetailView({ matchId }: { matchId: strin
               {waiting.length === 0 ? (
                 <p className="mt-1 text-sm text-text-tertiary">모두 투표했어요.</p>
               ) : (
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {waiting.map((member) => (
-                    <li key={member.id} className="inline-flex items-center gap-1 rounded-chip border border-border-strong px-2 py-1 text-sm">
-                      {tips[member.id]}
-                      <span>
-                        {member.jerseyNumber !== null && (
-                          <span className="mr-1 text-xs text-text-tertiary tabular-nums">{member.jerseyNumber}</span>
-                        )}
-                        {member.realName}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {waiting.map((member) => (
+                      <li key={member.id} className="inline-flex items-center gap-1 rounded-chip border border-border-strong px-2 py-1 text-sm">
+                        {tips[member.id]}
+                        <span>
+                          {member.jerseyNumber !== null && (
+                            <span className="mr-1 text-xs text-text-tertiary tabular-nums">{member.jerseyNumber}</span>
+                          )}
+                          {member.realName}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-3">
+                    <CopyButton text={reminder} label="독촉 문구 복사" done="복사했어요. 단톡방에 붙여 넣으세요." />
+                  </div>
+                </>
               )}
             </div>
+            {/* 단톡방에 "참석"이라고만 쓰는 사람은 관리자가 대신 남긴다(PLAN.md §4). 마감 뒤에도 된다 */}
+            <details className="border-t border-border px-3 py-3 md:px-4">
+              <summary className="cursor-pointer text-sm font-semibold">대신 투표하기</summary>
+              <p className="mt-1 text-xs text-text-tertiary">
+                단톡방에 답만 남긴 사람의 투표를 대신 남겨요. 시간은 처음부터 끝까지로 잡히고, 바뀌면 스쿼드 빌더에서 고쳐요.
+              </p>
+              <div className="mt-3">
+                <ProxyVoteForm action={submitProxyVote} matchId={match.id} choices={proxyVoteChoices(approved, attendance)} />
+              </div>
+            </details>
           </Panel>
 
           <Panel title="그날 용병" aside={`${guests.length}명`}>
