@@ -1023,3 +1023,70 @@ delete from public.matches where id = '10000000-0000-0000-0000-000000000041';
 select verify.ok((select (member_id is null and match_id is null and amount = 10000) from public.ledger_entries where payer_name = '경기비용병'),
   '매치 · 사람을 지워도 받은 돈은 장부에 이름과 남는다');
 reset role;
+
+-- ── MVP 투표 (20261028020000) ────────────────────────────────────────
+-- 어제 매치(끝나고 이틀 동안 열림)와 내일 매치(아직 안 끝남). 날짜는 한국 시각 기준이다.
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.matches (id, match_date) values
+  ('10000000-0000-0000-0000-000000000051', (now() at time zone 'Asia/Seoul')::date - 1),
+  ('10000000-0000-0000-0000-000000000052', (now() at time zone 'Asia/Seoul')::date + 1);
+insert into public.match_attendance (match_id, member_id, response, attended) values
+  ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', 'yes', true),
+  ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, 'yes', null),
+  ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000005', 'no', null),
+  ('10000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000002', 'yes', null),
+  ('10000000-0000-0000-0000-000000000052', current_setting('verify.registered')::uuid, 'yes', null);
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+insert into public.mvp_votes (match_id, voter_id, candidate_id)
+values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid);
+select verify.ok((select count(*) from public.mvp_votes) = 1, '뛴 사람은 끝난 매치의 MVP 를 뽑는다');
+update public.mvp_votes set candidate_id = current_setting('verify.registered')::uuid
+ where match_id = '10000000-0000-0000-0000-000000000051' and voter_id = '00000000-0000-0000-0000-000000000002';
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002')
+  on conflict (match_id, voter_id) do update set candidate_id = excluded.candidate_id$$, '자기 자신은 뽑지 못한다');
+select verify.fails($$update public.mvp_votes set candidate_id = '00000000-0000-0000-0000-000000000005'
+  where voter_id = '00000000-0000-0000-0000-000000000002'$$, '안 뛴 사람은 뽑지 못한다');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid)$$,
+  '끝나기 전에는 뽑지 못한다');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002')$$,
+  '남의 이름으로 뽑지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000005');
+select verify.fails($$insert into public.mvp_votes (match_id, voter_id, candidate_id)
+  values ('10000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000002')$$,
+  '안 뛴 사람은 투표하지 못한다');
+
+select verify.login(current_setting('verify.registered')::uuid);
+insert into public.mvp_votes (match_id, voter_id, candidate_id)
+values ('10000000-0000-0000-0000-000000000051', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.mvp_votes) = 1, '남이 누구를 뽑았는지는 못 본다 — 내 표만 본다');
+select verify.ok(public.mvp_voter_count('10000000-0000-0000-0000-000000000051') = 2, '몇 명이 투표했는지는 본다');
+select verify.ok(not exists (select 1 from public.mvp_results('10000000-0000-0000-0000-000000000051')),
+  '마감 전에는 결과를 보이지 않는다 — 쏠리지 않게');
+reset role;
+
+-- 마감한 매치(2026-10-18)의 표는 운영 DB 에서 넣는다(앱으로는 이미 못 넣는다)
+insert into public.mvp_votes (match_id, voter_id, candidate_id) values
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid),
+  ('10000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000005', current_setting('verify.registered')::uuid),
+  ('10000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid, '00000000-0000-0000-0000-000000000002');
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select (real_name, votes) = ('홍등록', 2) from public.mvp_results('10000000-0000-0000-0000-000000000002') limit 1),
+  '마감하면 결과를 많이 받은 순으로 본다');
+-- RLS USING 에 걸린 DELETE 는 오류 없이 0행이다. 지워 보고 표가 남았는지 본다.
+delete from public.mvp_votes where match_id = '10000000-0000-0000-0000-000000000002'
+  and voter_id = '00000000-0000-0000-0000-000000000002';
+reset role;
+select verify.ok((select count(*) from public.mvp_votes where match_id = '10000000-0000-0000-0000-000000000002') = 3,
+  '마감한 표는 지우지 못한다');
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.fails($$select * from public.mvp_results('10000000-0000-0000-0000-000000000002')$$, '로그인 안 하면 결과를 못 본다');
+reset role;
