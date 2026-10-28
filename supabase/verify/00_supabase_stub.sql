@@ -14,6 +14,7 @@ create table auth.users (
   email text,
   encrypted_password text,
   raw_user_meta_data jsonb not null default '{}',
+  raw_app_meta_data jsonb not null default '{}',
   updated_at timestamptz
 );
 

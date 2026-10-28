@@ -850,3 +850,119 @@ reset role;
 delete from auth.users where id = '00000000-0000-0000-0000-000000000009';
 select verify.ok(not exists (select 1 from public.members where id = '00000000-0000-0000-0000-000000000009'),
   '계정을 지우면 멤버 행도 지운다');
+
+-- ── 가입 없는 참여: 선수 등록 · 개인 링크 · 대신 투표 (20261028000000) ──
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.fails($$select public.register_member('등록시도', '{right}', '{CB,FB,DM}', null, 'member')$$,
+  '일반 멤버는 선수를 등록하지 못한다');
+
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.registered',
+  public.register_member(' 홍등록 ', '{right}', '{CB,FB,DM}', 44, 'member')::text, false);
+select verify.ok((select (real_name, status, role) = ('홍등록', 'approved', 'user')
+  from public.members where id = current_setting('verify.registered')::uuid),
+  '관리자가 등록한 선수는 계정 없이 바로 승인된 멤버다');
+select verify.ok((select approved_by from public.members where id = current_setting('verify.registered')::uuid)
+  = '00000000-0000-0000-0000-000000000001', '누가 등록했는지 남긴다');
+select verify.ok((select member_type from public.member_admin_info where member_id = current_setting('verify.registered')::uuid) = 'member',
+  '등록할 때 고른 구분이 관리자 표에 남는다');
+select verify.ok(not exists (select 1 from public.match_guests where member_id = current_setting('verify.registered')::uuid),
+  '등록한 선수는 그날 용병이 아니다 — 모든 매치에 나온다');
+select verify.ok(44 = any(public.taken_jersey_numbers()), '등록한 선수의 번호는 사용 중이다');
+select verify.fails($$select public.register_member('번호겹침', '{left}', '{GK}', 44, 'guest')$$,
+  '등록도 등번호가 겹치면 막는다');
+select verify.fails($$select public.register_member('두개만', '{left}', '{FW,WG}', null, 'member')$$,
+  '등록도 선호 포지션 규칙이 같다');
+select verify.fails($$select public.register_member('구분없음', '{left}', '{GK}', null, 'owner')$$,
+  '구분은 멤버 · 용병 둘 중 하나다');
+
+-- 개인 링크
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.fails($$select public.issue_member_link(current_setting('verify.registered')::uuid)$$,
+  '일반 멤버는 개인 링크를 만들지 못한다');
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.link', public.issue_member_link(current_setting('verify.registered')::uuid)::text, false);
+select verify.ok((select token::text from public.member_links where member_id = current_setting('verify.registered')::uuid)
+  = current_setting('verify.link'), '관리자는 개인 링크를 다시 읽어 복사한다');
+select verify.fails($$select public.issue_member_link('00000000-0000-0000-0000-000000000003')$$,
+  '승인 전인 사람에게는 개인 링크를 만들지 않는다');
+
+insert into public.matches (id, match_date, vote_deadline)
+values ('10000000-0000-0000-0000-000000000041', '2026-11-08', now() + interval '1 day');
+select set_config('verify.dayguest',
+  public.add_match_guest('10000000-0000-0000-0000-000000000041', '하루용병', '{right}', '{GK}', null)::text, false);
+select verify.fails($$select public.issue_member_link(current_setting('verify.dayguest')::uuid)$$,
+  '그날 용병은 개인 링크가 없다 — 공유 링크로 본다');
+
+select verify.login('00000000-0000-0000-0000-000000000007');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'admin');
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.fails($$select public.issue_member_link('00000000-0000-0000-0000-000000000002')$$,
+  '관리자는 다른 관리자의 개인 링크를 만들지 못한다');
+select verify.ok(public.issue_member_link('00000000-0000-0000-0000-000000000001') is not null,
+  '관리자는 자기 링크는 만든다');
+select verify.login('00000000-0000-0000-0000-000000000007');
+select verify.ok(public.issue_member_link('00000000-0000-0000-0000-000000000002') is not null,
+  '어드민은 관리자의 개인 링크도 만든다');
+select public.set_member_role('00000000-0000-0000-0000-000000000002', 'user');
+
+select verify.login('00000000-0000-0000-0000-000000000002');
+select verify.ok((select count(*) from public.member_links) = 0, '일반 멤버는 개인 링크를 못 읽는다');
+reset role;
+
+select set_config('request.jwt.claims', '', false);
+set role anon;
+select verify.ok((select real_name from public.link_member(current_setting('verify.link')::uuid)) = '홍등록',
+  '로그인 전에도 링크 주인의 이름을 본다');
+select verify.ok(not exists (select 1 from public.link_member(gen_random_uuid())), '틀린 링크는 아무도 아니다');
+select verify.ok((select count(*) from public.member_links) = 0, '로그인 안 하면 링크 표를 못 읽는다');
+reset role;
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select set_config('verify.newlink', public.issue_member_link(current_setting('verify.registered')::uuid)::text, false);
+select verify.ok(current_setting('verify.newlink') <> current_setting('verify.link'), '새 링크는 다른 값이다');
+select verify.ok(not exists (select 1 from public.link_member(current_setting('verify.link')::uuid)),
+  '새 링크를 만들면 예전 링크는 열리지 않는다');
+select public.set_member_status(current_setting('verify.registered')::uuid, 'inactive');
+select verify.ok(not exists (select 1 from public.link_member(current_setting('verify.newlink')::uuid)),
+  '휴면인 사람의 링크는 열리지 않는다');
+select public.set_member_status(current_setting('verify.registered')::uuid, 'approved');
+select verify.ok(exists (select 1 from public.link_member(current_setting('verify.newlink')::uuid)),
+  '복귀하면 같은 링크가 다시 열린다');
+reset role;
+
+-- 링크로 처음 들어오면 로그인 서버가 멤버 id 그대로 계정을 만든다(서버 전용 키). 그 모습을 흉내 낸다.
+insert into auth.users (id, email, raw_app_meta_data)
+values (current_setting('verify.registered')::uuid, current_setting('verify.registered') || '@link.invalid', '{"provider": "email", "link_login": true}');
+select verify.ok((select count(*) from public.members where id = current_setting('verify.registered')::uuid) = 1,
+  '링크 계정이 생겨도 멤버 행은 그대로 하나다');
+
+set role authenticated;
+select verify.login('00000000-0000-0000-0000-000000000001');
+select verify.ok((select (email is null and via_link) from public.member_emails() where member_id = current_setting('verify.registered')::uuid),
+  '링크 계정은 이메일 대신 링크로 보인다 — 표시용 주소는 보이지 않는다');
+select verify.ok((select (email, via_link) = ('member@example.com', false) from public.member_emails()
+  where member_id = '00000000-0000-0000-0000-000000000002'), '이메일 계정은 그대로 이메일이다');
+select verify.fails($$select public.reset_member_password(current_setting('verify.registered')::uuid)$$,
+  '링크 계정은 임시 비밀번호가 없다 — 새 링크를 보낸다');
+
+-- 링크로 들어온 사람은 다른 팀원과 똑같다(id = 계정 id)
+select verify.login(current_setting('verify.registered')::uuid);
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000041', current_setting('verify.registered')::uuid, 'yes');
+select verify.ok((select response from public.match_attendance where match_id = '10000000-0000-0000-0000-000000000041'
+  and member_id = current_setting('verify.registered')::uuid) = 'yes', '링크로 들어온 사람은 자기 투표를 한다');
+
+-- 대신 투표: 관리자는 마감 뒤에도 남의 투표를 남긴다. 일반 멤버는 못 한다.
+select verify.fails($$insert into public.match_attendance (match_id, member_id, response)
+  values ('10000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000005', 'yes')$$,
+  '일반 멤버는 남의 투표를 남기지 못한다');
+select verify.login('00000000-0000-0000-0000-000000000001');
+insert into public.match_attendance (match_id, member_id, response)
+values ('10000000-0000-0000-0000-000000000002', current_setting('verify.registered')::uuid, 'no')
+on conflict (match_id, member_id) do update set response = excluded.response;
+select verify.ok((select response from public.match_attendance where match_id = '10000000-0000-0000-0000-000000000002'
+  and member_id = current_setting('verify.registered')::uuid) = 'no', '관리자는 마감 뒤에도 대신 투표한다');
+reset role;

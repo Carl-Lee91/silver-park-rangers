@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupForAdmin, regularMembers, toAdminMember, type AdminMember } from "./adminMember";
+import { attachLogins, groupForAdmin, regularMembers, toAdminMember, type AdminMember } from "./adminMember";
 
 const row = {
   id: "00000000-0000-0000-0000-000000000001",
@@ -31,6 +31,7 @@ describe("관리 화면용 멤버", () => {
 
   it("이메일은 따로 읽어 붙인다 — 처음엔 없다", () => {
     expect(toAdminMember(row).email).toBeNull();
+    expect(toAdminMember(row).login).toBeNull();
   });
 
   it("구분이 아직 없으면(가입 대기) null 이다", () => {
@@ -106,5 +107,24 @@ describe("매치마다 볼 사람", () => {
 
   it("매치를 정하지 않으면 그날 용병을 모두 뺀다", () => {
     expect(regularMembers([make("멤버", null), make("이번", "m1")]).map((m) => m.realName)).toEqual(["멤버"]);
+  });
+});
+
+describe("로그인 방법 (PLAN.md §4 개인 링크)", () => {
+  const member = toAdminMember(row);
+
+  it("이메일로 가입한 사람은 이메일을 붙이고 email 로 본다", () => {
+    const [result] = attachLogins([member], [{ member_id: member.id, email: "kim@example.com", via_link: false }]);
+    expect(result).toMatchObject({ email: "kim@example.com", login: "email" });
+  });
+
+  it("링크로 들어온 사람은 link 다 — 메일이 가지 않는 표시용 주소는 보이지 않는다", () => {
+    const [result] = attachLogins([member], [{ member_id: member.id, email: `${member.id}@link.invalid`, via_link: true }]);
+    expect(result).toMatchObject({ email: null, login: "link" });
+  });
+
+  it("아직 계정이 없으면(관리자가 등록만 했다) 둘 다 없다", () => {
+    const [result] = attachLogins([member], []);
+    expect(result).toMatchObject({ email: null, login: null });
   });
 });
