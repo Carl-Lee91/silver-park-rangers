@@ -45,6 +45,7 @@
 | `20261027000000_member_ratings.sql` | 2026-10-27 |
 | `20261027010000_futsal.sql` | 2026-10-27 |
 | `20261027020000_positions_tactics.sql` | |
+| `20261028000000_member_links.sql` | |
 
 ## 2. Supabase — 이메일 가입 설정
 
@@ -88,13 +89,19 @@
 - [ ] **임시 비밀번호**: 테스트 계정 하나를 가입·승인한 뒤, 멤버 관리 › 관리 › **임시 비밀번호 만들기** 로 만든 비밀번호로 로그인되는지 본다. 그다음 `/me` 에서 비밀번호를 바꿔 본다.
   - 로그인이 안 되면 알려 준다. 임시 비밀번호는 DB 함수가 `auth.users` 에 bcrypt 로 직접 쓰는데, 그 방식이 막혀 있으면 서버에서 Supabase 관리 API 로 바꾼다.
 - [ ] **그날 용병**: 매치 화면 › 그날 용병 › **용병 넣기** 로 한 명 넣고, 스쿼드 빌더 벤치에 오르는지 본다.
+- [ ] **개인 링크**(가입 없는 참여, PLAN.md §4): `20261028000000_member_links.sql` 을 적용하고 §6 의 `SUPABASE_SERVICE_ROLE_KEY` 를 넣은 뒤,
+  멤버 관리 › **선수 등록** 으로 테스트 선수를 하나 넣는다 → 선수 상세 › 개인 링크 › **링크 만들기** → **안내 문구와 같이 복사** 해서
+  나와의 채팅에 붙이고, 🔴 **카톡 인앱 브라우저에서** 링크를 연다 → "○○님으로 들어가기" → 홈이 뜨고 다음 매치에 바로 투표되는지 본다.
+  - 카톡을 껐다 켜서 단톡방의 매치 링크(`/matches/…`)가 로그인 없이 바로 열리는지 본다(세션이 남는지).
+  - 안 들어가지면 Vercel › Logs 에서 "개인 링크 로그인 실패" 줄을 찾아 알려 준다. 계정을 만드는 로그인 서버의 답이 적혀 있다.
+  - 확인한 뒤 테스트 선수는 휴면 처리하면 된다(링크도 같이 막힌다). Authentication › Users 에 `…@link.invalid` 계정이 하나 생긴 것도 정상이다.
 
 ## 6. Vercel — 배포
 
 - [ ] [vercel.com](https://vercel.com) › Add New › Project 에서 GitHub 저장소(`Carl-Lee91/silver-park-rangers`)를 Import 한다.
   - Framework 는 Next.js 로 자동으로 잡힌다. Build·Install 명령은 건드리지 않는다.
   - Project Name 이 주소가 된다: `https://<Project Name>.vercel.app`. 아래 `SITE_URL` 에 그대로 쓴다.
-- [ ] Import 화면의 **Environment Variables** 에 아래 5개를 넣는다(나중에는 Settings › Environment Variables).
+- [ ] Import 화면의 **Environment Variables** 에 아래 6개를 넣는다(나중에는 Settings › Environment Variables).
   적용 범위는 **Production · Preview** 둘 다 체크한다.
 
   | 이름 | 종류 | 값 | 어디서 |
@@ -103,14 +110,17 @@
   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Config | `eyJ…` 로 시작하는 긴 값 | `.env.local` 과 같다(Supabase › Project Settings › API Keys 의 anon) |
   | `SITE_URL` | Config | `https://<Project Name>.vercel.app` | 🔴 `.env.local` 의 `localhost` 를 그대로 넣지 않는다. 끝에 `/` 는 없어도 된다 |
   | `CRON_SECRET` | **Secret** | 아무 긴 문자열 | 터미널에서 `openssl rand -hex 32` 로 만든다. 여기에만 넣고 어디에도 적지 않는다 |
+  | `SUPABASE_SERVICE_ROLE_KEY` | **Secret** | 서버 전용 키 | Supabase › Project Settings › API Keys 의 **service_role**(Legacy API Keys 탭, `eyJ…`). 개인 링크로 들어올 때만 쓴다. 🔴 `NEXT_PUBLIC_` 을 붙이지 않는다 — RLS 를 건너뛰는 키다 |
   | `ENABLE_EXPERIMENTAL_COREPACK` | Config | `1` | 이 저장소는 pnpm 11 을 쓴다(`packageManager`). 이걸 켜야 Vercel 도 같은 버전으로 설치한다 |
 
   - `.env.local` 내용을 키 칸에 통째로 붙여 넣으면 한 번에 들어간다. 붙인 뒤 `SITE_URL` 만 고친다.
   - anon key 는 원래 브라우저에 공개되는 값이다(접근 통제는 RLS 가 한다). 그래도 저장소에는 넣지 않는다.
   - **종류**: Vercel 은 변수마다 Config(저장 뒤에도 보임) · Secret(저장 뒤 못 봄)을 고른다. `NEXT_PUBLIC_` 변수를 Secret 으로 두면
     "Remove the public framework prefix … change the variable to Config" 경고가 뜬다 — 접두사를 지우지 말고 **Config** 로 바꾼다.
-    🔴 접두사를 지우면 브라우저(가입 대기 실시간 갱신 등)에서 Supabase 주소 · 키를 못 읽어 앱이 깨진다. 진짜 비밀인 `CRON_SECRET` 만 Secret 이다.
+    🔴 접두사를 지우면 브라우저(가입 대기 실시간 갱신 등)에서 Supabase 주소 · 키를 못 읽어 앱이 깨진다. 진짜 비밀인 `CRON_SECRET` · `SUPABASE_SERVICE_ROLE_KEY` 만 Secret 이다.
   - 🔴 `NEXT_PUBLIC_` 값은 빌드할 때 박힌다. 값을 바꾸면 Deployments › 최신 배포 › **Redeploy** 를 눌러야 반영된다.
+- [ ] **이미 배포했으면**(2026-10-28 추가): Settings › Environment Variables 에 `SUPABASE_SERVICE_ROLE_KEY` 를 Secret · Production · Preview 로
+  넣고 **Redeploy** 한다. `.env.local` 에도 넣으면 로컬에서도 개인 링크가 된다. 없으면 링크 화면이 이 키가 빠졌다고 알려 준다.
 - [ ] Deploy 를 누른다. 끝나면 실제 주소가 `SITE_URL` 과 같은지 본다. 다르면 고치고 Redeploy 한다.
 - [ ] Settings › General › **Production Branch** 가 `main` 인지 본다(기본값).
 - [ ] 배포 뒤 Settings › Cron Jobs 에 `/api/cron/keep-alive`(매일 1회)가 보이는지 본다.
